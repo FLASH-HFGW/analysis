@@ -1,2 +1,2 @@
-# analisys
+# analysis
 FALSH analysis tools
