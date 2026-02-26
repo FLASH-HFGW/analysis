@@ -39,16 +39,15 @@ A bank:
 - Open runXXXXX.mid.gz
 - Read BOR ODB and print the run description (if available)
 - Loop over events:
--   Skip internal MIDAS events
--   Periodically print event information
--   If a SPEC bank is present:
--     Interpret data as int16
--     Reshape into [Nsamples, Nchannels]
--     Convert ADC counts to Volts
--     Build time axis from sampling frequency
--     Print debug samples periodically
+  - Skip internal MIDAS events
+  - Periodically print event information
+  - If a SPEC bank is present:
+    - Interpret data as int16
+    - Reshape into [Nsamples, Nchannels]
+    - Convert ADC counts to Volts
+    - Build time axis from sampling frequency
+    - Print debug samples periodically
 
-- Extending to Other Banks
 
 ### Requirements
 - Python 3
