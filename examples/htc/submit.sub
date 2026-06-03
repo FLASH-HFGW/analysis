@@ -1,0 +1,19 @@
+executable              = script.sh
+#
+# path, runnumber, output folder, 
+#
+arguments               = flash/data/LNF 249 flash/analysis/users/mazzitel
+#
+output                  = stdout-$(ClusterId).$(ProcID).txt
+error                   = stderr-$(ClusterId).$(ProcID).txt
+log                     = output-$(ClusterId).$(ProcID).log
+request_cpus            = 2
+transfer_executable     = Yes
+# file da trasferire, ad esempio l'eseguibile
+transfer_input_files    = ../print_bank.py ../fft_chank.py
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+want_io_proxy           = true
+use_oauth_services   = t1
+t1_oauth_permissions = profile,email,openid,offline_access
+queue
