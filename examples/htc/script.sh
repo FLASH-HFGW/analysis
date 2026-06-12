@@ -26,12 +26,17 @@ echo "--------------------------------------"
 fname=$(printf 'run%05d.mid.gz' "$2")
 date
 gfal-copy davs://xfer-archive.cr.cnaf.infn.it:8443/$1/$fname .
+ls -hl ./$fname 
 date
 echo "--------------------------------------"
-echo "run:"
-# python3 print_bank.py --path ./ --run $1
 python3 -V
-python3 fft_chank.py --path ./ --run $2 --fft-out ./$2.out
+echo "run:"
+
+# python3 print_bank.py --path ./ --run $1
+# python3 fft_chank.py --path ./ --run $2 --fft-out ./$2.out
+python3 analyze_midas_iq_fft_only.py --path ./ --run $2 --fft-out ./$2.out --max-fft-events $4 --fs 5e6 --input-range 5 --iq-sign 1 --mode-workers 8
+echo "copy output:"
+export BEARER_TOKEN="$(jq -r .access_token "${_CONDOR_CREDS}/t1.use")"
 gfal-copy $2.out davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$2.out
 echo "--------------------------------------"
 echo "files:"
