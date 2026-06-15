@@ -1,16 +1,16 @@
 executable              = script.sh
 #
-# path, runnumber, output folder, events to analyze, core
+# path, runnumber, output folder, events/stream to average, core
 #
-arguments               = flash/data/LNF 388 flash/analysis/users/mazzitel 1000 8
+arguments               = flash/data/LNF 384 flash/analysis/users/mazzitel
 #
 output                  = stdout-$(ClusterId).$(ProcID).txt
 error                   = stderr-$(ClusterId).$(ProcID).txt
 log                     = output-$(ClusterId).$(ProcID).log
-request_cpus            = 8
+request_cpus            = 1
 transfer_executable     = Yes
 # file da trasferire, ad esempio l'eseguibile
-transfer_input_files    = ../print_bank.py ../fft_chank.py ../analyze_midas_iq_fft_only.py
+transfer_input_files    = ../analyze_midas_iq_fft_4ms.py
 should_transfer_files   = Yes
 when_to_transfer_output = ON_EXIT
 want_io_proxy           = true

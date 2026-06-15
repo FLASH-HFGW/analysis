@@ -240,8 +240,8 @@ def complex_fft_only(
     nsamp = frames.shape[0]
 
     # Converti solo i due canali necessari
-    I = frames[:, ch_i].astype(np.float32) * scale
-    Q = frames[:, ch_q].astype(np.float32) * scale
+    I = frames[:, ch_i].astype(np.float32)
+    Q = frames[:, ch_q].astype(np.float32)
 
     # Rimozione offset DC separata su I e Q
     I -= np.float32(np.mean(I, dtype=np.float64))
@@ -423,7 +423,7 @@ try:
         
             # Decode Spectrum digitizer
             u = np.asarray(event.banks["SPEC"].data, dtype=np.uint16)
-            s = u.view(np.int16) * scale 
+            s = u.view(np.int16) 
         
             nsamp = s.size // Nch
         
@@ -432,7 +432,7 @@ try:
                 continue
             
             # Reshape solo della porzione usata
-            volt = s[:nsamp * Nch].reshape(nsamp, Nch)
+            volt = s[:nsamp * Nch].reshape(nsamp, Nch) * scale 
     #######
             pps = volt[:, pps_channel].astype(np.float32)
             if verbose:
@@ -490,6 +490,18 @@ try:
                     use_window=not args.no_window,
                 )
                 futures.append((mode_name, fut))
+
+                # Aspetta che tutti i modi IQ dell'evento siano completati
+            for mode_name, fut in futures:
+                try:
+                    fut.result()
+                    # print("DONE FFT mode:", mode_name, "event:", event_number)
+                except Exception:
+                    print("ERROR in FFT mode:", mode_name, "event:", event_number)
+                    raise
+        
+            # Incrementa UNA volta per evento SPEC processato
+            n_fft_done += 1
         
             del volt, s, u
             gc.collect()
@@ -500,7 +512,7 @@ try:
             if stimep =="":
                 stimep=stime
             unix_time = tgps_bank_to_unix(arr)
-            print("TGPS Time: %s, %d, %d.%5d" % (stimep, trigger, unix_time, fs*trigger))
+            print("TGPS Time: %s, %d, %d" % (stimep, trigger, unix_time))
             stimep=stime
 finally:
     executor.shutdown(wait=True)
