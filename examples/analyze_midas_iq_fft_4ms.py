@@ -474,25 +474,24 @@ for event in mf:
                 plot_points=args.plot_points,
                 use_window=not args.no_window,
             )
-            match ch:
-                case 0: 
-                    if fft_amp_mode0_SPECs is None:
-                        fft_amp_mode0_SPECs = fft_amp_chunks
-                        fft_freq_mode0 = fs_meta
-                    else:
-                        fft_amp_mode0_SPECs += fft_amp_chunks
-                case 1: 
-                    if fft_amp_mode1_SPECs is None:
-                        fft_amp_mode1_SPECs = fft_amp_chunks
-                        fft_freq_mode1 = fs_meta
-                    else:
-                        fft_amp_mode1_SPECs += fft_amp_chunks
-                case 2: 
-                    if fft_amp_mode2_SPECs is None:
-                        fft_amp_mode2_SPECs = fft_amp_chunks
-                        fft_freq_mode2 = fs_meta
-                    else:
-                        fft_amp_mode2_SPECs += fft_amp_chunks
+            if ch == 0:
+                if fft_amp_mode0_SPECs is None:
+                    fft_amp_mode0_SPECs = fft_amp_chunks
+                    fft_freq_mode0 = fs_meta
+                else:
+                    fft_amp_mode0_SPECs += fft_amp_chunks
+            elif ch == 1:
+                if fft_amp_mode1_SPECs is None:
+                    fft_amp_mode1_SPECs = fft_amp_chunks
+                    fft_freq_mode1 = fs_meta
+                else:
+                    fft_amp_mode1_SPECs += fft_amp_chunks
+            else: 
+                if fft_amp_mode2_SPECs is None:
+                    fft_amp_mode2_SPECs = fft_amp_chunks
+                    fft_freq_mode2 = fs_meta
+                else:
+                    fft_amp_mode2_SPECs += fft_amp_chunks
 
         # futures = []
 
