@@ -555,7 +555,7 @@ print(event_number, n_fft_done)
 # Summary leggero
 out_npz = os.path.join(
     outdir,
-    "run%05d_event%08d_fft_summary.npz"
+    "run%05d.npz"
     % (run, event_number)
 )
 
