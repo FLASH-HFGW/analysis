@@ -436,7 +436,7 @@ stimep     = ""
 
 input_range = float(args.input_range)
 print(input_range)
-scale = np.float32(2.0 * input_range / 65536.0)
+scale = np.float32(2.0 * input_range / 65535)      # 2^16-1 =65535
 iq_sign=args.iq_sign
 
 Nch = 8
@@ -495,7 +495,7 @@ with Pool(processes=args.mode_workers) as pool:
                 
     
         
-k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt
+#k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt. Senza questo salva in V^2
 
 fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
 fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)

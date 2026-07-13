@@ -370,7 +370,7 @@ verbose    = args.verbose
 
 input_range = float(args.input_range)
 print(input_range)
-scale = np.float32(2.0 * input_range / 65536.0)
+scale = np.float32(2.0 * input_range / 65535)      # 2^16-1 =65535
 iq_sign=args.iq_sign
 
 Nch = 8

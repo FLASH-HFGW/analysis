@@ -605,7 +605,7 @@ verbose = args.verbose
 input_range = float(args.input_range)
 log(f"input_range: {input_range}")
 
-scale = np.float32(2.0 * input_range / 65536.0)
+scale = np.float32(2.0 * input_range / 65535)      # 2^16-1 =65535
 iq_sign = args.iq_sign
 
 Nch = 8
@@ -798,7 +798,7 @@ while True:
 # ============================================================
 
 with prof.section("normalization"):
-    k = 1000 / (2 * 50)  # tiene conto dei 50 Ohm e porta tutto in mWatt
+    #k = 1000 / (2 * 50)  # tiene conto dei 50 Ohm e porta tutto in mWatt. Senza questo salva in V^2
 
     if n_fft_done > 0:
         norm = k / (number_chunks * n_fft_done)
