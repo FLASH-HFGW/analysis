@@ -1,0 +1,2 @@
+timestamp, index, name, utilization.gpu [%], utilization.memory [%], memory.used [MiB], memory.total [MiB], power.draw [W]
+2026/06/27 19:50:15.988, 0, NVIDIA H100 80GB HBM3, 0 %, 0 %, 0 MiB, 81559 MiB, 68.54 W

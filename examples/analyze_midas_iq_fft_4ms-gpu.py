@@ -1,10 +1,16 @@
 import numpy as np
+
+# CuPy viene usato solo se --fft-backend gpu/auto lo richiede.
+try:
+    import cupy as cp
+except ImportError:
+    cp = None
 import midas.file_reader
 from datetime import datetime
 import os
 import argparse
-from concurrent.futures import ProcessPoolExecutor, as_completed
-import matplotlib.pyplot as plt
+# from concurrent.futures import ProcessPoolExecutor, as_completed
+# import matplotlib.pyplot as plt
 # matplotlib.use("Agg")
 import gc
 
@@ -55,7 +61,40 @@ parser.add_argument(
 parser.add_argument("--verbose", action="store_true", default=0,
                     help="Verbose output")
 
+parser.add_argument("--fft-backend", choices=["auto", "cpu", "gpu"], default="auto",
+                    help="Backend FFT: auto usa CuPy se disponibile, gpu richiede CuPy/CUDA, cpu usa NumPy")
+
+parser.add_argument("--gpu-device", type=int, default=0,
+                    help="Indice GPU CUDA da usare con CuPy")
+
 args = parser.parse_args()
+
+
+def configure_fft_backend(requested_backend: str, gpu_device: int):
+    """Seleziona NumPy o CuPy per la FFT."""
+    if requested_backend == "cpu":
+        return np, "cpu"
+
+    if cp is None:
+        if requested_backend == "gpu":
+            raise RuntimeError("--fft-backend gpu richiesto, ma CuPy non è installato")
+        print("CuPy non disponibile: uso FFT CPU/NumPy")
+        return np, "cpu"
+
+    try:
+        cp.cuda.Device(gpu_device).use()
+        # Forza una piccola operazione per intercettare subito problemi CUDA/driver.
+        _ = cp.asarray([0], dtype=cp.float32).sum().item()
+        print(f"Uso FFT GPU/CuPy su device CUDA {gpu_device}")
+        return cp, "gpu"
+    except Exception as exc:
+        if requested_backend == "gpu":
+            raise RuntimeError(f"Impossibile inizializzare CuPy/CUDA sul device {gpu_device}") from exc
+        print(f"CuPy presente ma GPU non inizializzabile ({exc}); uso FFT CPU/NumPy")
+        return np, "cpu"
+
+
+xp, fft_backend = configure_fft_backend(args.fft_backend, args.gpu_device)
 
 
 outdir = args.out_dir
@@ -80,29 +119,16 @@ mf = midas.file_reader.MidasFile(full_name)
 # ------------------------------------------------------------
 equipment_by_event_id = {}
 
+odb = mf.get_bor_odb_dump().data
+
 try:
-    odb = mf.get_bor_odb_dump().data
-
-    try:
-        run_description = odb["Experiment"]["Run Parameters"]["Run description"]
-        print("Run_description:", run_description)
-    except Exception:
-        print("WARNING: no run description")
-
-    try:
-        equipments = odb["Equipment"]
-
-        for eq_name, eq_data in equipments.items():
-            try:
-                event_id = eq_data["Common"]["Event ID"]
-                equipment_by_event_id[int(event_id)] = eq_name
-                print("Found equipment:", eq_name, "Event ID:", event_id)
-            except Exception:
-                pass
-
-    except Exception:
-        print("WARNING: no Equipment section in ODB")
-
+    run_description = odb["Experiment"]["Run Parameters"]["Run description"]
+    print("Run_description:", run_description)
+    equipments = odb["Equipment"]
+    for eq_name, eq_data in equipments.items():
+        event_id = eq_data["Common"]["Event ID"]
+        equipment_by_event_id[int(event_id, 16)] = eq_name
+        print("Found equipment:", eq_name, "Event ID:", event_id)
 except Exception:
     print("WARNING: no BOR ODB dump found")
     odb = None
@@ -239,118 +265,66 @@ def complex_fft_chunks(
     outdir,
     plot_points,
     use_window=True,
+    xp=np,
 ):
     """
-    Costruisce z[n] = I[n] + j*iq_sign*Q[n],
-    rimuove DC su I e Q, calcola FFT complessa e salva plot leggero.
+    Costruisce z[n] = I[n] + j*iq_sign*Q[n], rimuove DC su I e Q,
+    calcola FFT complessa sui chunk e somma |FFT|^2.
+
+    Se xp è cupy, tutta la parte FFT resta su GPU e viene riportato su CPU
+    solo il vettore finale fft_amp_chunks, così np.savez_compressed resta invariato.
     """
-    fft_amp_chunks = None
-    nstep = int(nsamp/number_chunks)
+    if number_chunks <= 0:
+        raise ValueError("number_chunks deve essere > 0")
 
-    #print(nsamp, number_chunks, nstep, nsamp/number_chunks)
-    for nchunk in range(number_chunks):
-    
-        # Converti solo i due canali necessari
-        I = frames[nchunk*nstep:(nchunk+1)*nstep-1, ch_i].astype(np.float32)
-        Q = frames[nchunk*nstep:(nchunk+1)*nstep-1, ch_q].astype(np.float32)
-    
-        # Rimozione offset DC separata su I e Q
-        I -= np.float32(np.mean(I, dtype=np.float64))
-        Q -= np.float32(np.mean(Q, dtype=np.float64))
-    
-        # Segnale complesso baseband
-        z = (I + 1j * iq_sign * Q).astype(np.complex64)
-    
-        # Libera I/Q, z contiene già tutto
-        del I, Q
-    
-        # # Finestra
-        if use_window:
-            window = np.hanning(nstep-1).astype(np.float32)
-            coherent_gain = np.sum(window, dtype=np.float64)
-            #print(len(z), len(window))
-            z *= window
-            del window
-        else:
-            coherent_gain = float(nstep)
+    nstep = nsamp // number_chunks
+    if nstep <= 1:
+        raise ValueError(f"Chunk troppo corto: nsamp={nsamp}, number_chunks={number_chunks}")
 
-        # FFT complessa bidirezionale
-        Z = np.fft.fft(z)
-        del z
-    
-        Z = np.fft.fftshift(Z)
-    
-        freq = np.fft.fftshift(
-            np.fft.fftfreq(nstep, d=1.0 / fs)
-        ).astype(np.float32)
-    
-        # Ampiezza complessa normalizzata
-        # Niente fattore 2, perché è una FFT complessa two-sided.
-        fft_amp = ((np.abs(Z) / coherent_gain).astype(np.float32))**2 # da scommetare in caso di uso dell hanning window
-        #fft_amp = (np.abs(Z)).astype(np.float32)
-        
-        # Non serve tenere Z se salviamo solo modulo/picco
-        del Z
-    
-        # # Cerca picco evitando DC
-        # dc_index = nstep // 2
-        # fft_amp_for_peak = fft_amp.copy()
-    
-        # guard_bins = 2
-        # i0 = max(0, dc_index - guard_bins)
-        # i1 = min(nstep, dc_index + guard_bins + 1)
-        # fft_amp_for_peak[i0:i1] = 0.0
-    
-        # imax = int(np.argmax(fft_amp_for_peak))
-        # peak_freq = float(freq[imax])
-        # peak_amp = float(fft_amp[imax])
-        # idx = np.arange(nstep, dtype=np.int64)
+    # Usa solo un numero intero di chunk. L'eventuale resto finale viene ignorato.
+    nuse = nstep * number_chunks
+    nfft = nstep
 
-        # # Plot sottocampionato
-        # if nsamp > plot_points:
-        #     idx = np.linspace(0, nsamp - 1, plot_points).astype(np.int64)
-            
-    
-        # fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    
-        # ax.plot(freq[idx], fft_amp[idx])
-        # ax.set_xlabel("Frequency [Hz]")
-        # ax.set_ylabel("|FFT| [V]")
-        # ax.set_title(
-        #     "%s complex FFT - run %05d event %08d"
-        #     % (mode_name, run, event_number)
-        # )
-        # ax.grid(True)
-        # ax.set_yscale("log")
-    
-        # fig.tight_layout()
-    
-        # out_png = os.path.join(
-        #     outdir,
-        #     "run%05d_event%08d_%s_complex_fft.png"
-        #     % (run, event_number, mode_name)
-        # )
-    
-        # fig.savefig(out_png, dpi=150)
-        # plt.close(fig)
-    
-        # if verbose:
-        #     print("Saved FFT plot:", out_png)
-        # if verbose:
-        #     print(
-        #         "%s | event = %s | peak freq = %.6f Hz | peak amp = %.6e V"
-        #         % (mode_name, event_number, peak_freq, peak_amp)
-        #     )
-            
-        if fft_amp_chunks is None:
-            fft_amp_chunks = fft_amp
-        else:
-            fft_amp_chunks += fft_amp
-            
-        del fft_amp
-        gc.collect()
-        
-    return fft_amp_chunks, [freq[0], freq[-1], len(freq)]
+    # Frequenze sempre su CPU: sono piccole e servono solo come metadato/output.
+    freq = np.fft.fftshift(np.fft.fftfreq(nfft, d=1.0 / fs)).astype(np.float32)
+
+    # Trasferisce/organizza in blocco i soli canali I/Q del modo corrente.
+    # Shape: (number_chunks, nstep)
+    I = xp.asarray(frames[:nuse, ch_i], dtype=xp.float32).reshape(number_chunks, nstep)
+    Q = xp.asarray(frames[:nuse, ch_q], dtype=xp.float32).reshape(number_chunks, nstep)
+
+    # Rimozione DC per chunk, separata su I e Q.
+    I = I - xp.mean(I, axis=1, keepdims=True, dtype=xp.float64).astype(xp.float32)
+    Q = Q - xp.mean(Q, axis=1, keepdims=True, dtype=xp.float64).astype(xp.float32)
+
+    z = (I + (1j * iq_sign) * Q).astype(xp.complex64)
+    del I, Q
+
+    if use_window:
+        window = xp.hanning(nfft).astype(xp.float32)
+        coherent_gain = float(xp.sum(window, dtype=xp.float64).get() if xp is cp else xp.sum(window, dtype=xp.float64))
+        z *= window[None, :]
+        del window
+    else:
+        coherent_gain = float(nfft)
+
+    # FFT complessa two-sided su tutti i chunk in parallelo.
+    Z = xp.fft.fft(z, axis=1)
+    del z
+    Z = xp.fft.fftshift(Z, axes=1)
+
+    # Somma sui chunk: equivalente al loop precedente, ma vettorializzato.
+    fft_amp_chunks = xp.sum((xp.abs(Z) / coherent_gain).astype(xp.float32) ** 2, axis=0).astype(xp.float32)
+    del Z
+
+    # np.savez_compressed vuole array NumPy; copiamo solo il risultato finale.
+    if xp is cp:
+        fft_amp_chunks = cp.asnumpy(fft_amp_chunks)
+        cp.get_default_memory_pool().free_all_blocks()
+        cp.get_default_pinned_memory_pool().free_all_blocks()
+
+    return fft_amp_chunks, [float(freq[0]), float(freq[-1]), int(len(freq))]
+
 
 
 
@@ -435,8 +409,6 @@ for event in mf:
         # volt contine i canali ordinati di lunghezza nsamp (209ms)
         volt = s[:nsamp * Nch].reshape(nsamp, Nch) * scale 
 
-
-
         
 ##################################################################
         pps = volt[:, pps_channel].astype(np.float32)
@@ -473,6 +445,7 @@ for event in mf:
                 outdir=outdir,
                 plot_points=args.plot_points,
                 use_window=not args.no_window,
+                xp=xp,
             )
             if ch == 0:
                 if fft_amp_mode0_SPECs is None:
@@ -493,39 +466,7 @@ for event in mf:
                 else:
                     fft_amp_mode2_SPECs += fft_amp_chunks
 
-        # futures = []
-
-        # for mode_name, (ch_i, ch_q) in iq_modes.items():
-        #     fut = executor.submit(
-        #         complex_fft_only,
-        #         frames=volt,
-        #         mode_name=mode_name,
-        #         ch_i=ch_i,
-        #         ch_q=ch_q,
-        #         fs=fs,
-        #         input_range=input_range,
-        #         iq_sign=args.iq_sign,
-        #         run=run,
-        #         event_number=event_number,
-        #         outdir=fft_out,
-        #         plot_points=args.plot_points,
-        #         use_window=not args.no_window,
-        #     )
-        #     futures.append((mode_name, fut))
-
-        #     # Aspetta che tutti i modi IQ dell'evento siano completati
-        # for mode_name, fut in futures:
-        #     try:
-        #         fut.result()
-        #         # print("DONE FFT mode:", mode_name, "event:", event_number)
-        #     except Exception:
-        #         print("ERROR in FFT mode:", mode_name, "event:", event_number)
-        #         raise
-
-
-        
-        # Incrementa UNA volta per evento SPEC processato
-
+    
         n_fft_done += 1
             
         del volt, s, u
@@ -542,9 +483,13 @@ for event in mf:
         
 k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt
 
-fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode2_SPECs*k/(number_chunks*n_fft_done)
+if n_fft_done > 0:
+    norm = k / (number_chunks * n_fft_done)
+    fft_amp_mode0_SPECs = fft_amp_mode0_SPECs * norm
+    fft_amp_mode1_SPECs = fft_amp_mode1_SPECs * norm
+    fft_amp_mode2_SPECs = fft_amp_mode2_SPECs * norm
+else:
+    raise RuntimeError("Nessun evento SPEC processato: non posso salvare FFT mediate")
 
 print(event_number, n_fft_done)
 
@@ -570,9 +515,10 @@ np.savez_compressed(out_npz,
     fs=fs,
     nsamp=nsamp,
     number_chunks=number_chunks,
+    fft_backend=fft_backend,
 
 )
 if verbose:
     print("Saved summary:", out_npz)
-        
+    
 print("DONE")

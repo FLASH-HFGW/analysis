@@ -1,0 +1,379 @@
+{
+  "wall_total_seconds": 674.6316440320807,
+  "cpu_process_seconds": 669.917889601,
+  "cpu_process_over_wall": 0.9930128471251245,
+  "n_fft_done": 850,
+  "rows": [
+    {
+      "section": "midas_next_event",
+      "seconds": 404.06276844395325,
+      "count": 1067,
+      "seconds_per_call": 0.3786905046335082,
+      "seconds_per_SPEC": 0.47536796287523914,
+      "percent_wall": 59.89383569809822
+    },
+    {
+      "section": "SPEC_event_total",
+      "seconds": 270.3767194787506,
+      "count": 850,
+      "seconds_per_call": 0.31809025821029485,
+      "seconds_per_SPEC": 0.31809025821029485,
+      "percent_wall": 40.07768118654888
+    },
+    {
+      "section": "SPEC_decode_numpy",
+      "seconds": 254.43813881988171,
+      "count": 850,
+      "seconds_per_call": 0.2993389868469197,
+      "seconds_per_SPEC": 0.2993389868469197,
+      "percent_wall": 37.715120698930996
+    },
+    {
+      "section": "SPEC_fft_all_modes_total",
+      "seconds": 14.092021452146582,
+      "count": 850,
+      "seconds_per_call": 0.016578848767231272,
+      "seconds_per_SPEC": 0.016578848767231272,
+      "percent_wall": 2.088846791698444
+    },
+    {
+      "section": "fft.TM010.h2d_or_array_select",
+      "seconds": 3.3595490901498124,
+      "count": 850,
+      "seconds_per_call": 0.003952410694293897,
+      "seconds_per_SPEC": 0.003952410694293897,
+      "percent_wall": 0.49798273174242863
+    },
+    {
+      "section": "fft.TM012.h2d_or_array_select",
+      "seconds": 3.223251807852648,
+      "count": 850,
+      "seconds_per_call": 0.0037920609504148804,
+      "seconds_per_SPEC": 0.0037920609504148804,
+      "percent_wall": 0.4777795166245379
+    },
+    {
+      "section": "fft.TM011.h2d_or_array_select",
+      "seconds": 3.21189359377604,
+      "count": 850,
+      "seconds_per_call": 0.0037786983456188704,
+      "seconds_per_SPEC": 0.0037786983456188704,
+      "percent_wall": 0.4760958994718168
+    },
+    {
+      "section": "SPEC_pps_threshold",
+      "seconds": 1.5812001075828448,
+      "count": 850,
+      "seconds_per_call": 0.0018602354206856998,
+      "seconds_per_SPEC": 0.0018602354206856998,
+      "percent_wall": 0.2343797717718166
+    },
+    {
+      "section": "fft.TM010.dc_remove",
+      "seconds": 0.5347207805607468,
+      "count": 850,
+      "seconds_per_call": 0.0006290832712479374,
+      "seconds_per_SPEC": 0.0006290832712479374,
+      "percent_wall": 0.07926114721878053
+    },
+    {
+      "section": "fft.TM010.window",
+      "seconds": 0.3486060645664111,
+      "count": 850,
+      "seconds_per_call": 0.00041012478184283656,
+      "seconds_per_SPEC": 0.00041012478184283656,
+      "percent_wall": 0.051673541798735116
+    },
+    {
+      "section": "fft.TM010.power_reduce",
+      "seconds": 0.3013815487502143,
+      "count": 850,
+      "seconds_per_call": 0.00035456652794142854,
+      "seconds_per_SPEC": 0.00035456652794142854,
+      "percent_wall": 0.04467349722123066
+    },
+    {
+      "section": "fft.TM011.dc_remove",
+      "seconds": 0.2714081881567836,
+      "count": 850,
+      "seconds_per_call": 0.0003193037507726866,
+      "seconds_per_SPEC": 0.0003193037507726866,
+      "percent_wall": 0.04023057479703358
+    },
+    {
+      "section": "fft.TM012.dc_remove",
+      "seconds": 0.2659507910721004,
+      "count": 850,
+      "seconds_per_call": 0.00031288328361423574,
+      "seconds_per_SPEC": 0.00031288328361423574,
+      "percent_wall": 0.039421630073945016
+    },
+    {
+      "section": "fft.TM011.power_reduce",
+      "seconds": 0.1916769326198846,
+      "count": 850,
+      "seconds_per_call": 0.0002255022736704525,
+      "seconds_per_SPEC": 0.0002255022736704525,
+      "percent_wall": 0.02841208744290237
+    },
+    {
+      "section": "fft.TM012.power_reduce",
+      "seconds": 0.18916409939993173,
+      "count": 850,
+      "seconds_per_call": 0.00022254599929403732,
+      "seconds_per_SPEC": 0.00022254599929403732,
+      "percent_wall": 0.02803961259056156
+    },
+    {
+      "section": "fft.TM011.window",
+      "seconds": 0.1840445790439844,
+      "count": 850,
+      "seconds_per_call": 0.00021652303416939343,
+      "seconds_per_SPEC": 0.00021652303416939343,
+      "percent_wall": 0.02728075101013681
+    },
+    {
+      "section": "fft.TM010.fft",
+      "seconds": 0.18341245490591973,
+      "count": 850,
+      "seconds_per_call": 0.00021577935871284673,
+      "seconds_per_SPEC": 0.00021577935871284673,
+      "percent_wall": 0.027187051856879387
+    },
+    {
+      "section": "fft.TM012.window",
+      "seconds": 0.18051472830120474,
+      "count": 850,
+      "seconds_per_call": 0.00021237026858965264,
+      "seconds_per_SPEC": 0.00021237026858965264,
+      "percent_wall": 0.02675752462815408
+    },
+    {
+      "section": "SPEC_cleanup_python",
+      "seconds": 0.1754265580093488,
+      "count": 850,
+      "seconds_per_call": 0.00020638418589335154,
+      "seconds_per_SPEC": 0.00020638418589335154,
+      "percent_wall": 0.026003310037589458
+    },
+    {
+      "section": "fft.TM010.fftshift",
+      "seconds": 0.14748698542825878,
+      "count": 850,
+      "seconds_per_call": 0.00017351410050383384,
+      "seconds_per_SPEC": 0.00017351410050383384,
+      "percent_wall": 0.021861854055165747
+    },
+    {
+      "section": "fft.TM010.freq_cpu",
+      "seconds": 0.13155461847782135,
+      "count": 850,
+      "seconds_per_call": 0.00015477013938567218,
+      "seconds_per_SPEC": 0.00015477013938567218,
+      "percent_wall": 0.01950021461957476
+    },
+    {
+      "section": "fft.TM010.build_complex",
+      "seconds": 0.13143210776615888,
+      "count": 850,
+      "seconds_per_call": 0.00015462600913665752,
+      "seconds_per_SPEC": 0.00015462600913665752,
+      "percent_wall": 0.01948205497456756
+    },
+    {
+      "section": "fft.TM011.fftshift",
+      "seconds": 0.11162404343485832,
+      "count": 850,
+      "seconds_per_call": 0.00013132240404100978,
+      "seconds_per_SPEC": 0.00013132240404100978,
+      "percent_wall": 0.016545924642329745
+    },
+    {
+      "section": "fft.TM012.fftshift",
+      "seconds": 0.10958902281709015,
+      "count": 850,
+      "seconds_per_call": 0.00012892826213775312,
+      "seconds_per_SPEC": 0.00012892826213775312,
+      "percent_wall": 0.016244275492638897
+    },
+    {
+      "section": "fft.TM011.freq_cpu",
+      "seconds": 0.09976100642234087,
+      "count": 850,
+      "seconds_per_call": 0.00011736588990863632,
+      "seconds_per_SPEC": 0.00011736588990863632,
+      "percent_wall": 0.014787478071158629
+    },
+    {
+      "section": "fft.TM012.freq_cpu",
+      "seconds": 0.09689311485271901,
+      "count": 850,
+      "seconds_per_call": 0.00011399189982672825,
+      "seconds_per_SPEC": 0.00011399189982672825,
+      "percent_wall": 0.014362373261001595
+    },
+    {
+      "section": "fft.TM011.fft",
+      "seconds": 0.08188625902403146,
+      "count": 850,
+      "seconds_per_call": 9.633677532238996e-05,
+      "seconds_per_SPEC": 9.633677532238996e-05,
+      "percent_wall": 0.012137921449195694
+    },
+    {
+      "section": "fft.TM012.fft",
+      "seconds": 0.07965203386265785,
+      "count": 850,
+      "seconds_per_call": 9.370827513253864e-05,
+      "seconds_per_SPEC": 9.370827513253864e-05,
+      "percent_wall": 0.011806744401522642
+    },
+    {
+      "section": "event_header_and_banknames",
+      "seconds": 0.07776955480221659,
+      "count": 1066,
+      "seconds_per_call": 7.295455422346772e-05,
+      "seconds_per_SPEC": 9.14935938849607e-05,
+      "percent_wall": 0.01152770634022
+    },
+    {
+      "section": "fft.TM011.build_complex",
+      "seconds": 0.0758369182003662,
+      "count": 850,
+      "seconds_per_call": 8.92199037651367e-05,
+      "seconds_per_SPEC": 8.92199037651367e-05,
+      "percent_wall": 0.011241233474776041
+    },
+    {
+      "section": "fft.TM012.build_complex",
+      "seconds": 0.0751834639813751,
+      "count": 850,
+      "seconds_per_call": 8.845113409573541e-05,
+      "seconds_per_SPEC": 8.845113409573541e-05,
+      "percent_wall": 0.011144372584129763
+    },
+    {
+      "section": "fft.TM010.d2h_result",
+      "seconds": 0.05490705126430839,
+      "count": 850,
+      "seconds_per_call": 6.459653089918635e-05,
+      "seconds_per_SPEC": 6.459653089918635e-05,
+      "percent_wall": 0.008138819420942758
+    },
+    {
+      "section": "fft.TM011.d2h_result",
+      "seconds": 0.05130514979828149,
+      "count": 850,
+      "seconds_per_call": 6.0358999762684105e-05,
+      "seconds_per_SPEC": 6.0358999762684105e-05,
+      "percent_wall": 0.007604913029523083
+    },
+    {
+      "section": "fft.TM012.d2h_result",
+      "seconds": 0.050556806148961186,
+      "count": 850,
+      "seconds_per_call": 5.94785954693661e-05,
+      "seconds_per_SPEC": 5.94785954693661e-05,
+      "percent_wall": 0.007493986769846371
+    },
+    {
+      "section": "TGPS_parse",
+      "seconds": 0.028730705613270402,
+      "count": 181,
+      "seconds_per_call": 0.0001587331801838144,
+      "seconds_per_SPEC": 3.3800830133259295e-05,
+      "percent_wall": 0.004258724871183803
+    },
+    {
+      "section": "save_npz_compressed",
+      "seconds": 0.015472825965844095,
+      "count": 1,
+      "seconds_per_call": 0.015472825965844095,
+      "seconds_per_SPEC": 1.8203324665698936e-05,
+      "percent_wall": 0.0022935221172501533
+    },
+    {
+      "section": "accumulate.TM010",
+      "seconds": 0.0137246772646904,
+      "count": 850,
+      "seconds_per_call": 1.614667913492988e-05,
+      "seconds_per_SPEC": 1.614667913492988e-05,
+      "percent_wall": 0.0020343957159587004
+    },
+    {
+      "section": "accumulate.TM011",
+      "seconds": 0.013172599370591342,
+      "count": 850,
+      "seconds_per_call": 1.549717573010746e-05,
+      "seconds_per_SPEC": 1.549717573010746e-05,
+      "percent_wall": 0.0019525617404873685
+    },
+    {
+      "section": "accumulate.TM012",
+      "seconds": 0.013126239413395524,
+      "count": 850,
+      "seconds_per_call": 1.5442634603994736e-05,
+      "seconds_per_SPEC": 1.5442634603994736e-05,
+      "percent_wall": 0.0019456898486029709
+    },
+    {
+      "section": "midas_get_bor_odb_dump",
+      "seconds": 0.010743630002252758,
+      "count": 1,
+      "seconds_per_call": 0.010743630002252758,
+      "seconds_per_SPEC": 1.2639564708532655e-05,
+      "percent_wall": 0.0015925179462441385
+    },
+    {
+      "section": "midas_open_file",
+      "seconds": 0.00015398103278130293,
+      "count": 1,
+      "seconds_per_call": 0.00015398103278130293,
+      "seconds_per_SPEC": 1.8115415621329755e-07,
+      "percent_wall": 2.282446045089173e-05
+    },
+    {
+      "section": "normalization",
+      "seconds": 8.6240004748106e-05,
+      "count": 1,
+      "seconds_per_call": 8.6240004748106e-05,
+      "seconds_per_SPEC": 1.0145882911541882e-07,
+      "percent_wall": 1.2783272992158228e-05
+    },
+    {
+      "section": "parse_bor_odb_dump",
+      "seconds": 5.7286000810563564e-05,
+      "count": 1,
+      "seconds_per_call": 5.7286000810563564e-05,
+      "seconds_per_SPEC": 6.739529507125125e-08,
+      "percent_wall": 8.491448825047918e-06
+    },
+    {
+      "section": "final_gpu_sync",
+      "seconds": 4.4460175558924675e-06,
+      "count": 1,
+      "seconds_per_call": 4.4460175558924675e-06,
+      "seconds_per_SPEC": 5.230608889285256e-09,
+      "percent_wall": 6.590289078822171e-07
+    }
+  ],
+  "extra": {
+    "run": 388,
+    "input_file": "/tmp/mazzitel/JOB_595/run00388.mid.gz",
+    "out_npz": "/tmp/mazzitel/JOB_595/run00388.npz",
+    "fft_backend": "gpu",
+    "number_chunks": 64,
+    "fs": 5000000.0,
+    "input_range": 5.0,
+    "max_fft_events": 99999999,
+    "gc_every": 0,
+    "free_gpu_pool_every": 0,
+    "gpu_snapshot_final": {
+      "gpu_mem_free_bytes": 84413644800,
+      "gpu_mem_total_bytes": 85009367040,
+      "cupy_pool_used_bytes": 512,
+      "cupy_pool_total_bytes": 29361664,
+      "cupy_pinned_free_blocks": 1
+    }
+  }
+}
