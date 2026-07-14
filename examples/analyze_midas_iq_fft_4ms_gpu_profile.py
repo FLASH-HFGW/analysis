@@ -799,6 +799,7 @@ while True:
 
 with prof.section("normalization"):
     #k = 1000 / (2 * 50)  # tiene conto dei 50 Ohm e porta tutto in mWatt. Senza questo salva in V^2
+    k = 1
 
     if n_fft_done > 0:
         norm = k / (number_chunks * n_fft_done)

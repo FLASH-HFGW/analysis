@@ -482,7 +482,8 @@ for event in mf:
         stimep=stime
         
 #k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt. Senza questo salva in V^2
-
+k =1
+ 
 if n_fft_done > 0:
     norm = k / (number_chunks * n_fft_done)
     fft_amp_mode0_SPECs = fft_amp_mode0_SPECs * norm
