@@ -498,9 +498,9 @@ with Pool(processes=args.mode_workers) as pool:
 #k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt. Senza questo salva in V^2
 k=1
 
-fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode2_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode0_SPECs = fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode1_SPECs = fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode2_SPECs = fft_amp_mode2_SPECs*k/(number_chunks*n_fft_done)
 
 # finally:
 #     executor.shutdown(wait=True)
