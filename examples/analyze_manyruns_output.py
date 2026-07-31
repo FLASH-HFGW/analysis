@@ -18,7 +18,6 @@ parser.add_argument("--path", required=True,
 
 parser.add_argument("--out-dir", default="./",
                     help="Directory dove salvare le FFT")
-
 parser.add_argument(
         "--range",
         dest="run_range",
@@ -43,7 +42,7 @@ fft_freq_mode1 = None
 fft_freq_mode2 = None
 
 for run in run_list:
-    file_npz = path+"/run%05d.npz"%(run)  
+    file_npz = path+"/run%05d.npz"%(int(run))  
 
     # Apertura del file
     data = np.load(file_npz)
