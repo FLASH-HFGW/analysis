@@ -337,6 +337,9 @@ parser.add_argument("--plot-points", type=int, default=50000,
 parser.add_argument("--number-chunks", type=int, default=64,
                     help="Numero di suddivisione del chunk acquisito 209ms/nchunk = ms su cui fare FFT. Deve essere una potenza di 2")
 
+parser.add_argument("--fft-window-seconds", type=float, default=0,
+                    help="Salva anche una FFT media per ogni finestra temporale di questa durata; 0 disabilita")
+
 parser.add_argument("--no-window", action="store_true",
                     help="Disabilita finestra Hann")
 parser.add_argument(
@@ -448,15 +451,58 @@ MAX_WORKERS = 8
 nsamp = None
 pps_sample = {}
 tgps = {}
+window_index = 1
+window_start = None
+window_fft = [None, None, None]
+window_n_fft_done = 0
+
+
+def save_time_window(index, start, stop, amplitudes, count):
+    out_window_npz = os.path.join(
+        outdir,
+        "run%05d_fft_%ds.npz" % (run, index),
+    )
+    np.savez_compressed(
+        out_window_npz,
+        fft_amp_mode0_SPECs=amplitudes[0],
+        fft_freq_mode0=fft_freq_mode0,
+        fft_amp_mode1_SPECs=amplitudes[1],
+        fft_freq_mode1=fft_freq_mode1,
+        fft_amp_mode2_SPECs=amplitudes[2],
+        fft_freq_mode2=fft_freq_mode2,
+        n_fft_done=count,
+        fs=fs,
+        nsamp=nsamp,
+        number_chunks=number_chunks,
+        window_index=index,
+        window_start= start,
+        window_stop=stop,
+        window_seconds=args.fft_window_seconds,
+    )
+    print(
+        "Saved time-window summary:",
+        out_window_npz,
+        "(events:", count, ")",
+    )
 
 
 with Pool(processes=args.mode_workers) as pool:
 
-    for results in pool.imap_unordered(
-        parallel_f,
-        event_payload_generator(mf),
-        chunksize=1,
-    ):
+    # L'ordine temporale è necessario per costruire finestre consecutive.
+    iterator = (
+        pool.imap(
+            parallel_f,
+            event_payload_generator(mf),
+            chunksize=1,
+        )
+        if args.fft_window_seconds > 0
+        else pool.imap_unordered(
+            parallel_f,
+            event_payload_generator(mf),
+            chunksize=1,
+        )
+    )
+    for results in iterator:
         if verbose:
             print(results)
         if (n_fft_done >= args.max_fft_events):
@@ -483,6 +529,35 @@ with Pool(processes=args.mode_workers) as pool:
             n_fft_done += 1
             pps_sample[results["event_number"]] = results["trigger"]
 
+            if args.fft_window_seconds > 0:
+                event_time = float(results["tdaq"])
+                if window_start is None:
+                    window_start = event_time
+                while (
+                    window_n_fft_done > 0
+                    and event_time
+                    >= window_start + args.fft_window_seconds
+                ):
+                    save_time_window(
+                        window_index,
+                        window_start,
+                        window_start + args.fft_window_seconds,
+                        window_fft,
+                        window_n_fft_done,
+                    )
+                    window_index += 1
+                    window_start += args.fft_window_seconds
+                    window_fft = [None, None, None]
+                    window_n_fft_done = 0
+
+                for mode in range(3):
+                    amplitude = results["fft"][mode]["amp"]
+                    if window_fft[mode] is None:
+                        window_fft[mode] = amplitude.copy()
+                    else:
+                        window_fft[mode] += amplitude
+                window_n_fft_done += 1
+
 
 
         if results["has_tgps"]:
@@ -492,15 +567,24 @@ with Pool(processes=args.mode_workers) as pool:
         del results
 
 
+if args.fft_window_seconds > 0 and window_n_fft_done > 0:
+    save_time_window(
+        window_index,
+        window_start,
+        window_start + args.fft_window_seconds,
+        window_fft,
+        window_n_fft_done,
+    )
+
                 
     
         
 #k=1000/(2*50) # tine conto dei 50 Home e posta tutto in mWatt. Senza questo salva in V^2
 k=1
 
-fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)
-fft_amp_mode2_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode0_SPECs = fft_amp_mode0_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode1_SPECs = fft_amp_mode1_SPECs*k/(number_chunks*n_fft_done)
+fft_amp_mode2_SPECs = fft_amp_mode2_SPECs*k/(number_chunks*n_fft_done)
 
 # finally:
 #     executor.shutdown(wait=True)

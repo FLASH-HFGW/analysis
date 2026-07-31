@@ -1,1 +1,5 @@
 /job_to_submit/
+/job_to_submit_offline/
+/logs/
+/fft_plots/
+/autoreco.lock

@@ -18,12 +18,23 @@ parser.add_argument("--path", required=True,
 
 parser.add_argument("--out-dir", default="./",
                     help="Directory dove salvare le FFT")
+
+parser.add_argument(
+        "--range",
+        dest="run_range",
+        nargs=2,
+        metavar=("START", "END"),
+        help=(
+            "Intervallo inclusivo di run. "
+            "Esempio: --range 590 600"
+        ))
 args = parser.parse_args()
 
 path = os.path.expanduser(args.path)
 outdir = args.out_dir
 
-run_list=[385,386]
+run_list=args.run_range
+print(run_list)
 fft_amp_mode0_SPECs_fin = None
 fft_amp_mode1_SPECs_fin = None
 fft_amp_mode2_SPECs_fin = None

@@ -8,10 +8,10 @@ from typing import Any, Dict, Optional
 
 from googletool import (
     ensure_column,
+    find_col,
     get_headers,
     open_google_sheet,
     read_all_records,
-    update_fields,
 )
 
 AUTORECO_DIR = Path(__file__).resolve().parent
@@ -67,7 +67,8 @@ def selected(run_number: int, args: argparse.Namespace) -> bool:
     return args.run_range[0] <= run_number <= args.run_range[1]
 
 
-def archive_terminal_state(output_dir: Path, run_number: int) -> None:
+def validate_terminal_state(output_dir: Path, run_number: int) -> None:
+    """Verifica lo stato senza modificarlo."""
     run_dir = output_dir / f"{run_number:05d}"
     path = run_dir / "job_state.json"
     if not path.is_file():
@@ -83,6 +84,14 @@ def archive_terminal_state(output_dir: Path, run_number: int) -> None:
             f"Run {run_number}: esiste già un job non terminale "
             f"(stato {status}, cluster {state.get('cluster_id')})"
         )
+
+
+def archive_terminal_state(output_dir: Path, run_number: int) -> None:
+    run_dir = output_dir / f"{run_number:05d}"
+    path = run_dir / "job_state.json"
+    if not path.is_file():
+        return
+    state = json.loads(path.read_text(encoding="utf-8"))
     cluster_id = state.get("cluster_id", "unknown")
     archived = run_dir / f"job_state.reset-{cluster_id}.json"
     path.replace(archived)
@@ -105,22 +114,38 @@ def main() -> None:
     if not matches:
         raise RuntimeError("Nessun run corrispondente trovato nel foglio")
 
-    for row_number, run_number in matches:
-        archive_terminal_state(args.output_dir.resolve(), run_number)
-        update_fields(
-            worksheet,
-            headers,
-            row_number,
-            {
-                "reco_requested_version": args.reco_version.strip(),
-                # reco_done è il commit marker e viene scritto per ultimo.
-                "reco_done": 0,
-            },
+    output_dir = args.output_dir.resolve()
+
+    # Controlla l'intero intervallo prima di archiviare qualunque stato:
+    # un job attivo non deve lasciare un reset parzialmente applicato.
+    for _, run_number in matches:
+        validate_terminal_state(output_dir, run_number)
+
+    for _, run_number in matches:
+        archive_terminal_state(output_dir, run_number)
+
+    # Una singola richiesta batch evita il limite di scritture al minuto.
+    # RAW mantiene la versione numerica-looking, per esempio "1.0", come testo.
+    from gspread import Cell
+    from gspread.utils import ValueInputOption
+
+    version = args.reco_version.strip()
+    version_col = find_col(headers, "reco_requested_version")
+    reco_done_col = find_col(headers, "reco_done")
+    cells = [
+        cell
+        for row_number, _ in matches
+        for cell in (
+            Cell(row_number, version_col, version),
+            # reco_done è il commit marker e viene scritto per ultimo.
+            Cell(row_number, reco_done_col, 0),
         )
-        print(
-            f"Run {run_number}: reco_done=0, versione richiesta "
-            f"{args.reco_version.strip()}"
-        )
+    ]
+    worksheet.update_cells(cells, value_input_option=ValueInputOption.raw)
+    print(
+        f"Reset completato per {len(matches)} run: reco_done=0, "
+        f"versione richiesta {version}"
+    )
 
 
 if __name__ == "__main__":

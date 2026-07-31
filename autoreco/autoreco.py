@@ -16,13 +16,14 @@ from googletool import (
     get_headers,
     open_google_sheet,
     read_all_records,
-    update_fields,
 )
 
 AUTORECO_DIR = Path(__file__).resolve().parent
 JOBS_DIR = AUTORECO_DIR / "job_to_submit"
 LOCK_PATH = AUTORECO_DIR / ".autoreco.lock"
 STATE_FILENAME = "job_state.json"
+DEFAULT_OUTPUT_PATH = "flash/analysis/autoreco/Run2/fft_by_run"
+TERMINAL_STATUSES = {"sheet_updated", "read_only_completed"}
 SCRIPT_TEMPLATE = r"""#!/bin/bash
 set -euo pipefail
 
@@ -72,7 +73,9 @@ echo "Arguments: $@"
 echo "--------------------------------------"
 
 # $1: input path, $2: run, $3: output path, $4: max events
-# $5: analysis script, $6: number of workers
+# $5: analysis script, $6: number of workers, $7: IQ sign
+# $8: number of chunks (durata FFT = durata evento / number of chunks)
+# $9: durata delle finestre temporali aggiuntive; 0 le disabilita
 fname=$(printf 'run%05d.mid.gz' "$2")
 
 echo ">> Start coping ${fname}: `date`"
@@ -83,7 +86,14 @@ echo "--------------------------------------"
 echo "Python version: `python3 -V`"
 echo "run:"
 
-python3 "$5" --path ./ --run "$2" --max-fft-events "$4" --mode-workers "$6"
+python3 "$5" \
+  --path ./ \
+  --run "$2" \
+  --max-fft-events "$4" \
+  --mode-workers "$6" \
+  --iq-sign "$7" \
+  --number-chunks "$8" \
+  --fft-window-seconds "$9"
   
 echo "run complited, `date`, list of files:"
 ls -lsrth
@@ -92,17 +102,16 @@ echo ">> Output coping: `date`"
 # refresh token befor copy
 export BEARER_TOKEN="$(jq -r .access_token "${_CONDOR_CREDS}/t1.use")"
 # se vuoi la directory
-out_h5="run$(printf '%05d' "$2").npz"
-gfal-copy -f -r "$out_h5" "davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$out_h5"
+for out_npz in run$(printf '%05d' "$2")*.npz; do
+  gfal-copy -f -r "$out_npz" "davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$out_npz"
+done
 echo "--------------------------------------"
 
 
 rm -f "$fname"
 """ + " "
-ANALYSIS_SCRIPT = (
-    AUTORECO_DIR.parent / "examples"
-    / "analyze_midas_iq_fft_4ms_paral-pipe.py"
-)
+DEFAULT_ANALYSIS_SCRIPT_DIR = AUTORECO_DIR.parent / "examples"
+DEFAULT_ANALYSIS_SCRIPT_NAME = "analyze_midas_iq_fft_4ms_paral-pipe.py"
 
 
 def parse_integer(raw: Any) -> Optional[int]:
@@ -155,16 +164,37 @@ def runs_to_reconstruct(
 ) -> Iterable[Tuple[int, str]]:
     for record in records:
         run_number = get_run_number(record)
+        rucio_status = parse_integer(record.get("rucio_status"))
         reco_done = parse_integer(record.get("reco_done"))
         filename = str(record.get("filename", "")).strip()
 
         if (
             run_number is not None
-            and reco_done == 0
+            and rucio_status == 0
+            and (reco_done == 0 or args.ignore_reco_done)
             and filename
             and run_is_selected(run_number, args)
         ):
             yield run_number, filename
+
+
+def log_rucio_warnings(
+    records: Iterable[Dict[str, Any]],
+    args: argparse.Namespace,
+) -> None:
+    """Segnala i run selezionati che non sono disponibili via Rucio."""
+    for record in records:
+        run_number = get_run_number(record)
+        if run_number is None or not run_is_selected(run_number, args):
+            continue
+        rucio_status = parse_integer(record.get("rucio_status"))
+        if rucio_status != 0:
+            raw_status = record.get("rucio_status", "")
+            filename = str(record.get("filename", "")).strip()
+            print(
+                f"WARNING: run {run_number} ({filename or 'filename assente'}): "
+                f"rucio_status={raw_status!r}; job non sottomesso"
+            )
 
 
 def build_htcondor_files(
@@ -174,6 +204,10 @@ def build_htcondor_files(
     output_path: str,
     max_events: int,
     request_cpus: int,
+    analysis_script: Path,
+    iq_sign: int,
+    number_chunks: int,
+    fft_window_seconds: float,
 ) -> List[Tuple[Path, Path]]:
     """Crea una directory con script e submit file per ciascun run."""
     runs = sorted(set(run_numbers))
@@ -187,8 +221,11 @@ def build_htcondor_files(
 
         generated_script = run_dir / "script.sh"
         generated_submit = run_dir / "submit.sub"
-        analysis_script = os.path.relpath(ANALYSIS_SCRIPT, start=run_dir)
-        analysis_script_name = ANALYSIS_SCRIPT.name
+        analysis_script_path = os.path.relpath(
+            analysis_script,
+            start=run_dir,
+        )
+        analysis_script_name = analysis_script.name
         generated_script.write_text(SCRIPT_TEMPLATE, encoding="utf-8")
         generated_script.chmod(0o755)
 
@@ -198,14 +235,14 @@ executable              = script.sh
 #
 # path, runnumber, output folder, events/stream to average
 #
-arguments               = {input_path} {run_number} {output_path} {max_events} {analysis_script_name} $(job_cpus)
+arguments               = {input_path} {run_number} {output_path} {max_events} {analysis_script_name} $(job_cpus) {iq_sign} {number_chunks} {fft_window_seconds}
 #
 output                  = stdout-$(ClusterId).$(ProcID).txt
 error                   = stderr-$(ClusterId).$(ProcID).txt
 log                     = output-$(ClusterId).$(ProcID).log
 request_cpus            = $(job_cpus)
 transfer_executable     = Yes
-transfer_input_files    = {analysis_script}
+transfer_input_files    = {analysis_script_path}
 should_transfer_files   = Yes
 when_to_transfer_output = ON_EXIT
 want_io_proxy           = true
@@ -353,6 +390,7 @@ def discover_existing_jobs(
                 "discovered": True,
                 "condor_status": status,
                 "target_reco_done": 1,
+                "output_path": output_path,
                 "created_at": utc_now(),
             },
         )
@@ -523,68 +561,106 @@ def stderr_is_empty(cluster_id: str, run_dir: Path) -> bool:
     return True
 
 
-def update_reco_done(
+def update_reco_done_batch(
     worksheet,
     headers: List[str],
-    state: Dict[str, Any],
-) -> bool:
-    """Aggiorna il foglio in modo idempotente rispetto allo stato salvato."""
-    run_number = int(state["run_number"])
-    filename = str(state["filename"])
+    jobs: List[Tuple[Path, Dict[str, Any]]],
+) -> int:
+    """Aggiorna tutti i job riusciti con una lettura e scrittura batch."""
+    if not jobs:
+        return 0
+
     current_records = read_all_records(worksheet)
-    matching_record = next(
-        (
-            (row_number, record)
-            for row_number, record in enumerate(current_records, start=2)
-            if str(record.get("filename", "")).strip() == filename
-        ),
-        None,
-    )
-    if matching_record is None:
-        print(
-            f"Run {run_number}: filename {filename} non trovato "
-            "nel foglio, aggiornamento rimandato"
-        )
-        return False
+    records_by_filename = {
+        str(record.get("filename", "")).strip(): (row_number, record)
+        for row_number, record in enumerate(current_records, start=2)
+    }
 
-    row_number, current_record = matching_record
-    current_value = parse_integer(current_record.get("reco_done"))
-    if current_value is None:
-        print(
-            f"Run {run_number}: valore reco_done non valido, "
-            "aggiornamento rimandato"
-        )
-        return False
+    from gspread import Cell
+    from gspread.utils import ValueInputOption
 
-    target = state.get("target_reco_done")
-    if target is None:
-        target = current_value + 1
-        state["target_reco_done"] = target
-    target = int(target)
-    reco_version = str(state.get("reco_version", "1.0")).strip() or "1.0"
+    version_col = headers.index("reco_version") + 1
+    output_col = headers.index("reco_output_path") + 1
+    reco_done_col = headers.index("reco_done") + 1
+    cells = []
+    ready = []
 
-    current_version = str(current_record.get("reco_version", "")).strip()
-    if current_value < target or current_version != reco_version:
-        update_fields(
-            worksheet,
-            headers,
-            row_number,
-            {
-                "reco_version": reco_version,
-                # reco_done è il commit marker e viene scritto per ultimo.
-                "reco_done": target,
-            },
+    for run_dir, state in jobs:
+        run_number = int(state["run_number"])
+        filename = str(state["filename"])
+        matching_record = records_by_filename.get(filename)
+        if matching_record is None:
+            print(
+                f"Run {run_number}: filename {filename} non trovato "
+                "nel foglio, aggiornamento rimandato"
+            )
+            continue
+
+        row_number, current_record = matching_record
+        current_value = parse_integer(current_record.get("reco_done"))
+        if current_value is None:
+            print(
+                f"Run {run_number}: valore reco_done non valido, "
+                "aggiornamento rimandato"
+            )
+            continue
+
+        target = state.get("target_reco_done")
+        if target is None:
+            target = current_value + 1
+            state["target_reco_done"] = target
+        target = int(target)
+        reco_version = (
+            str(state.get("reco_version", "1.0")).strip() or "1.0"
         )
-    print(
-        f"Run {run_number} ({filename}): reco_done verificato a {target}, "
-        f"versione {reco_version}"
-    )
-    return True
+        output_path = str(state.get("output_path", "")).strip()
+
+        cells.append(Cell(row_number, version_col, reco_version))
+        if output_path:
+            cells.append(Cell(row_number, output_col, output_path))
+        # reco_done è il commit marker logico e viene aggiunto per ultimo.
+        cells.append(Cell(row_number, reco_done_col, target))
+        ready.append(
+            (
+                run_dir,
+                state,
+                run_number,
+                filename,
+                target,
+                reco_version,
+                output_path,
+            )
+        )
+
+    if not ready:
+        return 0
+
+    worksheet.update_cells(cells, value_input_option=ValueInputOption.raw)
+
+    for (
+        run_dir,
+        state,
+        run_number,
+        filename,
+        target,
+        reco_version,
+        output_path,
+    ) in ready:
+        message = (
+            f"Run {run_number} ({filename}): reco_done verificato a "
+            f"{target}, versione {reco_version}"
+        )
+        if output_path:
+            message += f", output {output_path}"
+        print(message)
+        state["status"] = "sheet_updated"
+        state["completed_at"] = utc_now()
+        save_state(run_dir, state)
+
+    return len(ready)
 
 
 def reconcile_job(
-    worksheet,
-    headers: List[str],
     run_dir: Path,
     state: Dict[str, Any],
 ) -> bool:
@@ -592,7 +668,9 @@ def reconcile_job(
     run_number = int(state["run_number"])
     cluster_id = str(state["cluster_id"])
 
-    if state.get("status") == "sheet_updated":
+    if state.get("status") in TERMINAL_STATUSES:
+        return True
+    if state.get("status") == "job_succeeded":
         return True
 
     try:
@@ -646,22 +724,6 @@ def reconcile_job(
 
     state["status"] = "job_succeeded"
     save_state(run_dir, state)
-    try:
-        updated = update_reco_done(worksheet, headers, state)
-    except Exception as exc:
-        print(
-            f"Run {run_number}: aggiornamento Google Sheet fallito: {exc}; "
-            "riproverò alla prossima esecuzione"
-        )
-        save_state(run_dir, state)
-        return False
-    if not updated:
-        save_state(run_dir, state)
-        return False
-
-    state["status"] = "sheet_updated"
-    state["completed_at"] = utc_now()
-    save_state(run_dir, state)
     return True
 
 
@@ -704,8 +766,30 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-path",
-        default="flash/analysis/autoreco",
-        help="path remoto dei risultati",
+        "--output-folder",
+        dest="output_path",
+        default=DEFAULT_OUTPUT_PATH,
+        help=(
+            "cartella remota dei risultati "
+            f"(default: {DEFAULT_OUTPUT_PATH})"
+        ),
+    )
+    parser.add_argument(
+        "--analysis-script-dir",
+        type=Path,
+        default=DEFAULT_ANALYSIS_SCRIPT_DIR,
+        help=(
+            "directory locale dello script di analisi "
+            f"(default: {DEFAULT_ANALYSIS_SCRIPT_DIR})"
+        ),
+    )
+    parser.add_argument(
+        "--analysis-script-name",
+        default=DEFAULT_ANALYSIS_SCRIPT_NAME,
+        help=(
+            "nome dello script di analisi "
+            f"(default: {DEFAULT_ANALYSIS_SCRIPT_NAME})"
+        ),
     )
     parser.add_argument(
         "--max-events",
@@ -718,6 +802,33 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=8,
         help="CPU richieste per ciascun job",
+    )
+    parser.add_argument(
+        "--iq-sign",
+        type=int,
+        choices=(-1, 1),
+        default=1,
+        help="segno applicato al canale Q nell'analisi IQ (default: +1)",
+    )
+    parser.add_argument(
+        "--number-chunks",
+        type=int,
+        default=64,
+        metavar="N",
+        help=(
+            "numero di parti in cui dividere l'evento; la durata FFT è "
+            "circa 209 ms / N (default: 64, circa 3.27 ms)"
+        ),
+    )
+    parser.add_argument(
+        "--fft-window-seconds",
+        type=float,
+        default=0,
+        metavar="SECONDS",
+        help=(
+            "salva NPZ medi aggiuntivi per finestre temporali consecutive; "
+            "0 disabilita la funzione (default: 0)"
+        ),
     )
     parser.add_argument(
         "--poll-interval",
@@ -751,6 +862,22 @@ def parse_args() -> argparse.Namespace:
             "(default: 1.0)"
         ),
     )
+    parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help=(
+            "non modifica il Google Sheet; adatto a esecuzioni manuali "
+            "con configurazione e directory job separate"
+        ),
+    )
+    parser.add_argument(
+        "--ignore-reco-done",
+        action="store_true",
+        help=(
+            "seleziona anche run già ricostruiti; consentito soltanto "
+            "insieme a --read-only"
+        ),
+    )
     args = parser.parse_args()
 
     if args.run_range and args.run_range[0] > args.run_range[1]:
@@ -759,10 +886,38 @@ def parse_args() -> argparse.Namespace:
         parser.error("--max-events deve essere maggiore di zero")
     if args.cpus <= 0:
         parser.error("--cpus deve essere maggiore di zero")
+    if (
+        args.number_chunks <= 0
+        or args.number_chunks & (args.number_chunks - 1)
+    ):
+        parser.error("--number-chunks deve essere una potenza di 2 positiva")
+    if args.fft_window_seconds < 0:
+        parser.error("--fft-window-seconds non può essere negativo")
+    if args.ignore_reco_done and not args.read_only:
+        parser.error("--ignore-reco-done richiede --read-only")
     if args.poll_interval <= 0:
         parser.error("--poll-interval deve essere maggiore di zero")
     if not args.reco_version.strip():
         parser.error("--reco-version non può essere vuota")
+    args.output_path = args.output_path.strip().rstrip("/")
+    if not args.output_path:
+        parser.error("--output-path non può essere vuoto")
+    args.analysis_script_name = args.analysis_script_name.strip()
+    if (
+        not args.analysis_script_name
+        or Path(args.analysis_script_name).name != args.analysis_script_name
+    ):
+        parser.error(
+            "--analysis-script-name deve essere un semplice nome di file"
+        )
+    args.analysis_script_dir = args.analysis_script_dir.expanduser().resolve()
+    args.analysis_script = (
+        args.analysis_script_dir / args.analysis_script_name
+    )
+    if not args.analysis_script.is_file():
+        parser.error(
+            f"script di analisi non trovato: {args.analysis_script}"
+        )
 
     return args
 
@@ -772,7 +927,12 @@ def main() -> None:
     args.output_dir = args.output_dir.resolve()
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    lock_file = LOCK_PATH.open("w", encoding="utf-8")
+    lock_path = (
+        args.output_dir / ".autoreco.lock"
+        if args.read_only
+        else LOCK_PATH
+    )
+    lock_file = lock_path.open("w", encoding="utf-8")
     try:
         fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
@@ -780,9 +940,22 @@ def main() -> None:
         return
 
     worksheet = open_google_sheet()
-    ensure_column(worksheet, "reco_version")
-    ensure_column(worksheet, "reco_requested_version")
+    if args.read_only:
+        print(
+            "Modalità read-only: il Google Sheet sarà soltanto letto; "
+            "nessuna colonna o cella verrà modificata."
+        )
+        if args.ignore_reco_done:
+            print(
+                "Modalità offline: reco_done viene ignorato nella "
+                "selezione dei run."
+            )
+    else:
+        ensure_column(worksheet, "reco_version")
+        ensure_column(worksheet, "reco_requested_version")
+        ensure_column(worksheet, "reco_output_path")
     records = read_all_records(worksheet)
+    log_rucio_warnings(records, args)
     selected = list(runs_to_reconstruct(records, args))
     headers = get_headers(worksheet)
 
@@ -796,10 +969,13 @@ def main() -> None:
     # Prima recupera sempre i job già sottomessi. Questo rende ogni
     # invocazione indipendente dalla sopravvivenza del processo precedente.
     active_runs = set()
+    jobs_ready_for_sheet: List[Tuple[Path, Dict[str, Any]]] = []
     for run_number, _ in selected:
         run_dir = args.output_dir / f"{run_number:05d}"
         state = load_state(run_dir)
         if state is None:
+            continue
+        if state.get("status") in TERMINAL_STATUSES:
             continue
         if state.get("status") == "failed":
             if args.retry_failed:
@@ -817,10 +993,36 @@ def main() -> None:
             )
             active_runs.add(run_number)
             continue
-        reconcile_job(worksheet, headers, run_dir, state)
+        reconcile_job(run_dir, state)
         refreshed = load_state(run_dir) or state
-        if refreshed.get("status") != "sheet_updated":
+        if (
+            args.read_only
+            and refreshed.get("status") == "job_succeeded"
+        ):
+            refreshed["status"] = "read_only_completed"
+            refreshed["completed_at"] = utc_now()
+            save_state(run_dir, refreshed)
+            print(
+                f"Run {run_number}: completato; aggiornamento Google Sheet "
+                "saltato (modalità read-only)"
+            )
+        elif refreshed.get("status") == "job_succeeded":
+            jobs_ready_for_sheet.append((run_dir, refreshed))
+        if refreshed.get("status") not in TERMINAL_STATUSES:
             active_runs.add(run_number)
+
+    if not args.read_only:
+        try:
+            update_reco_done_batch(
+                worksheet,
+                headers,
+                jobs_ready_for_sheet,
+            )
+        except Exception as exc:
+            print(
+                "Aggiornamento batch del Google Sheet fallito: "
+                f"{exc}; riproverò alla prossima esecuzione"
+            )
 
     # Rilegge il foglio: i job appena recuperati potrebbero aver aggiornato
     # reco_done e non devono essere risottomessi.
@@ -832,7 +1034,7 @@ def main() -> None:
         and (load_state(args.output_dir / f"{item[0]:05d}") or {}).get(
             "status"
         )
-        != "sheet_updated"
+        not in TERMINAL_STATUSES
     ]
 
     for _, filename in selected:
@@ -849,6 +1051,10 @@ def main() -> None:
         output_path=args.output_path,
         max_events=args.max_events,
         request_cpus=args.cpus,
+        analysis_script=args.analysis_script,
+        iq_sign=args.iq_sign,
+        number_chunks=args.number_chunks,
+        fft_window_seconds=args.fft_window_seconds,
     )
     filenames_by_run = {
         run_number: filename
@@ -887,6 +1093,10 @@ def main() -> None:
                 "status": "submitted",
                 "target_reco_done": (current_reco_done or 0) + 1,
                 "reco_version": reco_version,
+                "output_path": args.output_path,
+                "iq_sign": args.iq_sign,
+                "number_chunks": args.number_chunks,
+                "fft_window_seconds": args.fft_window_seconds,
                 "created_at": utc_now(),
             },
         )
@@ -908,15 +1118,48 @@ def main() -> None:
 
     pending = list(submitted_jobs)
     while pending:
-        next_pending = []
+        jobs_ready_for_sheet = []
         for run_number, _, run_dir, _ in pending:
             state = load_state(run_dir)
-            if state is None or not reconcile_job(
-                worksheet, headers, run_dir, state
+            if state is None:
+                continue
+            reconcile_job(run_dir, state)
+            refreshed = load_state(run_dir) or state
+            if (
+                args.read_only
+                and refreshed.get("status") == "job_succeeded"
             ):
-                next_pending.append(
-                    next(item for item in pending if item[0] == run_number)
+                refreshed["status"] = "read_only_completed"
+                refreshed["completed_at"] = utc_now()
+                save_state(run_dir, refreshed)
+                print(
+                    f"Run {run_number}: completato; aggiornamento Google "
+                    "Sheet saltato (modalità read-only)"
                 )
+            elif refreshed.get("status") == "job_succeeded":
+                jobs_ready_for_sheet.append((run_dir, refreshed))
+
+        if not args.read_only:
+            try:
+                update_reco_done_batch(
+                    worksheet,
+                    headers,
+                    jobs_ready_for_sheet,
+                )
+            except Exception as exc:
+                print(
+                    "Aggiornamento batch del Google Sheet fallito: "
+                    f"{exc}; riproverò"
+                )
+
+        next_pending = []
+        for item in pending:
+            state = load_state(item[2])
+            if (
+                state is None
+                or state.get("status") not in TERMINAL_STATUSES
+            ):
+                next_pending.append(item)
         pending = next_pending
         if pending:
             time.sleep(args.poll_interval)

@@ -218,11 +218,22 @@ def update_field(
         field
     )
 
-    ws.update_cell(
-        row,
-        col,
-        value
-    )
+    if field in {"reco_version", "reco_requested_version"}:
+        # update_cell usa USER_ENTERED e Google Sheets trasformerebbe
+        # automaticamente "1.0" nel numero 1. RAW preserva il tipo stringa.
+        from gspread import Cell
+        from gspread.utils import ValueInputOption
+
+        ws.update_cells(
+            [Cell(row, col, str(value))],
+            value_input_option=ValueInputOption.raw,
+        )
+    else:
+        ws.update_cell(
+            row,
+            col,
+            value
+        )
 
 
 def update_fields(
@@ -247,18 +258,23 @@ def update_fields(
         )
     """
 
-    for field, value in updates.items():
+    from gspread import Cell
+    from gspread.utils import ValueInputOption
 
-        col = find_col(
-            headers,
-            field
-        )
-
-        ws.update_cell(
+    cells = [
+        Cell(
             row,
-            col,
-            value
+            find_col(headers, field),
+            str(value)
+            if field in {"reco_version", "reco_requested_version"}
+            else value,
         )
+        for field, value in updates.items()
+    ]
+    ws.update_cells(
+        cells,
+        value_input_option=ValueInputOption.raw,
+    )
 
 
 # ----------------------------------------------------------------------
@@ -303,4 +319,3 @@ def parse_rucio_status(raw: Any) -> Optional[int]:
 
     except (ValueError, TypeError):
         return None
-
