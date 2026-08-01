@@ -458,17 +458,27 @@ window_n_fft_done = 0
 
 
 def save_time_window(index, start, stop, amplitudes, count):
+    if count <= 0:
+        return
+
     out_window_npz = os.path.join(
         outdir,
         "run%05d_fft_%ds.npz" % (run, index),
     )
+
+    normalization = number_chunks * count
+    mean_amplitudes = [
+        amplitude / normalization
+        for amplitude in amplitudes
+    ]
+
     np.savez_compressed(
         out_window_npz,
-        fft_amp_mode0_SPECs=amplitudes[0],
+        fft_amp_mode0_SPECs=mean_amplitudes[0],
         fft_freq_mode0=fft_freq_mode0,
-        fft_amp_mode1_SPECs=amplitudes[1],
+        fft_amp_mode1_SPECs=mean_amplitudes[1],
         fft_freq_mode1=fft_freq_mode1,
-        fft_amp_mode2_SPECs=amplitudes[2],
+        fft_amp_mode2_SPECs=mean_amplitudes[2],
         fft_freq_mode2=fft_freq_mode2,
         n_fft_done=count,
         fs=fs,
