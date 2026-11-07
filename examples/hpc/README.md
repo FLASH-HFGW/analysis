@@ -24,13 +24,17 @@ Dalla directory del clone sulla facility:
 ```bash
 mkdir -p "$HOME/slurm_logs"
 # Se necessario, caricare sul login node il modulo oidc-agent già configurato.
+(
 BEARER_TOKEN=$(oidc-token flash --time=3600)
 export BEARER_TOKEN
-sbatch --export=ALL,BEARER_TOKEN examples/hpc/test_gfal_direct.sh
+sbatch --account=cygno --partition=GPU --qos=normal --gres=gpu:1 \
+  --export=ALL,BEARER_TOKEN examples/hpc/test_gfal_direct.sh
+)
 ```
 
-Questo test richiede una CPU, non una GPU, e controlla l'accesso alla directory
-CNAF con `gfal-ls`. Per verificare anche il download, impostare esplicitamente
+Questo test controlla l'accesso alla directory CNAF con `gfal-ls`, senza calcoli
+GPU. L'associazione attuale dell'utente è `cygno/GPU`: il comando sovrascrive
+quindi la partizione CPU predefinita nel test. Per verificare anche il download, impostare esplicitamente
 `HFGW_GFAL_TEST_URL` a un piccolo file e `HFGW_GFAL_TEST_DOWNLOAD=1` prima di
 sottomettere. Il file di prova viene scaricato in scratch e poi eliminato.
 
@@ -46,10 +50,36 @@ la validità residua. Nessuna di queste istruzioni copia credenziali nel reposit
 ## Benchmark FFT
 
 ```bash
-export HFGW_RUN=388
-export HFGW_MAX_EVENTS=100
-sbatch --export=ALL,BEARER_TOKEN examples/hpc/job.sh
+bash examples/hpc/submit_one_run.sh 680
 ```
+
+Il launcher richiede il token sul login node in un sottoprocesso e lo esporta
+soltanto verso `sbatch`: il valore `BEARER_TOKEN` della shell chiamante non cambia,
+neppure se il launcher viene accidentalmente eseguito con `source`. La cache
+dell'oidc-agent condiviso può comunque aggiornarsi: i token già esportati nella
+shell mantengono il loro valore e la loro scadenza originari.
+
+I default sono account `cygno`, partizione `GPU`, QoS `normal`, run completo e
+validità residua minima del token di 86400 secondi. Il limite SLURM resta quello
+di `job.sh`, un'ora, salvo override esplicito:
+
+```bash
+bash examples/hpc/submit_one_run.sh 680 --time 02:00:00
+bash examples/hpc/submit_one_run.sh 388 --max-events 100
+bash examples/hpc/submit_one_run.sh --help
+```
+
+Sono disponibili anche `--account`, `--partition`, `--qos`, `--oidc-account`,
+`--token-time SECONDI` e `--log-dir`. I default di account/partizione/QoS possono
+essere impostati con `HFGW_SLURM_ACCOUNT`, `HFGW_SLURM_PARTITION`, `HFGW_SLURM_QOS`.
+Il launcher crea la directory dei log e mostra job ID e percorsi per monitorarlo.
+
+Token e scadenza vengono letti insieme con `oidc-token --all`, senza stampare o
+scrivere il token in un file. `--time` non forza l'issuer a concedere una durata
+maggiore del proprio massimo: il launcher controlla la scadenza effettiva e non
+sottomette se il margine è inferiore a quello richiesto, con 60 secondi di tolleranza.
+In quel caso una soglia più breve va scelta esplicitamente con `--token-time`.
+Vedi la [documentazione oidc-agent](https://indigo-dc.gitbook.io/oidc-agent/user/oidc-token/options).
 
 Il job scarica il MIDAS una sola volta con GFAL, in un file temporaneo `.part`.
 Soltanto dopo il download riuscito e non vuoto lo rinomina come input. Non sono
