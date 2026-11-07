@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #SBATCH --job-name=test_gpu
 #SBATCH --partition=GPU
 #SBATCH --nodes=1
@@ -14,265 +13,77 @@
 #SBATCH --mail-user=giovanni.mazzitelli@lnf.infn.it
 
 set -Eeuo pipefail
+: "${SLURM_JOB_ID:?Run this script through sbatch or an allocated SLURM job}"
+REPO_ROOT="${HFGW_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+while [[ ! -f "$REPO_ROOT/examples/hpc/environment.sh" ]]; do
+    [[ "$REPO_ROOT" != / && "$REPO_ROOT" != . ]] || { echo 'Cannot locate repository; set HFGW_REPO_ROOT' >&2; exit 10; }
+    REPO_ROOT=$(dirname -- "$REPO_ROOT")
+done
+source "$REPO_ROOT/examples/hpc/environment.sh"
 
-echo "======================================"
-echo "Job started at: $(date)"
-echo "Job ID: ${SLURM_JOB_ID}"
-echo "Submit dir: ${SLURM_SUBMIT_DIR}"
-echo "Host: $(hostname)"
-echo "SLURM_NODELIST: ${SLURM_NODELIST}"
-echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-unset}"
-echo "======================================"
+REMOTE_DIR="${HFGW_INPUT_PATH:-flash/data/LNF}"
+RUN_NUMBER="${HFGW_RUN:-388}"
+MAX_FFT_EVENTS="${HFGW_MAX_EVENTS:-99999999}"
+[[ "$RUN_NUMBER" =~ ^[0-9]+$ ]] || { echo 'HFGW_RUN must be a run number' >&2; exit 2; }
+RUN_NUMBER=$((10#$RUN_NUMBER))
+ANALYSIS_SCRIPT="${HFGW_ANALYSIS_SCRIPT:-$REPO_ROOT/examples/analyze_midas_iq_fft_4ms_gpu_profile.py}"
+[[ -f "$ANALYSIS_SCRIPT" ]] || { echo "Missing analysis script: $ANALYSIS_SCRIPT" >&2; exit 40; }
+PYTHON="${HFGW_PYTHON:-python3.9}"
+command -v "$PYTHON" >/dev/null
+command -v gfal-copy >/dev/null
+command -v nvidia-smi >/dev/null
+[[ -n ${BEARER_TOKEN:-} ]] || { echo 'Export BEARER_TOKEN from the login node before sbatch' >&2; exit 20; }
 
-# ------------------------------------------------------
-# User parameters
-# ------------------------------------------------------
-
-REMOTE_DIR="flash/data/LNF"
-RUN_NUMBER="388"
-MAX_FFT_EVENTS="99999999"
-
-# ANALYSIS_SCRIPT="/home/mazzitel/analysis/examples/analyze_midas_iq_fft_4ms-gpu.py"
-ANALYSIS_SCRIPT="/home/mazzitel/analysis/examples/analyze_midas_iq_fft_4ms_gpu_profile.py"
-
-# Usa una workdir dedicata sul /tmp locale del nodo.
-# Meglio di /tmp diretto, perché evita collisioni tra job.
-WORKDIR="/tmp/${USER}/JOB_${SLURM_JOB_ID}"
-
-# Destinazione persistente: equivale al mount flash-data, senza richiederlo sul worker.
-OUTDIR="davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/examples/hpc/results/JOB_${SLURM_JOB_ID}"
-
-mkdir -p "$WORKDIR"
-mkdir -p /home/mazzitel/slurm_logs
-
+SCRATCH_ROOT="${HFGW_SCRATCH_ROOT:-${SLURM_TMPDIR:-/tmp/${USER}}}"
+RUNTIME_ROOT="${HFGW_RUNTIME_ROOT:-$HOME/HFGW/analysis-runtime/autoreco/Run2}"
+WORKDIR="$SCRATCH_ROOT/JOB_${SLURM_JOB_ID}"
+OUTDIR="$RUNTIME_ROOT/benchmarks/slurm/JOB_${SLURM_JOB_ID}"
+mkdir -p "$WORKDIR" "$OUTDIR"
 fname=$(printf 'run%05d.mid.gz' "$RUN_NUMBER")
-INPUT_FILE="${WORKDIR}/${fname}"
+INPUT_FILE="$WORKDIR/$fname"
+SRC_URL="davs://xfer-archive.cr.cnaf.infn.it:8443/${REMOTE_DIR}/${fname}"
+GPU_MON_PID=''
 
-echo "REMOTE_DIR      = $REMOTE_DIR"
-echo "RUN_NUMBER      = $RUN_NUMBER"
-echo "MAX_FFT_EVENTS  = $MAX_FFT_EVENTS"
-echo "WORKDIR         = $WORKDIR"
-echo "OUTDIR          = $OUTDIR"
-echo "INPUT_FILE      = $INPUT_FILE"
-echo "ANALYSIS_SCRIPT = $ANALYSIS_SCRIPT"
-
-# ------------------------------------------------------
-# Environment
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "Loading environment"
-
-if ! command -v module >/dev/null 2>&1; then
-    if [[ -f /etc/profile.d/modules.sh ]]; then
-        source /etc/profile.d/modules.sh
+finish() {
+    rc=$?
+    trap - EXIT
+    set +e
+    if [[ -n "$GPU_MON_PID" ]]; then
+        kill "$GPU_MON_PID" 2>/dev/null
+        wait "$GPU_MON_PID" 2>/dev/null
     fi
-fi
-
-module use /cvmfs/mazzitel-personalrepo.infn.it/modules/modulefiles/x86_64-el9
-module load gfal/1.9.0
-module load rclone/1.74.2 
-
-MIDAS_PATH="/cvmfs/mazzitel-personalrepo.infn.it/package/midas/python"
-FLLIB_PATH="/cvmfs/mazzitel-personalrepo.infn.it/FLASH/lib/fllib"
-PACKAGE_PATH="/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-packages"
-
-export PYTHONPATH="${PACKAGE_PATH}:${MIDAS_PATH}:${FLLIB_PATH}:${PYTHONPATH:-}"
-
-export X509_CERT_DIR=/cvmfs/grid.cern.ch/etc/grid-security/certificates
-export SSL_CERT_DIR="$X509_CERT_DIR"
-
-export MPLCONFIGDIR="${WORKDIR}/matplotlib-cache"
-export XDG_CACHE_HOME="${WORKDIR}/xdg-cache"
-export XDG_CONFIG_HOME="${WORKDIR}/xdg-config"
-
-mkdir -p "$MPLCONFIGDIR" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
+    copy_rc=0
+    while IFS= read -r -d '' result; do
+        cp -p -- "$result" "$OUTDIR/" || copy_rc=1
+    done < <(find "$WORKDIR" -maxdepth 1 -type f ! -name "$fname" ! -name "$fname.part" -print0)
+    if [[ $rc -eq 0 && $copy_rc -ne 0 ]]; then rc=$copy_rc; fi
+    printf '{"run":%d,"job_id":"%s","exit_code":%d}\n' "$RUN_NUMBER" "$SLURM_JOB_ID" "$rc" > "$OUTDIR/job_status.json"
+    echo "Job finished: exit=$rc; local benchmark results: $OUTDIR"
+    exit "$rc"
+}
+trap finish EXIT
 
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
-export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
-export MKL_NUM_THREADS="$OMP_NUM_THREADS"
-export NUMEXPR_NUM_THREADS="$OMP_NUM_THREADS"
+export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS" MKL_NUM_THREADS="$OMP_NUM_THREADS" NUMEXPR_NUM_THREADS="$OMP_NUM_THREADS"
+export MPLCONFIGDIR="$WORKDIR/matplotlib-cache"
+export XDG_CACHE_HOME="$WORKDIR/xdg-cache" XDG_CONFIG_HOME="$WORKDIR/xdg-config"
+mkdir -p "$MPLCONFIGDIR" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
+echo "Job $SLURM_JOB_ID on $(hostname); repository: $REPO_ROOT"
+echo "Input: $SRC_URL; scratch: $WORKDIR"
+nvidia-smi
+"$PYTHON" -V
 
-echo "PYTHONPATH             = $PYTHONPATH"
-echo "OMP_NUM_THREADS        = $OMP_NUM_THREADS"
-echo "MPLCONFIGDIR           = $MPLCONFIGDIR"
-
-echo "--------------------------------------"
-echo "Checking commands"
-
-which python3.9
-python3.9 -V
-
-if ! command -v gfal-copy >/dev/null 2>&1; then
-    echo "ERROR: gfal-copy not found after module load"
-    module list || true
-    exit 11
+if [[ ! -s "$INPUT_FILE" ]]; then
+    # Exactly one remote transfer. A failed transfer never becomes a cached input.
+    rm -f -- "$INPUT_FILE.part"
+    gfal-copy "$SRC_URL" "$INPUT_FILE.part"
+    [[ -s "$INPUT_FILE.part" ]] || { echo 'Downloaded input is empty' >&2; exit 30; }
+    mv -- "$INPUT_FILE.part" "$INPUT_FILE"
 fi
-
-which gfal-copy
-
-# ------------------------------------------------------
-# GPU diagnostics
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "GPU diagnostics"
-
-if command -v nvidia-smi >/dev/null 2>&1; then
-    nvidia-smi
-else
-    echo "WARNING: nvidia-smi not found"
-fi
-
-# ------------------------------------------------------
-# Bearer token
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "Checking BEARER_TOKEN"
-
-# Non stampare mai il token nei log.
-if [[ -z "${BEARER_TOKEN:-}" ]]; then
-    echo "ERROR: BEARER_TOKEN is not set."
-    echo "Submit with:"
-    echo '  export BEARER_TOKEN="$(oidc-token flash --time=3600)"'
-    echo '  sbatch --export=ALL,BEARER_TOKEN jobsub.sh'
-    exit 20
-fi
-
-echo "BEARER_TOKEN is set, length: ${#BEARER_TOKEN}"
-
-# ------------------------------------------------------
-# Input copy
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "Input file preparation"
-
-SRC_URL="davs://xfer-archive.cr.cnaf.infn.it:8443/${REMOTE_DIR}/${fname}"
-
-echo "Source:      $SRC_URL"
-echo "Destination: $INPUT_FILE"
-
-
-if [[ -f "$INPUT_FILE" ]]; then
-    echo "Input file already exists:"
-    ls -lh "$INPUT_FILE"
-else
-    echo "Copying input file at: $(date)"
-
-    set +e
-    gfal-copy "$SRC_URL" "$INPUT_FILE"
-    rclone --config=/cvmfs/mazzitel-personalrepo.infn.it/FLASH/config/rclone.conf copy flash:${REMOTE_DIR}/${fname} "$INPUT_FILE"
-    # cp /home/mazzitel/testdata/run00388.mid.gz "$INPUT_FILE"
-    copy_rc=$?
-    set -e
-
-    echo "gfal-copy exit code: $copy_rc"
-
-    if [[ "$copy_rc" -ne 0 ]]; then
-        echo "ERROR: gfal-copy failed"
-        echo "WORKDIR content:"
-        ls -lah "$WORKDIR" || true
-        exit "$copy_rc"
-    fi
-fi
-
-if [[ ! -f "$INPUT_FILE" ]]; then
-    echo "ERROR: input file missing after copy: $INPUT_FILE"
-    ls -lah "$WORKDIR" || true
-    exit 30
-fi
-
-echo "Input file ready:"
-ls -lh "$INPUT_FILE"
-
-# ------------------------------------------------------
-# Run analysis
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "Starting Python analysis at: $(date)"
-
-if [[ ! -f "$ANALYSIS_SCRIPT" ]]; then
-    echo "ERROR: analysis script not found: $ANALYSIS_SCRIPT"
-    exit 40
-fi
-
-GPU_LOG="${WORKDIR}/gpu_usage_${SLURM_JOB_ID}.csv"
-
-echo "Starting GPU monitor: $GPU_LOG"
-
-nvidia-smi \
-    --query-gpu=timestamp,index,name,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw \
-    --format=csv \
-    -l 1 \
-    > "$GPU_LOG" &
-
+nvidia-smi --query-gpu=timestamp,index,name,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw \
+    --format=csv -l 1 > "$WORKDIR/gpu_usage_${SLURM_JOB_ID}.csv" &
 GPU_MON_PID=$!
-
-set +e
-
-srun python3.9 "$ANALYSIS_SCRIPT" \
-    --path "$WORKDIR/" \
-    --run "$RUN_NUMBER" \
-    --out-dir "$WORKDIR/" \
-    --max-fft-events "$MAX_FFT_EVENTS" \
-    --fft-backend gpu \
-    --gpu-device 0 \
-    --profile \
-    --profile-every 100 \
-    --gc-every 0 \
-    --free-gpu-pool-every 0
-
-# srun python3.9 "$ANALYSIS_SCRIPT" \
-#     --path "$WORKDIR/" \
-#     --run "$RUN_NUMBER" \
-#     --out-dir "$WORKDIR/" \
-#     --max-fft-events "$MAX_FFT_EVENTS" \
-#     --fft-backend gpu \
-#     --gpu-device 0
-
-python_rc=$?
-
-set -e
-
-kill "$GPU_MON_PID" 2>/dev/null || true
-wait "$GPU_MON_PID" 2>/dev/null || true
-
-echo "GPU monitor saved in: $GPU_LOG"
-
-echo "Python/srun exit code: $python_rc"
-echo "Analysis finished at: $(date)"
-
-# ------------------------------------------------------
-# Collect output
-# ------------------------------------------------------
-
-echo "--------------------------------------"
-echo "WORKDIR content after analysis:"
-ls -lsrth "$WORKDIR" || true
-
-echo "Copying selected outputs to OUTDIR: $OUTDIR"
-
-# Copia tutto tranne il file MIDAS di input, per evitare di salvare file enormi inutilmente.
-LOCAL_DIAGNOSTICS="/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/examples/hpc/results/JOB_${SLURM_JOB_ID}"
-mkdir -p "$LOCAL_DIAGNOSTICS"
-gfal-mkdir -p "$OUTDIR"
-while IFS= read -r -d '' result; do
-    case "$(basename -- "$result")" in
-        *.npz|*.npy|*.h5|*.hdf5|*.root|*.png|run*_noise.json|run*_phase_diagnostic.json)
-            gfal-copy -f -K ADLER32 "$result" "$OUTDIR/$(basename -- "$result")" ;;
-        *) cp -p -- "$result" "$LOCAL_DIAGNOSTICS/" ;;
-    esac
-done < <(find "$WORKDIR" -maxdepth 1 -type f ! -name "$fname" -print0)
-
-echo "OUTDIR content:"
-gfal-ls -l "$OUTDIR"
-
-echo "--------------------------------------"
-echo "Job finished at: $(date)"
-echo "Final exit code: $python_rc"
-echo "======================================"
-
-exit "$python_rc"
+srun "$PYTHON" "$ANALYSIS_SCRIPT" \
+    --path "$WORKDIR/" --run "$RUN_NUMBER" --out-dir "$WORKDIR/" \
+    --max-fft-events "$MAX_FFT_EVENTS" --fft-backend gpu --gpu-device 0 \
+    --profile --profile-every 100 --gc-every 0 --free-gpu-pool-every 0

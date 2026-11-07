@@ -11,7 +11,12 @@
 
 set -euo pipefail
 
-export PYTHONPATH=/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-packages:${PYTHONPATH:-}
+REPO_ROOT="${HFGW_REPO_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"
+while [[ ! -f "$REPO_ROOT/examples/hpc/environment.sh" ]]; do
+    [[ "$REPO_ROOT" != / && "$REPO_ROOT" != . ]] || { echo 'Set HFGW_REPO_ROOT' >&2; exit 10; }
+    REPO_ROOT=$(dirname -- "$REPO_ROOT")
+done
+source "$REPO_ROOT/examples/hpc/environment.sh"
 
 echo "Host: $(hostname)"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
