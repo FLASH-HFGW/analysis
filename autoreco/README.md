@@ -7,7 +7,7 @@
 3. aggiorna `reco_done` sul Google Sheet;
 4. sottomette solo i run con `rucio_status=0`, `reco_done=0` e senza
    un job attivo;
-5. salva lo stato in `job_to_submit/RUN/job_state.json`.
+5. salva lo stato in `/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit/RUN/job_state.json`.
 
 La versione richiesta viene letta da `reco_requested_version` (oppure
 da `--reco-version`, con default `1.0`). Dopo un job riuscito viene salvata
@@ -87,10 +87,11 @@ La durata delle FFT si configura nello stesso file con
 209 ms, in `N` parti. Per esempio, `--number-chunks 64` produce FFT di
 circa 3,27 ms. `N` deve essere una potenza di 2.
 
-Con `--fft-window-seconds 1`, oltre al file medio dell'intero run, vengono
-salvate medie consecutive da circa un secondo con nomi come
-`run00402_fft_1s.npz`, `run00402_fft_2s.npz`, ecc. La configurazione
-automatica lascia questa funzione disabilitata; quella offline la abilita.
+Con `--fft-window-seconds 1` vengono conservati il riepilogo del run e le
+medie consecutive da circa un secondo (`run00402_fft_1s.npz`, ecc.) come membri
+di archivi giornalieri `fft_YYYY-MM-DD.zip`, non come file separati su GPFS.
+La configurazione automatica lascia questa funzione disabilitata; quella
+offline la abilita. Dettagli in [README_fft_daily.md](README_fft_daily.md).
 
 Per ripetere l'elaborazione offline dopo una modifica alla configurazione:
 
@@ -102,7 +103,7 @@ Per ripetere l'elaborazione offline dopo una modifica alla configurazione:
 
 Il reset non apre e non modifica il Google Sheet. Le directory locali
 selezionate vengono spostate sotto
-`job_to_submit_offline/_reset_archive/TIMESTAMP`, senza essere cancellate.
+`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit_offline/_reset_archive/TIMESTAMP`, senza essere cancellate.
 Il comando non può essere eseguito mentre autoreco offline detiene il lock.
 
 ## Crontab
@@ -110,13 +111,13 @@ Il comando non può essere eseguito mentre autoreco offline detiene il lock.
 Creare prima la directory dei log:
 
 ```bash
-mkdir -p /home/mazzitel/HFGW/analysis/autoreco/logs
+mkdir -p /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/logs
 ```
 
 Quindi aggiungere con `crontab -e`:
 
 ```cron
-*/5 * * * * /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh >> /home/mazzitel/HFGW/analysis/autoreco/logs/autoreco.log 2>&1
+*/5 * * * * /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh >> /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/logs/autoreco.log 2>&1
 ```
 
 I parametri dell'esecuzione automatica sono raccolti, su più righe, in
@@ -151,7 +152,7 @@ la versione realmente prodotta.
 Per generare il plot dei tre modi da un singolo file:
 
 ```bash
-./plot_fft_npz.py job_to_submit/00591/run00591.npz
+./plot_fft_npz.py /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit/00591/run00591.npz
 ```
 
 Per elaborare tutti i file presenti in una directory e salvare i PNG in
@@ -159,10 +160,56 @@ una directory scelta:
 
 ```bash
 ./plot_fft_npz.py /percorso/degli/npz \
-  --output-dir fft_plots \
+  --output-dir /home/mazzitel/flash-data/analysis/autoreco/Run2/fft_plots \
   --db
 ```
 
 Il plot normalizza per `n_fft_done * number_chunks`. Usare `--raw` per
 visualizzare le somme salvate senza normalizzazione, `--fmin` e `--fmax`
 per limitare l'intervallo in Hz e `--modes` per scegliere i modi.
+
+## Posizione degli output
+
+Le FFT temporali in `fft_by_1sec` sono raccolte per giorno UTC in archivi ZIP:
+vedi [formato, recupero e produzione giornaliera](README_fft_daily.md).
+
+Solo i risultati scientifici (array, grafici e riepiloghi dell’analisi) vanno in
+`/home/mazzitel/flash-data/analysis/autoreco/Run2`. Log, lock, stati, payload, cache e input di lavoro restano locali in
+`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2`.
+Il repository contiene script, notebook, README e configurazioni sorgenti.
+I risultati delle code si pubblicano con `gfal-copy`; nessun log o stato viene pubblicato su GPFS.
+
+## File operativi e continuità dei job
+
+La directory locale `/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2`
+contiene tutto il ciclo di sottomissione e controllo: `job_to_submit`,
+`job_to_submit_offline`, `job_to_submit_noise`, file `.sub`, payload, riferimenti
+trasferiti ai worker, stati JSON, archivi dei tentativi, lock, log e cache.
+Questi file piccoli non devono essere archiviati su GPFS. Anche gli stati e i
+payload di riparazione noise (`noise_continuous/jobs` e `sources`) restano locali.
+Gli stati esistenti non vanno rigenerati né sovrascritti durante un recupero.
+Il cron va riattivato solo esplicitamente, con redirezione dei log sul disco locale.
+
+### Preparazione della prossima elaborazione
+
+La precedente `job_to_submit` su GPFS è stata verificata e rimossa:
+i risultati FFT sono conservati in `fft_by_run`, mentre una copia completa,
+inclusi input e storico, resta nella `job_to_submit` locale di `analysis-runtime`.
+Il prossimo rilancio completo, dopo le modifiche agli script, riutilizzerà le
+destinazioni scientifiche esistenti (`--output-folder`) sovrascrivendo i risultati,
+come richiesto. Per gli stati usare una directory locale di campagna distinta
+(`--output-dir`) oppure archiviare e resettare esplicitamente gli stati precedenti:
+gli stati terminali esistenti possono altrimenti impedire il rilancio.
+Lo storico locale recuperato resta disponibile fino al completamento del nuovo giro.
+Non sono stati resettati stati, riattivati cron o sottomessi nuovi job.
+
+### Storico offline e noise
+
+Tutte le directory `job_to_submit*` appartengono al disco locale di
+`analysis-runtime/autoreco/Run2`, inclusi archivi dei reset e diagnostica.
+Il recupero del 6 novembre 2026 conserva in locale anche i risultati rimasti
+nelle vecchie directory dei job: 43.821 file offline e 1.584 file noise.
+L'archivio offline include risultati precedenti ai reset che non hanno una copia
+equivalente in `fft_by_1sec`: conservarlo e non sovrascriverlo per il rilancio.
+Le destinazioni scientifiche correnti sono `fft_by_run`, `fft_by_1sec` e
+`noise_by_run`; non usare directory `job_to_submit*` come destinazioni remote.

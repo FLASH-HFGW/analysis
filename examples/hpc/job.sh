@@ -39,11 +39,10 @@ ANALYSIS_SCRIPT="/home/mazzitel/analysis/examples/analyze_midas_iq_fft_4ms_gpu_p
 # Meglio di /tmp diretto, perché evita collisioni tra job.
 WORKDIR="/tmp/${USER}/JOB_${SLURM_JOB_ID}"
 
-# Directory persistente su filesystem condiviso per eventuali output finali/log utili.
-OUTDIR="${SLURM_SUBMIT_DIR}/results/JOB_${SLURM_JOB_ID}"
+# Destinazione persistente: equivale al mount flash-data, senza richiederlo sul worker.
+OUTDIR="davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/examples/hpc/results/JOB_${SLURM_JOB_ID}"
 
 mkdir -p "$WORKDIR"
-mkdir -p "$OUTDIR"
 mkdir -p /home/mazzitel/slurm_logs
 
 fname=$(printf 'run%05d.mid.gz' "$RUN_NUMBER")
@@ -163,9 +162,9 @@ else
     echo "Copying input file at: $(date)"
 
     set +e
-    # gfal-copy "$SRC_URL" "$INPUT_FILE"
-    # rclone --config=/cvmfs/mazzitel-personalrepo.infn.it/FLASH/config/rclone.conf copy flash:${REMOTE_DIR}/${fname} "$INPUT_FILE"
-    cp /home/mazzitel/testdata/run00388.mid.gz "$INPUT_FILE"
+    gfal-copy "$SRC_URL" "$INPUT_FILE"
+    rclone --config=/cvmfs/mazzitel-personalrepo.infn.it/FLASH/config/rclone.conf copy flash:${REMOTE_DIR}/${fname} "$INPUT_FILE"
+    # cp /home/mazzitel/testdata/run00388.mid.gz "$INPUT_FILE"
     copy_rc=$?
     set -e
 
@@ -200,7 +199,7 @@ if [[ ! -f "$ANALYSIS_SCRIPT" ]]; then
     exit 40
 fi
 
-GPU_LOG="${OUTDIR}/gpu_usage_${SLURM_JOB_ID}.csv"
+GPU_LOG="${WORKDIR}/gpu_usage_${SLURM_JOB_ID}.csv"
 
 echo "Starting GPU monitor: $GPU_LOG"
 
@@ -257,10 +256,19 @@ ls -lsrth "$WORKDIR" || true
 echo "Copying selected outputs to OUTDIR: $OUTDIR"
 
 # Copia tutto tranne il file MIDAS di input, per evitare di salvare file enormi inutilmente.
-find "$WORKDIR" -maxdepth 1 -type f ! -name "$fname" -exec cp -v {} "$OUTDIR/" \; || true
+LOCAL_DIAGNOSTICS="/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/examples/hpc/results/JOB_${SLURM_JOB_ID}"
+mkdir -p "$LOCAL_DIAGNOSTICS"
+gfal-mkdir -p "$OUTDIR"
+while IFS= read -r -d '' result; do
+    case "$(basename -- "$result")" in
+        *.npz|*.npy|*.h5|*.hdf5|*.root|*.png|run*_noise.json|run*_phase_diagnostic.json)
+            gfal-copy -f -K ADLER32 "$result" "$OUTDIR/$(basename -- "$result")" ;;
+        *) cp -p -- "$result" "$LOCAL_DIAGNOSTICS/" ;;
+    esac
+done < <(find "$WORKDIR" -maxdepth 1 -type f ! -name "$fname" -print0)
 
 echo "OUTDIR content:"
-ls -lsrth "$OUTDIR" || true
+gfal-ls -l "$OUTDIR"
 
 echo "--------------------------------------"
 echo "Job finished at: $(date)"

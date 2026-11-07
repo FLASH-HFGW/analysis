@@ -19,8 +19,8 @@ from googletool import (
 )
 
 AUTORECO_DIR = Path(__file__).resolve().parent
-JOBS_DIR = AUTORECO_DIR / "job_to_submit"
-LOCK_PATH = AUTORECO_DIR / ".autoreco.lock"
+JOBS_DIR = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit")
+LOCK_PATH = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/.autoreco.lock")
 STATE_FILENAME = "job_state.json"
 DEFAULT_OUTPUT_PATH = "flash/analysis/autoreco/Run2/fft_by_run"
 TERMINAL_STATUSES = {"sheet_updated", "read_only_completed"}
@@ -87,7 +87,7 @@ echo "Python version: `python3 -V`"
 echo "run:"
 
 python3 "$5" \
-  --path ./ \
+  --path ./ --out-dir ./ \
   --run "$2" \
   --max-fft-events "$4" \
   --mode-workers "$6" \
@@ -99,12 +99,16 @@ echo "run complited, `date`, list of files:"
 ls -lsrth
 
 echo ">> Output coping: `date`"
-# refresh token befor copy
-export BEARER_TOKEN="$(jq -r .access_token "${_CONDOR_CREDS}/t1.use")"
-# se vuoi la directory
-for out_npz in run$(printf '%05d' "$2")*.npz; do
-  gfal-copy -f -r "$out_npz" "davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$out_npz"
-done
+if python3 -c 'import sys; sys.exit(0 if float(sys.argv[1]) > 0 else 1)' "$9"; then
+  # The coordinator merges and publishes daily files after spool recovery.
+  mkdir -p fft_daily_pending
+  mv "run$(printf '%05d' "$2")_fft_windows.zip" fft_daily_pending/
+else
+  export BEARER_TOKEN="$(jq -r .access_token "${_CONDOR_CREDS}/t1.use")"
+  for out_npz in run$(printf '%05d' "$2")*.npz; do
+    gfal-copy -f -r "$out_npz" "davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$out_npz"
+  done
+fi
 echo "--------------------------------------"
 
 
@@ -208,8 +212,14 @@ def build_htcondor_files(
     iq_sign: int,
     number_chunks: int,
     fft_window_seconds: float,
+    analysis_kind: str = "fft",
+    noise_reference: Optional[Path] = None,
 ) -> List[Tuple[Path, Path]]:
     """Crea una directory con script e submit file per ciascun run."""
+    if analysis_kind == "noise":
+        from noise_jobs import build_noise_jobs
+        return build_noise_jobs(run_numbers, output_dir, input_path, output_path,
+                                analysis_script, noise_reference, iq_sign, request_cpus)
     runs = sorted(set(run_numbers))
     if not runs:
         raise ValueError("nessun run da inserire nel submit file")
@@ -226,6 +236,14 @@ def build_htcondor_files(
             start=run_dir,
         )
         analysis_script_name = analysis_script.name
+        daily_fft = fft_window_seconds > 0
+        transfer_inputs = [analysis_script_path]
+        if daily_fft:
+            daily_module = analysis_script.with_name("fft_daily_archive.py")
+            if not daily_module.is_file():
+                raise ValueError(f"Modulo per archivi giornalieri assente: {daily_module}")
+            transfer_inputs.append(os.path.relpath(daily_module, start=run_dir))
+        output_directive = "transfer_output_files = fft_daily_pending\n" if daily_fft else ""
         generated_script.write_text(SCRIPT_TEMPLATE, encoding="utf-8")
         generated_script.chmod(0o755)
 
@@ -242,7 +260,8 @@ error                   = stderr-$(ClusterId).$(ProcID).txt
 log                     = output-$(ClusterId).$(ProcID).log
 request_cpus            = $(job_cpus)
 transfer_executable     = Yes
-transfer_input_files    = {analysis_script_path}
+transfer_input_files    = {','.join(transfer_inputs)}
+{output_directive}\
 should_transfer_files   = Yes
 when_to_transfer_output = ON_EXIT
 want_io_proxy           = true
@@ -336,6 +355,7 @@ def discover_existing_jobs(
     output_dir: Path,
     input_path: str,
     output_path: str,
+    analysis_kind: str = "fft",
 ) -> None:
     """Recupera job creati da versioni precedenti che non avevano uno state."""
     wanted = {run_number: filename for run_number, filename in selected}
@@ -380,6 +400,9 @@ def discover_existing_jobs(
     for run_number, (cluster_id, status) in found.items():
         run_dir = output_dir / f"{run_number:05d}"
         run_dir.mkdir(parents=True, exist_ok=True)
+        submit = run_dir / "submit.sub"
+        daily_fft = submit.is_file() and bool(re.search(
+            r"transfer_output_files\s*=\s*fft_daily_pending", submit.read_text()))
         save_state(
             run_dir,
             {
@@ -388,6 +411,8 @@ def discover_existing_jobs(
                 "cluster_id": str(cluster_id),
                 "status": "submitted",
                 "discovered": True,
+                "analysis_kind": analysis_kind,
+                "daily_fft": daily_fft,
                 "condor_status": status,
                 "target_reco_done": 1,
                 "output_path": output_path,
@@ -406,9 +431,15 @@ def submit_job(submit_path: Path) -> str:
         cwd=submit_path.parent,
     )
     if result.returncode != 0:
+        diagnostics = submit_path.parent / "submit_error.json"
+        diagnostics.write_text(json.dumps({
+            "timestamp": utc_now(), "command": ["condor_submit", "-spool", submit_path.name],
+            "exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
+        }, indent=2) + "\n")
+        diagnostics.chmod(0o600)
         raise RuntimeError(
             f"condor_submit fallito per {submit_path} "
-            f"(exit code {result.returncode})"
+            f"(exit code {result.returncode}); dettagli: {diagnostics}"
         )
 
     match = re.search(
@@ -672,6 +703,8 @@ def reconcile_job(
         return True
     if state.get("status") == "job_succeeded":
         return True
+    if state.get("status") == "daily_ready":
+        return False
 
     try:
         status = get_job_status(cluster_id, run_dir)
@@ -722,9 +755,77 @@ def reconcile_job(
     if error_path.is_file() and error_path.stat().st_size:
         print(f"Run {run_number}: attenzione, stderr non vuoto: {error_path}")
 
-    state["status"] = "job_succeeded"
+    if state.get("analysis_kind") == "noise":
+        result_path = run_dir / f"run{run_number:05d}_noise.json"
+        try:
+            result = json.loads(result_path.read_text())
+            if (result.get("status") != "success" or not result.get("reached_eof")
+                    or "global_statistics" not in result):
+                raise ValueError("output noise non completo")
+            expected_reference = json.loads((run_dir / "noise_reference.json").read_text())
+            if result["global_statistics"]["config"]["reference"] != expected_reference:
+                raise ValueError("riferimento noise diverso da quello del job")
+            if Path(result["input"]).name.split(".mid")[0] != f"run{run_number:05d}":
+                raise ValueError("numero run noise diverso da quello del job")
+            if not result_path.with_suffix(".npz").is_file():
+                raise ValueError("NPZ noise assente")
+        except (OSError, ValueError, KeyError) as exc:
+            state["status"] = "failed"
+            save_state(run_dir, state)
+            print(f"Run {run_number}: verifica noise fallita: {exc}")
+            return True
+
+    if state.get("daily_fft"):
+        bundle = run_dir / "fft_daily_pending" / f"run{run_number:05d}_fft_windows.zip"
+        if not bundle.is_file():
+            try:
+                transfer_job_data(cluster_id, run_dir)
+            except RuntimeError as exc:
+                print(f"Run {run_number}: bundle giornaliero non recuperato: {exc}")
+                return False
+        if not bundle.is_file():
+            print(f"Run {run_number}: bundle FFT assente; riproverò il recupero")
+            return False
+        state["status"] = "daily_ready"
+    else:
+        state["status"] = "job_succeeded"
     save_state(run_dir, state)
-    return True
+    return state["status"] == "job_succeeded"
+
+
+def finalize_daily_jobs(args, jobs_ready_for_sheet):
+    """Publish once per poll, before marking daily jobs complete."""
+    ready = []
+    for directory in sorted(args.output_dir.iterdir()):
+        if directory.is_dir() and directory.name.isdigit():
+            state = load_state(directory)
+            if state and state.get("status") == "daily_ready":
+                ready.append((directory, state))
+    if not ready:
+        return
+    destinations = {state["output_path"] for _, state in ready}
+    for destination in sorted(destinations):
+        group = [(directory, state) for directory, state in ready if state["output_path"] == destination]
+        prefix = "flash/"
+        if not destination.startswith(prefix) or ".." in Path(destination).parts:
+            raise ValueError("Destinazione giornaliera non supportata: " + destination)
+        store = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/fft_daily") / destination
+        command = [sys.executable, str(DEFAULT_ANALYSIS_SCRIPT_DIR / "fft_daily_archive.py"),
+                   "--directory", str(store), "--remote", "flash:" + destination[len(prefix):],
+                   "--replace-runs"]
+        command.extend(str(directory / "fft_daily_pending" / f"run{state['run_number']:05d}_fft_windows.zip")
+                       for directory, state in group)
+        result = run_command(command, cwd=AUTORECO_DIR)
+        if result.returncode:
+            print("Pubblicazione giornaliera fallita; stati daily_ready conservati per il prossimo tentativo")
+            continue
+        for directory, state in group:
+            state["status"] = "read_only_completed" if args.read_only else "job_succeeded"
+            if args.read_only:
+                state["completed_at"] = utc_now()
+            save_state(directory, state)
+            if not args.read_only:
+                jobs_ready_for_sheet.append((directory, state))
 
 
 def parse_args() -> argparse.Namespace:
@@ -878,7 +979,23 @@ def parse_args() -> argparse.Namespace:
             "insieme a --read-only"
         ),
     )
+    parser.add_argument("--analysis-kind", choices=("fft", "noise"), default="fft")
+    parser.add_argument("--noise-reference", type=Path,
+                        help="Riferimento fisso per la modalità noise")
+    parser.add_argument("--prepare-only", action="store_true",
+                        help="Genera i job di una selezione esplicita senza logbook, coda o sottomissione")
     args = parser.parse_args()
+    if args.prepare_only and args.run_min is not None:
+        parser.error("--prepare-only richiede --run oppure --run-range")
+    if args.analysis_kind == "noise":
+        if not args.read_only:
+            parser.error("--analysis-kind noise richiede --read-only per preservare lo stato FFT sul logbook")
+        if args.analysis_script_name == DEFAULT_ANALYSIS_SCRIPT_NAME:
+            args.analysis_script_name = "analyze_midas_iq_noise.py"
+        if args.noise_reference is None or not args.noise_reference.is_file():
+            parser.error("--analysis-kind noise richiede un --noise-reference esistente")
+        args.noise_reference = args.noise_reference.resolve()
+
 
     if args.run_range and args.run_range[0] > args.run_range[1]:
         parser.error("MIN non puo essere maggiore di MAX")
@@ -939,6 +1056,21 @@ def main() -> None:
         print("Un'altra istanza di autoreco è già attiva; esco.")
         return
 
+    if args.prepare_only:
+        runs = [args.run] if args.run is not None else range(args.run_range[0], args.run_range[1] + 1)
+        runs = [run for run in runs if load_state(args.output_dir / f"{run:05d}") is None]
+        if not runs:
+            print("Nessun nuovo job da preparare; stati esistenti conservati.")
+            return
+        files = build_htcondor_files(
+            run_numbers=runs, output_dir=args.output_dir, input_path=args.input_path,
+            output_path=args.output_path, max_events=args.max_events, request_cpus=args.cpus,
+            analysis_script=args.analysis_script, iq_sign=args.iq_sign,
+            number_chunks=args.number_chunks, fft_window_seconds=args.fft_window_seconds,
+            analysis_kind=args.analysis_kind, noise_reference=args.noise_reference)
+        print(f"Preparati {len(files)} job in {args.output_dir}; nessun accesso al logbook o sottomissione.")
+        return
+
     worksheet = open_google_sheet()
     if args.read_only:
         print(
@@ -964,6 +1096,7 @@ def main() -> None:
         args.output_dir,
         args.input_path,
         args.output_path,
+        analysis_kind=args.analysis_kind,
     )
 
     # Prima recupera sempre i job già sottomessi. Questo rende ogni
@@ -1011,6 +1144,7 @@ def main() -> None:
         if refreshed.get("status") not in TERMINAL_STATUSES:
             active_runs.add(run_number)
 
+    finalize_daily_jobs(args, jobs_ready_for_sheet)
     if not args.read_only:
         try:
             update_reco_done_batch(
@@ -1055,6 +1189,8 @@ def main() -> None:
         iq_sign=args.iq_sign,
         number_chunks=args.number_chunks,
         fft_window_seconds=args.fft_window_seconds,
+        analysis_kind=args.analysis_kind,
+        noise_reference=args.noise_reference,
     )
     filenames_by_run = {
         run_number: filename
@@ -1063,6 +1199,7 @@ def main() -> None:
         for filename in [str(record.get("filename", "")).strip()]
     }
     submitted_jobs: List[Tuple[int, str, Path, str]] = []
+    submission_failures = 0
     for script_path, submit_path in generated_files:
         run_number = int(submit_path.parent.name)
         print(f"script HTCondor creato: {script_path}")
@@ -1071,7 +1208,11 @@ def main() -> None:
         try:
             cluster_id = submit_job(submit_path)
         except RuntimeError as exc:
+            submission_failures += 1
             print(f"Run {run_number}: {exc}")
+            if args.analysis_kind == "noise":
+                print("Interrompo la sottomissione noise al primo errore; gli altri run restano da sottomettere.")
+                break
             continue
         print(f"Run {run_number}: sottomesso nel cluster {cluster_id}")
         current_record = next(
@@ -1094,6 +1235,8 @@ def main() -> None:
                 "target_reco_done": (current_reco_done or 0) + 1,
                 "reco_version": reco_version,
                 "output_path": args.output_path,
+                "analysis_kind": args.analysis_kind,
+                "daily_fft": args.analysis_kind == "fft" and args.fft_window_seconds > 0,
                 "iq_sign": args.iq_sign,
                 "number_chunks": args.number_chunks,
                 "fft_window_seconds": args.fft_window_seconds,
@@ -1109,11 +1252,17 @@ def main() -> None:
             )
         )
 
+    if not submitted_jobs:
+        print("Nessun nuovo job sottomesso: la sottomissione è fallita.")
+        raise SystemExit(1)
+    print(f"Nuovi job sottomessi: {len(submitted_jobs)}; errori di sottomissione: {submission_failures}.")
     if not args.wait:
-        print(
-            "Job sottomessi. Una successiva invocazione controllerà "
-            "il risultato e aggiornerà reco_done."
-        )
+        if args.read_only:
+            print("Una successiva invocazione recupererà gli output; il Google Sheet resta in sola lettura.")
+        else:
+            print("Una successiva invocazione controllerà il risultato e aggiornerà reco_done.")
+        if submission_failures:
+            raise SystemExit(1)
         return
 
     pending = list(submitted_jobs)
@@ -1139,6 +1288,7 @@ def main() -> None:
             elif refreshed.get("status") == "job_succeeded":
                 jobs_ready_for_sheet.append((run_dir, refreshed))
 
+        finalize_daily_jobs(args, jobs_ready_for_sheet)
         if not args.read_only:
             try:
                 update_reco_done_batch(

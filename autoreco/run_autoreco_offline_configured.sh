@@ -4,12 +4,13 @@ set -euo pipefail
 AUTORECO_DIR="/home/mazzitel/HFGW/analysis/autoreco"
 
 # Configurazione manuale/offline: modificare qui i parametri desiderati.
+# Finestre FFT consolidate dal coordinatore in archivi giornalieri UTC.
 # La selezione del run viene passata da riga di comando, per esempio:
 #   ./run_autoreco_offline_configured.sh --run 900 --wait
 exec "$AUTORECO_DIR/run_autoreco_cron.sh" \
   --read-only \
   --ignore-reco-done \
-  --output-dir "$AUTORECO_DIR/job_to_submit_offline" \
+  --output-dir "/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit_offline" \
   --input-path flash/data/LNF \
   --output-folder flash/analysis/autoreco/Run2/fft_by_1sec \
   --analysis-script-dir /home/mazzitel/HFGW/analysis/examples \

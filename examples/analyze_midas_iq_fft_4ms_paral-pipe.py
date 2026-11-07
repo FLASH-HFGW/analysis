@@ -316,7 +316,7 @@ parser.add_argument("--path", required=True,
 parser.add_argument("--run", required=True, type=int,
                     help="Numero run, es: 123")
 
-parser.add_argument("--out-dir", default="./",
+parser.add_argument("--out-dir", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples/fft",
                     help="Directory dove salvare le FFT")
 
 parser.add_argument("--max-fft-events", type=int, default=999999999,
@@ -339,6 +339,8 @@ parser.add_argument("--number-chunks", type=int, default=64,
 
 parser.add_argument("--fft-window-seconds", type=float, default=0,
                     help="Salva anche una FFT media per ogni finestra temporale di questa durata; 0 disabilita")
+parser.add_argument("--fft-output-format", choices=("daily-zip", "npz"), default="daily-zip",
+                    help="Finestre in un bundle locale per gli archivi giornalieri (default), oppure NPZ separati")
 
 parser.add_argument("--no-window", action="store_true",
                     help="Disabilita finestra Hann")
@@ -455,6 +457,21 @@ window_index = 1
 window_start = None
 window_fft = [None, None, None]
 window_n_fft_done = 0
+first_spec_time = None
+if args.fft_window_seconds > 0 and args.fft_output_format == "daily-zip":
+    from fft_daily_archive import RunBundle, utc_day
+daily_bundle = (
+    RunBundle(os.path.join(outdir, "run%05d_fft_windows.zip" % run))
+    if args.fft_window_seconds > 0 and args.fft_output_format == "daily-zip"
+    else None
+)
+
+
+def save_fft_product(path, **arrays):
+    if daily_bundle is None:
+        np.savez_compressed(path, **arrays)
+    else:
+        daily_bundle.add(os.path.basename(path), day=utc_day(first_spec_time), **arrays)
 
 
 def save_time_window(index, start, stop, amplitudes, count):
@@ -472,7 +489,7 @@ def save_time_window(index, start, stop, amplitudes, count):
         for amplitude in amplitudes
     ]
 
-    np.savez_compressed(
+    save_fft_product(
         out_window_npz,
         fft_amp_mode0_SPECs=mean_amplitudes[0],
         fft_freq_mode0=fft_freq_mode0,
@@ -491,7 +508,7 @@ def save_time_window(index, start, stop, amplitudes, count):
     )
     print(
         "Saved time-window summary:",
-        out_window_npz,
+        out_window_npz if daily_bundle is None else str(daily_bundle.path) + "::" + os.path.basename(out_window_npz),
         "(events:", count, ")",
     )
 
@@ -518,6 +535,8 @@ with Pool(processes=args.mode_workers) as pool:
         if (n_fft_done >= args.max_fft_events):
             break
         if results["has_spec"]:
+            if first_spec_time is None:
+                first_spec_time = float(results["tdaq"])
             if fft_amp_mode0_SPECs is None:
                 fft_amp_mode0_SPECs = results["fft"][0]["amp"]
                 fft_freq_mode0 = results["fft"][0]["fs_meta"]
@@ -607,7 +626,7 @@ out_npz = os.path.join(
     % (run)
 )
 
-np.savez_compressed(out_npz,
+save_fft_product(out_npz,
     fft_amp_mode0_SPECs=fft_amp_mode0_SPECs,
     fft_freq_mode0=fft_freq_mode0,
     fft_amp_mode1_SPECs=fft_amp_mode1_SPECs,
@@ -620,6 +639,8 @@ np.savez_compressed(out_npz,
     number_chunks=number_chunks,
 
 )
+if daily_bundle is not None:
+    daily_bundle.close()
 if verbose:
     print("Saved summary:", out_npz)
         

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser(description="Legge un file MIDAS e stampa gli equipment/bank incontrati.")
 parser.add_argument("--path", required=True, help="Directory contenente i file MIDAS, es: ~/flash-data/QUAX/TEST")
 parser.add_argument("--run", required=True, type=int, help="Numero run, es: 123")
-parser.add_argument("--fft-out", default="fft_plots", help="Directory dove salvare i plot FFT")
+parser.add_argument("--fft-out", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples/fft_plots", help="Directory dove salvare i plot FFT")
 parser.add_argument("--max-fft-events", type=int, default=10, help="Numero massimo di eventi SPEC da processare")
 args = parser.parse_args()
 

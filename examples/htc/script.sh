@@ -68,7 +68,7 @@ echo "run:"
 #python3 analyze_midas_iq_fft_average_h5_process.py  --path ./ --run $2 --h5-out ./  --avg-all  --workers 8 --max-inflight-events 8  --h5-compression gzip  --h5-gzip-level 3
 
 #python3 analyze_midas_iq_fft_4ms.py --path ./  --run "$2" --max-fft-events $4
-python3 analyze_midas_iq_fft_4ms_paral-pipe.py --path ./  --run "$2" --max-fft-events $4 --mode-workers 8
+python3 analyze_midas_iq_fft_4ms_paral-pipe.py --path ./ --out-dir ./ --run "$2" --max-fft-events $4 --mode-workers 8
 
 
   
@@ -79,7 +79,7 @@ echo ">> Output coping: `date`"
 # refresh token befor copy
 export BEARER_TOKEN="$(jq -r .access_token "${_CONDOR_CREDS}/t1.use")"
 # se vuoi la directory
-out_h5="run$(printf '%05d' "$run").npz"
+out_h5="run$(printf '%05d' "$2").npz"
 gfal-copy -r $out_h5 davs://xfer-archive.cr.cnaf.infn.it:8443/$3/$out_h5
 #gfal-copy ./$2.out/run$(printf '%05d' "$2")_fft_average.h5 davs://xfer-archive.cr.cnaf.infn.it:8443/$3/run$(printf '%05d' "$2")_fft_average.h5
 # out_h5="./$2.out/run$(printf '%05d' "$2")_fft_average.h5"

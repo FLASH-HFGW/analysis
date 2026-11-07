@@ -28,7 +28,7 @@ parser.add_argument("--path", required=True,
 parser.add_argument("--run", required=True, type=int,
                     help="Numero run, es: 123")
 
-parser.add_argument("--out-dir", default="./",
+parser.add_argument("--out-dir", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples",
                     help="Directory dove salvare le FFT")
 
 parser.add_argument("--max-fft-events", type=int, default=999999999,

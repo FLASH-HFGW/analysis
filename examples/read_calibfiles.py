@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--path", required=True,
                     help="Directory contenente i file npz, es: ~/flash-data/analysis/users/dho/")
 
-parser.add_argument("--out-dir", default="./",
+parser.add_argument("--out-dir", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples",
                     help="Directory dove salvare le FFT")
 
 parser.add_argument("--run", required=True, default=0,

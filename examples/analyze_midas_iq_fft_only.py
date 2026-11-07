@@ -22,7 +22,7 @@ parser.add_argument("--path", required=True,
 parser.add_argument("--run", required=True, type=int,
                     help="Numero run, es: 123")
 
-parser.add_argument("--fft-out", default="fft_plots",
+parser.add_argument("--fft-out", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples/fft_plots",
                     help="Directory dove salvare i plot FFT")
 
 parser.add_argument("--max-fft-events", type=int, default=1,

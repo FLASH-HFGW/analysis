@@ -53,3 +53,10 @@ A bank:
 - Python 3
 - numpy
 - midas Python bindings
+
+## Output
+
+I risultati scientifici vanno in `/home/mazzitel/flash-data/analysis/autoreco/Run2/examples/`.
+Log, stati dei job, payload e diagnostica operativa restano su disco locale in
+`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2`, fuori dal repository.
+I payload elaborano in scratch e pubblicano solo i risultati con `gfal-copy`.

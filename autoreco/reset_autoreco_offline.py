@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 AUTORECO_DIR = Path(__file__).resolve().parent
-DEFAULT_JOBS_DIR = AUTORECO_DIR / "job_to_submit_offline"
+DEFAULT_JOBS_DIR = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit_offline")
 
 
 def parse_args() -> argparse.Namespace:

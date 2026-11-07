@@ -4,6 +4,7 @@ import argparse
 import matplotlib.pyplot as plt
 # matplotlib.use("Agg")
 import gc
+from fft_daily_archive import load_product
 
 
 # ------------------------------------------------------------
@@ -16,7 +17,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--path", required=True,
                     help="Directory contenente i file npz, es: ~/flash-data/analysis/users/dho/")
 
-parser.add_argument("--out-dir", default="./",
+parser.add_argument("--out-dir", default="/home/mazzitel/HFGW/analysis-work/Run2/staging/examples",
                     help="Directory dove salvare le FFT")
 parser.add_argument(
         "--range",
@@ -45,7 +46,7 @@ for run in run_list:
     file_npz = path+"/run%05d.npz"%(int(run))  
 
     # Apertura del file
-    data = np.load(file_npz)
+    data = load_product(path, os.path.basename(file_npz))
     if fft_amp_mode0_SPECs_fin is None:
         fft_amp_mode0_SPECs_fin = data["fft_amp_mode0_SPECs"]
         fft_freq_mode0 = data["fft_freq_mode0"]
@@ -63,6 +64,7 @@ for run in run_list:
         fft_freq_mode2 = data["fft_freq_mode0"]
     else:
         fft_amp_mode2_SPECs_fin += data["fft_amp_mode2_SPECs"]
+    data.close()
 
 run_tot=len(run_list)
 fft_amp_mode0_SPECs_fin/=run_tot

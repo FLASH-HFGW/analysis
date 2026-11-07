@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+export PYTHONDONTWRITEBYTECODE=1
 
 AUTORECO_DIR="/home/mazzitel/HFGW/analysis/autoreco"
 PACKAGE_PATH="/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-packages"

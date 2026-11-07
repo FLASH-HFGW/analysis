@@ -2,10 +2,13 @@
 """Genera plot degli spettri FFT prodotti da autoreco."""
 
 import argparse
+from contextlib import ExitStack
+import io
 import os
 import re
 from pathlib import Path
 from typing import Iterable, List
+from zipfile import ZipFile, BadZipFile
 
 import numpy as np
 
@@ -28,19 +31,20 @@ def parse_args() -> argparse.Namespace:
         "inputs",
         type=Path,
         nargs="+",
-        help="uno o più file .npz oppure directory che li contengono",
+        help="file .npz, archivi giornalieri .zip oppure directory che li contengono",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("fft_plots"),
-        help="directory dei PNG prodotti (default: ./fft_plots)",
+        default=Path("/home/mazzitel/flash-data/analysis/autoreco/Run2/fft_plots"),
+        help="directory dei PNG prodotti (default: /home/mazzitel/flash-data/analysis/autoreco/Run2/fft_plots)",
     )
     parser.add_argument(
         "--recursive",
         action="store_true",
         help="cerca file .npz ricorsivamente nelle directory",
     )
+    parser.add_argument("--member", help="nome NPZ da leggere dentro un archivio giornaliero ZIP")
     parser.add_argument(
         "--modes",
         type=int,
@@ -93,11 +97,12 @@ def find_npz_files(inputs: Iterable[Path], recursive: bool) -> List[Path]:
     for item in inputs:
         item = item.expanduser()
         if item.is_file():
-            if item.suffix.lower() != ".npz":
-                raise ValueError(f"Il file non è .npz: {item}")
+            if item.suffix.lower() not in (".npz", ".zip"):
+                raise ValueError(f"Il file non è .npz o .zip: {item}")
             files.add(item.resolve())
         elif item.is_dir():
             files.update(path.resolve() for path in item.glob(pattern))
+            files.update(path.resolve() for path in item.glob("**/*.zip" if recursive else "*.zip"))
         else:
             raise FileNotFoundError(f"Input non trovato: {item}")
     return sorted(files)
@@ -122,7 +127,16 @@ def run_label(path: Path) -> str:
 
 
 def plot_file(path: Path, args, plt) -> Path:
-    with np.load(path, allow_pickle=False) as data:
+    with ExitStack() as stack:
+        label = path
+        source = path
+        if path.suffix.lower() == ".zip":
+            if not args.member:
+                raise ValueError("Specificare --member runNNNNN_fft_Ns.npz per un archivio giornaliero")
+            archive = stack.enter_context(ZipFile(path))
+            source = io.BytesIO(archive.read(args.member))
+            label = Path(args.member)
+        data = stack.enter_context(np.load(source, allow_pickle=False))
         available = [
             mode
             for mode in args.modes
@@ -193,11 +207,11 @@ def plot_file(path: Path, args, plt) -> Path:
             if args.raw
             else f"average over {n_events} events × {n_chunks} chunks"
         )
-        fig.suptitle(f"{run_label(path)} — {normalization_text}")
+        fig.suptitle(f"{run_label(label)} — {normalization_text}")
         fig.tight_layout()
 
         args.output_dir.mkdir(parents=True, exist_ok=True)
-        output = args.output_dir / f"{path.stem}_fft.png"
+        output = args.output_dir / f"{label.stem}_fft.png"
         fig.savefig(output, dpi=args.dpi)
         if args.show:
             plt.show()
@@ -227,7 +241,7 @@ def main() -> None:
         try:
             output = plot_file(path, args, plt)
             print(f"{path} -> {output}")
-        except (KeyError, ValueError, OSError) as exc:
+        except (KeyError, ValueError, OSError, BadZipFile) as exc:
             failures += 1
             print(f"ERRORE {path}: {exc}")
 

@@ -3,3 +3,11 @@
 /logs/
 /fft_plots/
 /autoreco.lock
+/.autoreco.lock
+/job_to_submit_noise/
+/noise_global/
+/noise_relaunch_staging/
+/noise_continuous/
+/noise_performance/
+/noise_stationarity/
+/noise_reference.json

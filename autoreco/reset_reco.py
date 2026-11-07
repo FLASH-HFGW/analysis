@@ -15,7 +15,7 @@ from googletool import (
 )
 
 AUTORECO_DIR = Path(__file__).resolve().parent
-JOBS_DIR = AUTORECO_DIR / "job_to_submit"
+JOBS_DIR = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit")
 
 
 def parse_integer(raw: Any) -> Optional[int]:

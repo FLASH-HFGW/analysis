@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+export PYTHONDONTWRITEBYTECODE=1
 
 AUTORECO_DIR="/home/mazzitel/HFGW/analysis/autoreco"
 
