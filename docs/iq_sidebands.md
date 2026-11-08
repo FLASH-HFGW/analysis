@@ -74,3 +74,17 @@ La procedura Slurm è descritta in [examples/hpc/README.md](../examples/hpc/READ
 `python examples/tests/test_iq_filtered_bands.py` verifica equivalenza
 tra stream spezzato e blocco unico, trasmissione/reiezione dei toni
 e incremento di fase noto dopo demodulazione.
+
+## Implementazione ottimizzata dei filtri v1
+
+Il filtro fisico resta lo stesso: coefficienti FIR, demodulazione, transitorio,
+griglia di decimazione e stato tra SPEC non cambiano. `FilterWorkspace` conserva
+al massimo due FFT del kernel e un oscillatore/griglia alla volta; bande con lo
+stesso centro vengono elaborate insieme nei tre modi. In questo modo la FFT
+del FIR e l'esponenziale complesso non vengono ricalcolati per ogni modo.
+Il tag scientifico resta `v1`; `filtered_bands/config/implementation` identifica
+il kernel `shared-oscillator-cached-fir-fft-v1` per la riproducibilità.
+
+I test confrontano il risultato con un FIR causale indipendente (`lfilter`),
+includendo blocchi di dimensioni irregolari, bordi del transitorio, banda DC,
+offset negativi e condivisione del workspace tra modi e kernel diversi.

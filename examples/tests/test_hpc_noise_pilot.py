@@ -98,6 +98,18 @@ class SlurmPilotTests(unittest.TestCase):
             self.assertEqual(status['failed_runs'],[680])
             self.assertEqual(status['counts'],{'failed':1,'prepared':11})
 
+    def test_cpu_selection_reaches_the_launcher_without_forcing_gpu_partition(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args,manifest=self.prepare(Path(directory))
+            args.submit=True;args.resource='cpu';args.partition=None;args.max_active=1
+            with mock.patch.object(noise_pilot,'execute',return_value='Submitted job 500: run 680\n') as command:
+                noise_pilot.cycle(args,manifest)
+            argv=command.call_args.args[0]
+            self.assertEqual(argv[argv.index('--resource')+1],'cpu')
+            self.assertNotIn('--partition',argv)
+            state=json.loads((args.campaign/'run00680.json').read_text())
+            self.assertEqual(state['resource'],'cpu')
+
     def test_prepare_bootstraps_external_inputs_without_committing_data(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)

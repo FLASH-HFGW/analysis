@@ -182,7 +182,7 @@ def process_second_mode(mode, channels, frames, states, global_stats, args,
 class FilteredBandChecks:
     """Statistiche per SPEC con stato FIR e coppie continui tra eventi."""
     def __init__(self, args):
-        from analyze_iq_filtered_bands import BandFilter
+        from analyze_iq_filtered_bands import BandFilter, FilterWorkspace, FILTER_IMPLEMENTATION
         offsets = sorted(set([0.] + [sign * v for v in args.band_offsets_hz for sign in (-1, 1)]))
         if not all(np.isfinite(v) for v in [*offsets, *args.band_centers_hz, args.band_width_hz]):
             raise ValueError("Parametri delle bande non finiti")
@@ -194,9 +194,11 @@ class FilteredBandChecks:
                            centers_hz=args.band_centers_hz,
                            increment_lag_s=args.band_decimation / args.fs,
                            phase_reference="demodulation oscillator; central band includes DC",
-                           continuity="FIR, oscillator and increment pairs continuous across SPEC")
+                           continuity="FIR, oscillator and increment pairs continuous across SPEC",
+                           implementation=FILTER_IMPLEMENTATION)
+        workspace = FilterWorkspace()
         self.filters = {(mode, index): BandFilter(args.fs, center + offset, args.band_width_hz,
-                                                args.band_taps, args.band_decimation)
+                                                args.band_taps, args.band_decimation, workspace=workspace)
                         for mode, center in zip(MODES, args.band_centers_hz)
                         for index, offset in enumerate(offsets)}
         self.previous = {key: None for key in self.filters}
@@ -206,11 +208,12 @@ class FilteredBandChecks:
 
     def update(self, frames, event_index, serial, timestamp):
         from analyze_iq_filtered_bands import statistics
-        for mode, (ci, cq) in MODES.items():
-            z = (frames[:, ci].astype(float) + 1j * self.iq_sign * frames[:, cq]) * self.scale
-            for key, band in self.filters.items():
-                if key[0] != mode:
-                    continue
+        signals = {mode: (frames[:, ci].astype(float) + 1j * self.iq_sign * frames[:, cq]) * self.scale
+                   for mode, (ci, cq) in MODES.items()}
+        for index in range(len(self.config['offsets_hz'])):
+            for mode, z in signals.items():
+                key = (mode, index)
+                band = self.filters[key]
                 t, filtered = band.process(z)
                 if not len(filtered):
                     continue

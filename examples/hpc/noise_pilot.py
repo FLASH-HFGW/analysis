@@ -66,7 +66,7 @@ def prepare(args):
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources.iterdir()},
                     scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it', gpfs_url=preset['output_url'],
                     product_version='v1',
-                    note='CPU IQ calculations; tested association cygno/GPU reserves one GPU per job')
+                    note='CPU IQ calculations; --resource cpu requests no GPU; legacy GPU allocation remains explicit')
     save(campaign / 'manifest.json', manifest)
     print('Prepared runs:', ', '.join(map(str, RUNS)))
     print('State:', campaign)
@@ -173,13 +173,17 @@ def cycle(args, manifest):
             env.update(HFGW_NOISE_SOURCE_DIR=str(campaign / 'sources'), HFGW_NOISE_OUTPUT_ROOT=str(output / 'jobs'))
             command = ['bash', str(ROOT / 'examples/hpc/submit_one_run.sh'), str(run), '--analysis', 'noise',
                        '--reference', str(campaign / 'sources/noise_reference.json'), '--token-time', str(args.token_time),
-                       '--time', args.time, '--account', args.account, '--partition', args.partition, '--qos', args.qos]
+                       '--time', args.time, '--account', args.account, '--qos', args.qos,
+                       '--resource', getattr(args, 'resource', 'gpu')]
+            if args.partition:
+                command.extend(['--partition', args.partition])
             response = execute(command, env=env)
             (campaign / f'run{run:05d}_submission.log').write_text(response)
             match = re.search(r'Submitted job (\d+):', response)
             if not match:
                 raise ValueError('Unexpected launcher response; check squeue before retrying')
-            state.update(status='submitted', job_id=int(match[1]), submitted_utc=now())
+            state.update(status='submitted', job_id=int(match[1]), submitted_utc=now(),
+                         resource=getattr(args, 'resource', 'gpu'))
             save(campaign / f'run{run:05d}.json', state)
             active += 1
             print(response, flush=True)
@@ -205,7 +209,9 @@ def main():
     parser.add_argument('--token-time', type=int, default=3600)
     parser.add_argument('--time', default='03:00:00')
     parser.add_argument('--account', default=os.environ.get('HFGW_SLURM_ACCOUNT', 'cygno'))
-    parser.add_argument('--partition', default=os.environ.get('HFGW_SLURM_PARTITION', 'GPU'))
+    parser.add_argument('--partition', default=os.environ.get('HFGW_SLURM_PARTITION'))
+    parser.add_argument('--resource', choices=['cpu','gpu'], default='gpu',
+                        help='Slurm allocation: cpu requests no GPU; gpu preserves the tested legacy association')
     parser.add_argument('--qos', default=os.environ.get('HFGW_SLURM_QOS', 'normal'))
     args = parser.parse_args()
     if args.max_active < 1 or args.token_time < 1:

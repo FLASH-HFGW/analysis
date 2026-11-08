@@ -40,9 +40,42 @@ bash examples/hpc/submit_one_run.sh 680 --analysis noise \
 ```
 
 La modalità noise usa 1 CPU e 4 GB RAM, con limite predefinito di tre ore.
-La partizione resta `GPU`, perché l'associazione già verificata è `cygno/GPU`;
-viene riservata una GPU, ma il programma IQ attuale calcola sulla CPU.
-Il precedente benchmark FFT GPU resta un percorso distinto.
+`--resource cpu` seleziona per default la partizione `CPU` e non richiede GPU.
+Anche eventuali richieste GPU ereditate tramite variabili `SBATCH_*` vengono
+rimosse nel sottoprocesso di sottomissione. Il payload non contiene più una
+direttiva GPU: la richiesta viene aggiunta dal launcher solo con `--resource gpu`.
+
+Per compatibilità con l'associazione già provata, il default resta
+`--resource gpu`, partizione `GPU`: riserva una GPU, ma il programma IQ calcola
+sulla CPU. Il percorso FFT GPU rimane distinto e non accetta `--resource cpu`.
+L'uso della partizione CPU richiede che l'account sia autorizzato sulla facility;
+la presenza della partizione sul nodo non dimostra da sola l'autorizzazione.
+
+### Benchmark CPU isolato
+
+La prova locale sul run 680, limitata a 10 SPEC con Python 3.9 e librerie
+FLASH CVMFS, confronta i sorgenti precedenti con il FIR ottimizzato:
+tempo totale 61,7 → 48,4 s (−22%), seconda passata 45,8 → 32,3 s (−29%).
+Le statistiche non filtrate sono identiche; quelle filtrate differiscono solo
+per arrotondamenti numerici (fase entro 9,4e-15 rad). È una misura breve locale,
+da confermare su un run completo HPC. Il picco di memoria osservato sale da
+circa 437 a 487 MiB: si conserva la richiesta Slurm di 4 GB.
+
+Dopo il pull, usando il riferimento già congelato nella campagna, si può
+misurare una ricostruzione parziale senza pubblicarla su GPFS:
+
+```bash
+HFGW_NOISE_OUTPUT_ROOT="$HOME/HFGW/analysis-runtime/autoreco/Run2/benchmarks/noise_cpu_optimized" \
+bash examples/hpc/submit_one_run.sh 680 --analysis noise --resource cpu --partition CPU \
+  --reference "$HOME/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_v1_20261108/sources/noise_reference.json" \
+  --max-events 10 --time 00:15:00 --token-time 3600
+```
+
+Il risultato ha `reached_eof=false`, resta nel benchmark locale HPC e non viene
+gestito dal monitor del pilot. I tempi per passata sono in `summary/performance`
+dell'HDF5. `sacct` permette di verificare che `AllocTRES` non contenga GPU.
+Una nuova campagna può usare `watch --submit --resource cpu`; `--partition`
+consente un override esplicito del nome della partizione.
 
 Per i 12 run 680, 704, 727, 751, 774, 798, 821, 845, 868, 892, 915, 939,
 eseguire sulla login HPC, dalla radice del clone Git:
@@ -71,6 +104,10 @@ Il token del worker serve al download iniziale. Il monitor sul login node
 ottiene separatamente un token corrente per pubblicare i risultati su GPFS.
 
 Il monitor deve rimanere attivo sul login node: le ricostruzioni girano nei job.
+Le campagne già preparate continuano a usare i propri sorgenti congelati:
+il pull non sostituisce i filtri dei job già avviati o ancora da inviare in quella
+campagna. Per adottare i nuovi filtri creare una nuova directory `--campaign`
+e un nuovo `--output`; non modificare le copie congelate a mano.
 Per riprenderlo usare lo stesso comando: legge gli stati senza risottomettere
 i run già inviati. Un lock impedisce monitor simultanei per la stessa campagna.
 `watch --once` esegue un solo controllo senza nuove sottomissioni;

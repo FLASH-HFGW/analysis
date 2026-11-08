@@ -18,6 +18,7 @@ Usage: submit_one_run.sh RUN [options]
   --log-dir DIR        SLURM stdout/stderr directory (default: $HOME/slurm_logs)
   --analysis KIND      fft (default) or noise (I-iQ, filtered bands, HDF5)
   --reference FILE     Common amplitude reference required for noise
+  --resource KIND      noise allocation: cpu (no GPU) or gpu (legacy default)
   -h, --help           Show this help
 
 Examples:
@@ -31,7 +32,7 @@ HELP
 
 RUN=''
 ACCOUNT="${HFGW_SLURM_ACCOUNT:-cygno}"
-PARTITION="${HFGW_SLURM_PARTITION:-GPU}"
+PARTITION="${HFGW_SLURM_PARTITION:-}"
 QOS="${HFGW_SLURM_QOS:-normal}"
 TOKEN_TIME=86400
 OIDC_ACCOUNT=flash
@@ -39,11 +40,12 @@ MAX_EVENTS=99999999
 WALLTIME=''
 LOG_DIR="${HFGW_SLURM_LOG_DIR:-$HOME/slurm_logs}"
 ANALYSIS_KIND=fft
+RESOURCE=gpu
 REFERENCE="${HFGW_NOISE_REFERENCE:-}"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference)
+        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference|--resource)
             [[ $# -ge 2 && -n $2 ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
                 --account) ACCOUNT=$2 ;;
@@ -56,6 +58,7 @@ while [[ $# -gt 0 ]]; do
                 --log-dir) LOG_DIR=$2 ;;
                 --analysis) ANALYSIS_KIND=$2 ;;
                 --reference) REFERENCE=$2 ;;
+                --resource) RESOURCE=$2 ;;
             esac
             shift 2 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
@@ -68,11 +71,19 @@ RUN=$((10#$RUN))
 TOKEN_TIME=$((10#$TOKEN_TIME))
 MAX_EVENTS=$((10#$MAX_EVENTS))
 (( TOKEN_TIME > 0 && MAX_EVENTS > 0 )) || { echo 'Token time and event limit must be positive' >&2; exit 2; }
+[[ "$RESOURCE" == cpu || "$RESOURCE" == gpu ]] || { echo 'Resource must be cpu or gpu' >&2; exit 2; }
+if [[ "$ANALYSIS_KIND" != noise && "$RESOURCE" != gpu ]]; then
+    echo '--resource cpu is supported only for --analysis noise' >&2; exit 2
+fi
+if [[ -z "$PARTITION" ]]; then
+    if [[ "$RESOURCE" == cpu ]]; then PARTITION=CPU; else PARTITION=GPU; fi
+fi
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 JOB_SCRIPT="$REPO_ROOT/examples/hpc/job.sh"
 case "$ANALYSIS_KIND" in
     fft) ;;
     noise)
+        export HFGW_NOISE_RESOURCE="$RESOURCE"
         JOB_SCRIPT="$REPO_ROOT/examples/hpc/noise_job.sh"
         [[ -f "$JOB_SCRIPT" && -n "$REFERENCE" && -f "$REFERENCE" ]] || {
             echo 'Noise requires noise_job.sh and --reference FILE' >&2; exit 2;
@@ -112,6 +123,14 @@ LOG_DIR=$(cd -- "$LOG_DIR" && pwd)
 SBATCH_ARGS=(--parsable --account="$ACCOUNT" --partition="$PARTITION" --qos="$QOS"
     --export=ALL,BEARER_TOKEN --output="$LOG_DIR/JOB_%j.out" --error="$LOG_DIR/JOB_%j.err")
 if [[ -n "$WALLTIME" ]]; then SBATCH_ARGS+=(--time="$WALLTIME"); fi
+if [[ "$ANALYSIS_KIND" == noise ]]; then
+    if [[ "$RESOURCE" == gpu ]]; then
+        SBATCH_ARGS+=(--gres=gpu:1)
+    else
+        # CPU requests must not inherit GPU resources from a previous allocation.
+        unset SBATCH_GRES SBATCH_GPUS SBATCH_GPUS_PER_NODE SBATCH_GPUS_PER_SOCKET SBATCH_GPUS_PER_TASK SBATCH_TRES_PER_TASK
+    fi
+fi
 JOB_RESPONSE=$(sbatch "${SBATCH_ARGS[@]}" "$JOB_SCRIPT")
 JOB_ID=${JOB_RESPONSE%%;*}
 [[ $JOB_ID =~ ^[0-9]+$ ]] || { echo 'Unexpected sbatch response; check squeue before retrying' >&2; exit 22; }

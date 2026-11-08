@@ -1,11 +1,9 @@
 #!/bin/bash
-# The tested LNF association is cygno/GPU; IQ calculations themselves use CPU.
+# Resource allocation (CPU or legacy GPU partition) is selected by the launcher.
 #SBATCH --job-name=noise_iq_v1
-#SBATCH --partition=GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --gres=gpu:1
 #SBATCH --mem=4G
 #SBATCH --time=03:00:00
 
@@ -57,6 +55,7 @@ cp -- "$HFGW_NOISE_REFERENCE" "$WORKDIR/noise_reference.json"
 "$PYTHON" "$HFGW_REPO_ROOT/examples/hpc/check_noise_environment.py"
 URL="davs://xfer-archive.cr.cnaf.infn.it:8443/${HFGW_INPUT_PATH:-flash/data/LNF}/${NAME}.mid.gz"
 echo "Download $NAME $(date -u +%FT%TZ)"
+echo "Host $(hostname); resource profile ${HFGW_NOISE_RESOURCE:-unspecified}; CPUs ${SLURM_CPUS_PER_TASK:-1}"
 gfal-copy "$URL" "$WORKDIR/${NAME}.mid.gz.part"
 [[ -s "$WORKDIR/${NAME}.mid.gz.part" ]] || exit 30
 mv -- "$WORKDIR/${NAME}.mid.gz.part" "$WORKDIR/${NAME}.mid.gz"

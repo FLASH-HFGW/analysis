@@ -30,7 +30,8 @@ import json,os,sys
 from pathlib import Path
 Path(os.environ['SUBMIT_CAPTURE']).write_text(json.dumps({'args':sys.argv[1:],
     'token':os.environ['BEARER_TOKEN'],'run':os.environ['HFGW_RUN'],
-    'events':os.environ['HFGW_MAX_EVENTS'],'repo':os.environ['HFGW_REPO_ROOT']}))
+    'events':os.environ['HFGW_MAX_EVENTS'],'repo':os.environ['HFGW_REPO_ROOT'],
+    'sbatch_gres':os.environ.get('SBATCH_GRES'),'sbatch_gpus':os.environ.get('SBATCH_GPUS')}))
 print('4321;hpc-cluster')
 ''')
         token.chmod(0o755)
@@ -84,7 +85,32 @@ print('4321;hpc-cluster')
             capture = json.loads((root / 'submission.json').read_text())
             self.assertEqual(capture['args'][-1], str(ROOT / 'examples/hpc/noise_job.sh'))
             self.assertIn('--time=03:00:00', capture['args'])
+            self.assertIn('--gres=gpu:1', capture['args'])
             self.assertNotIn('job-private-token', result.stdout + result.stderr)
+
+    def test_noise_cpu_profile_does_not_request_or_inherit_gpus(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);env=self.setup_commands(root,lifetime=4000)
+            env.pop('HFGW_SLURM_PARTITION',None)
+            env.update(SBATCH_GRES='gpu:1',SBATCH_GPUS='1')
+            reference=root/'reference.json';reference.write_text('{"iq_sign": -1}')
+            result=subprocess.run(['bash',str(SCRIPT),'680','--analysis','noise','--resource','cpu',
+                '--reference',str(reference),'--token-time','3600'],env=env,capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            capture=json.loads((root/'submission.json').read_text())
+            self.assertIn('--partition=CPU',capture['args'])
+            self.assertFalse(any(a.startswith(('--gres=','--gpus=')) for a in capture['args']))
+            self.assertIsNone(capture['sbatch_gres']);self.assertIsNone(capture['sbatch_gpus'])
+            worker=(ROOT/'examples/hpc/noise_job.sh').read_text()
+            self.assertNotIn('#SBATCH --gres',worker)
+            self.assertNotIn('#SBATCH --partition',worker)
+
+    def test_cpu_profile_is_not_applied_to_the_fft_gpu_program(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);env=self.setup_commands(root)
+            result=subprocess.run(['bash',str(SCRIPT),'680','--resource','cpu'],env=env,capture_output=True,text=True)
+            self.assertEqual(result.returncode,2)
+            self.assertFalse((root/'token-call.json').exists())
 
     def test_noise_missing_reference_never_requests_token(self):
         with tempfile.TemporaryDirectory() as directory:
