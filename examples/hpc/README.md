@@ -5,6 +5,9 @@
 `submit_one_run.sh` conserva il percorso FFT predefinito. La nuova opzione
 `--analysis noise` seleziona invece `noise_job.sh`, con ricostruzione completa
 `analyze_midas_iq_noise.py --iq-sign -1 --filtered-bands --h5-only`.
+Entrambi i payload, HPC e HTC, passano `--product-version v1`: il tag è
+registrato nel riepilogo e nella radice dell'HDF5. Su GPFS il nome finale è
+`runNNNNN_noise_v1.h5`, un file completo per run con le figure incorporate.
 Richiede il riferimento di ampiezza condiviso, disponibile anche nel pacchetto
 trasferibile del pilot sotto `config/noise_reference.json`:
 
@@ -53,11 +56,11 @@ Una ricostruzione limitata con `--max-events` non è accettata come prodotto com
 
 Stati e log del controllo sono sotto:
 
-`$HOME/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_20261108/`
+`$HOME/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_v1_20261108/`
 
 Risultati HDF5 e confronto termico sono sotto:
 
-`$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/`
+`$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/`
 
 Il sottoalbero `jobs/JOB_<id>/` conserva HDF5, log dell'analisi ed esito per ogni
 job. Solo un HDF5 validato (fine file, I−iQ, nove bande per modo) viene copiato
@@ -71,9 +74,13 @@ La cartella scientifica GPFS autorizzata è:
 
 `flash/analysis/autoreco/Run2/noise_temperature_pilot_minus1_20261108/`
 
-Contiene l'HDF5 degli input, `runNNNNN_noise.h5` per ogni run completato e,
-alla fine, `noise_temperature_comparison.h5` con tabelle, figure e provenienza.
+Contiene l'HDF5 degli input, `runNNNNN_noise_v1.h5` per ogni run completato e,
+alla fine, `noise_temperature_comparison_v1.h5` con tabelle, figure e provenienza.
 Log, stati e ricevute di trasferimento restano sul filesystem HPC.
+La pubblicazione avviene a ogni run completato, senza aspettare la fine dei 12 run:
+i file sono leggibili dal mount CNAF `~/flash-data/analysis/autoreco/Run2/`.
+Le nuove directory di controllo `v1` mantengono separate le copie congelate
+delle campagne precedenti; `prepare` non cambia una campagna già preparata.
 
 Lo scratch unico viene eliminato soltanto dopo
 analisi e copia riuscite; in caso di errore viene conservato per diagnosi.

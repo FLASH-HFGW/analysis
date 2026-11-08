@@ -72,8 +72,10 @@ def write_csv(path, rows):
     temporary.replace(path)
 
 
-def summarize_product(path, run, temperatures):
+def summarize_product(path, run, temperatures, product_version=None):
     summary = read_summary(path)
+    if product_version and summary.get('product_version') != product_version:
+        raise ValueError(f'Wrong scientific product version: {path}')
     if summary.get('iq_sign') != -1 or not summary.get('reached_eof') or summary.get('status') != 'success':
         raise ValueError(f'Incomplete or wrong IQ convention: {path}')
     if Path(summary['input']).name.split('.mid')[0] != f'run{run:05d}':
@@ -117,11 +119,11 @@ def summarize_product(path, run, temperatures):
     return rows
 
 
-def report(output, temperatures, runs):
+def report(output, temperatures, runs, product_version=None):
     data = temperatures_by_run(temperatures, set(runs))
     rows = []
     for run in runs:
-        rows.extend(summarize_product(output / f'run{run:05d}_noise.h5', run, data[run]))
+        rows.extend(summarize_product(output / f'run{run:05d}_noise.h5', run, data[run], product_version))
     write_csv(output / 'bands_temperature_by_run.csv', rows)
     correlations = []
     for mode in ('TM010', 'TM011', 'TM012'):
@@ -184,9 +186,13 @@ def report(output, temperatures, runs):
                       'Many modes, bands and metrics are explored; large coefficients need independent confirmation.',
                       'Central band includes DC offsets. Phase resultant is dimensionless, not evidence of a physical signal.',
                       'Phase concentration is combined with sample-count weights; filtered amplitudes are assumed nonzero.'])
+    if product_version:
+        result['product_version'] = product_version
     (output / 'comparison_summary.json').write_text(json.dumps(result, indent=2) + '\n')
     import hashlib
     packaged = build_results(result, {})
+    if product_version:
+        packaged['product_version'] = product_version
     packaged['tables'] = {'bands_temperature_by_run': rows, 'temperature_correlations': correlations}
     packaged['figures'] = {name: {'format': 'png', 'data': np.frombuffer((output / name).read_bytes(), dtype=np.uint8)}
                            for name in ('central_rms_vs_temperature.png', 'band_rms_by_run.png')}

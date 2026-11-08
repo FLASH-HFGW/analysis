@@ -18,9 +18,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = [680, 704, 727, 751, 774, 798, 821, 845, 868, 892, 915, 939]
-DEFAULT = Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_minus1_20261108')
+DEFAULT = Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_v1_20261108')
 TEMPERATURES = Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/thermometers/thermometers_00680_00939.csv')
-RESULTS = Path('/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108')
+RESULTS = Path('/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108')
 SOURCE_NAMES = ('analyze_midas_iq_noise.py', 'iq_noise_statistics.py',
                 'iq_noise_io.py', 'analyze_iq_filtered_bands.py')
 
@@ -81,12 +81,14 @@ gfal-copy "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/data/LNF/${RUN_NAME}.m
 echo "Analysis $RUN_NAME $(date -u +%FT%TZ)"
 "$PYTHON" -u analyze_midas_iq_noise.py "$WORKDIR/${RUN_NAME}.mid.gz" \
     --out-dir "$JOB_ROOT/results" --global-reference noise_reference.json \
-    --iq-sign -1 --mode-workers 1 --phase-lags 1 10 100 --h5-only --filtered-bands
+    --iq-sign -1 --mode-workers 1 --phase-lags 1 10 100 --h5-only --filtered-bands --product-version v1
 echo "Complete $RUN_NAME $(date -u +%FT%TZ)"
 '''
     tag = campaign.name
     output.mkdir(parents=True, exist_ok=True)
+    preset = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())
     manifest = dict(runs=RUNS, iq_sign=-1, tag=tag, output=str(output.resolve()), created_utc=now(),
+                    product_version='v1', gpfs_url=preset['output_url'], submissions_paused=True,
                     temperatures=str(sources / 'temperatures.csv'),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                    for p in sources.iterdir() if p.is_file()},
@@ -117,6 +119,7 @@ t1_oauth_permissions = profile,email,openid,offline_access
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 +JobBatchName = "{tag}"
 +NoisePilotRun = {run}
++NoiseProductVersion = "v1"
 queue
 ''')
         save(directory / 'state.json', dict(run=run, status='prepared'))
@@ -124,16 +127,20 @@ queue
     return manifest
 
 
-def validate(path, run):
+def validate(path, run, product_version=None):
     from iq_noise_io import read_summary
     import h5py
     import numpy as np
     summary = read_summary(path)
+    if product_version and summary.get('product_version') != product_version:
+        raise ValueError(f'Wrong scientific product version: {path}')
     if (summary.get('status') != 'success' or not summary.get('reached_eof')
             or summary.get('iq_sign') != -1 or not summary.get('events') or summary.get('samples', 0) <= 0
             or Path(summary['input']).name.split('.mid')[0] != f'run{run:05d}'):
         raise ValueError(f'Incomplete or wrong-convention result: {path}')
     with h5py.File(path, 'r') as source:
+        if product_version and ('product_version' not in source or source['product_version'].asstr()[()] != product_version):
+            raise ValueError('Wrong scientific product version in HDF5 root')
         if source['filtered_bands/config/iq_sign'][()] != -1:
             raise ValueError('Wrong filtered IQ sign')
         expected = np.array([-1e6, -5e5, -25e4, -1e5, 0, 1e5, 25e4, 5e5, 1e6])
@@ -183,7 +190,7 @@ def cycle(campaign, manifest, max_active, submit):
                         state.update(status='failed', error=str(history[0]))
             if result.exists():
                 try:
-                    summary = validate(result, run)
+                    summary = validate(result, run, product_version=manifest.get('product_version'))
                     destination = Path(manifest['output']) / result.name
                     digest = hashlib.sha256(result.read_bytes()).hexdigest()
                     if destination.exists():
@@ -196,13 +203,24 @@ def cycle(campaign, manifest, max_active, submit):
                     state.update(status='complete', sha256=digest, samples=int(summary['samples']), completed_utc=now())
                 except Exception as exc:
                     state.update(status='failed', error=str(exc))
+                if state['status'] == 'complete' and manifest.get('gpfs_url'):
+                    from iq_noise_publish import publish
+                    try:
+                        remote_name = result.stem + '_v1.h5' if manifest.get('product_version') == 'v1' else result.name
+                        remote = publish(destination, manifest['gpfs_url'].rstrip('/') + '/' + remote_name,
+                                         campaign / 'remote_checks')
+                        state['gpfs'] = remote
+                        state.pop('publication_error', None)
+                    except Exception as exc:
+                        state.update(status='publication_pending', publication_error=str(exc))
             save(directory / 'state.json', state)
         states[run] = state
     failures = [run for run, state in states.items() if state['status'] == 'failed']
     visible = {int(j['ClusterId']) for j in jobs}
     active = sum(j['JobStatus'] in (1, 2, 4, 5, 6, 7) for j in jobs)
     active += sum(s['status'] == 'submitted' and s.get('cluster') not in visible for s in states.values())
-    if submit and not failures:
+    pending = [r for r, s in states.items() if s['status'] == 'publication_pending']
+    if submit and not failures and not pending:
         for run, state in states.items():
             if active >= max_active:
                 break
@@ -259,7 +277,14 @@ def main():
                 return
             time.sleep(60)
     from report_noise_temperature import report
-    report(Path(manifest['output']), Path(manifest['temperatures']), manifest['runs'])
+    output = Path(manifest['output'])
+    report(output, Path(manifest['temperatures']), manifest['runs'], product_version=manifest.get('product_version'))
+    if manifest.get('gpfs_url'):
+        from iq_noise_publish import publish
+        remote = publish(output / 'noise_temperature_comparison.h5',
+                         manifest['gpfs_url'].rstrip('/') + '/noise_temperature_comparison_v1.h5',
+                         args.campaign / 'remote_checks')
+        save(args.campaign / 'gpfs_comparison.json', remote)
 
 
 if __name__ == '__main__':

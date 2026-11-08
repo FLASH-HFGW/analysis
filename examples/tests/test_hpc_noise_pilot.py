@@ -106,12 +106,13 @@ class SlurmPilotTests(unittest.TestCase):
             self.assertEqual(status['publication_pending'],[680])
             self.assertEqual(status['failed_runs'],[])
             args.submit=False
-            remote=dict(url=manifest['gpfs_url']+'/run00680_noise.h5',
+            remote=dict(url=manifest['gpfs_url']+'/run00680_noise_v1.h5',
                         sha256=hashlib.sha256(b'simulated-valid-HDF5').hexdigest())
             with mock.patch('noise_temperature_pilot.validate',return_value={}), \
                  mock.patch.object(noise_pilot,'execute',side_effect=AssertionError('No resubmission expected')), \
-                 mock.patch.object(noise_pilot,'publish',return_value=remote):
+                 mock.patch.object(noise_pilot,'publish',return_value=remote) as published:
                 status=noise_pilot.cycle(args,manifest)
+            self.assertTrue(published.call_args.args[1].endswith('/run00680_noise_v1.h5'))
             self.assertEqual(status['counts'],{'complete':1,'prepared':11})
             self.assertEqual(json.loads(state.read_text())['gpfs'],remote)
 

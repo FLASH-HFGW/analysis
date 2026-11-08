@@ -65,6 +65,7 @@ def prepare(args):
     manifest = dict(runs=RUNS, iq_sign=-1, output=str(output), created_utc=now(),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources.iterdir()},
                     scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it', gpfs_url=preset['output_url'],
+                    product_version='v1',
                     note='CPU IQ calculations; tested association cygno/GPU reserves one GPU per job')
     save(campaign / 'manifest.json', manifest)
     print('Prepared runs:', ', '.join(map(str, RUNS)))
@@ -102,7 +103,7 @@ def cycle(args, manifest):
                     raise ValueError(f'Worker failed: {result}')
                 from noise_temperature_pilot import validate
                 source = directory / f'run{run:05d}_noise.h5'
-                validate(source, run)
+                validate(source, run, product_version=manifest.get('product_version'))
                 digest = hashlib.sha256(source.read_bytes()).hexdigest()
                 destination = output / source.name
                 if destination.exists() and hashlib.sha256(destination.read_bytes()).hexdigest() != digest:
@@ -116,7 +117,8 @@ def cycle(args, manifest):
                 state.update(status='failed', error=str(exc))
             if state['status'] == 'complete' and manifest.get('gpfs_url'):
                 try:
-                    remote = publish(destination, manifest['gpfs_url'].rstrip('/') + '/' + destination.name,
+                    remote_name = destination.stem + '_v1.h5' if manifest.get('product_version') == 'v1' else destination.name
+                    remote = publish(destination, manifest['gpfs_url'].rstrip('/') + '/' + remote_name,
                                      campaign / 'remote_checks')
                     state.update(gpfs=remote, completed_utc=now())
                     state.pop('publication_error', None)
@@ -164,8 +166,8 @@ def main():
     home = Path.home() / 'HFGW'
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['prepare', 'watch', 'status', 'report'])
-    parser.add_argument('--campaign', type=Path, default=home / 'analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_20261108')
-    parser.add_argument('--output', type=Path, default=home / 'analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108')
+    parser.add_argument('--campaign', type=Path, default=home / 'analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_v1_20261108')
+    parser.add_argument('--output', type=Path, default=home / 'analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108')
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--temperatures', type=Path)
     parser.add_argument('--submit', action='store_true')
@@ -214,8 +216,10 @@ def main():
     # Use the frozen reporting source and frozen temperature observations too.
     sys.path.insert(0, str(args.campaign / 'sources'))
     from report_noise_temperature import report
-    report(Path(manifest['output']), args.campaign / 'sources/temperatures.csv', manifest['runs'])
-    remote = publish(comparison, manifest['gpfs_url'].rstrip('/') + '/' + comparison.name,
+    report(Path(manifest['output']), args.campaign / 'sources/temperatures.csv', manifest['runs'],
+           product_version=manifest.get('product_version'))
+    remote_name = comparison.stem + '_v1.h5' if manifest.get('product_version') == 'v1' else comparison.name
+    remote = publish(comparison, manifest['gpfs_url'].rstrip('/') + '/' + remote_name,
                      args.campaign / 'remote_checks')
     save(receipt, remote)
     print('Scientific comparison published and downloaded/verified:', remote['url'])

@@ -237,6 +237,12 @@ per tempi, memoria e correttezza durante le modifiche e il prossimo rilancio.
 
 ## Dizionario dei risultati e verifiche IQ filtrate
 
+I nuovi payload HPC e HTC generano prodotti scientifici `v1`, con
+`--filtered-bands --product-version v1 --h5-only`. La pubblicazione su GPFS
+usa `runNNNNN_noise_v1.h5`: un contenitore per run con statistiche, bande e
+PNG incorporati. Il tag `v1` è anche nei metadati. I file storici `*_v0.h5`
+restano separati. Il trasferimento viene verificato con riscaricamento SHA-256.
+
 Lo script principale può salvare anche un contenitore HDF5 compresso:
 
 ```bash

@@ -52,11 +52,14 @@ gfal-copy "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mi
 echo "[timing] download end / analysis start $(date -u +%FT%TZ)"
 "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \
     --out-dir "$JOB_ROOT" --global-reference "$REFERENCE" --iq-sign "$IQ_SIGN" \
-    --mode-workers "$MODE_WORKERS" --phase-lags 1 10 100 --h5-only
+    --mode-workers "$MODE_WORKERS" --phase-lags 1 10 100 --h5-only --filtered-bands --product-version v1
 echo "[timing] analysis end / upload start $(date -u +%FT%TZ)"
 # Stessa pubblicazione dell'autoreco FFT, in una cartella dedicata al rumore.
 BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
 REMOTE="davs://xfer-archive.cr.cnaf.infn.it:8443/${OUTPUT_PATH}"
 gfal-mkdir -p "$REMOTE"
-gfal-copy -f "$JOB_ROOT/${RUN_NAME}_noise.h5" "$REMOTE/${RUN_NAME}_noise.h5"
+gfal-copy -K ADLER32 "$JOB_ROOT/${RUN_NAME}_noise.h5" "$REMOTE/${RUN_NAME}_noise_v1.h5"
+gfal-copy "$REMOTE/${RUN_NAME}_noise_v1.h5" "$WORKDIR/remote_noise_v1.h5"
+"$PYTHON" -c 'import hashlib,sys; from pathlib import Path; assert hashlib.sha256(Path(sys.argv[1]).read_bytes()).digest() == hashlib.sha256(Path(sys.argv[2]).read_bytes()).digest(), "GPFS SHA-256 mismatch"' \
+    "$JOB_ROOT/${RUN_NAME}_noise.h5" "$WORKDIR/remote_noise_v1.h5"
 echo "[timing] upload end $(date -u +%FT%TZ)"

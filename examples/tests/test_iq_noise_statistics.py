@@ -273,6 +273,7 @@ class StatisticsTests(unittest.TestCase):
                 argv=['noise',str(source),'--out-dir',str(root),'--phase-lags','1','3','--plot-points','10','--mode-workers',str(1 if run==1 else 3), '--filtered-bands', '--band-taps', '21']
                 if run == 2:
                     argv.append('--h5-only')
+                argv.extend(['--product-version', 'v1'])
                 with mock.patch.object(sys,'argv',argv),contextlib.redirect_stdout(io.StringIO()):analysis.main()
             from iq_noise_io import read_results_h5, flattened_arrays, read_summary
             parallel = flattened_arrays(read_results_h5(root/'run00002_noise.h5'))
@@ -282,6 +283,8 @@ class StatisticsTests(unittest.TestCase):
                     np.testing.assert_array_equal(serial[key], parallel[key], err_msg=key)
             self.assertEqual([p.name for p in root.glob('run00002_noise*')], ['run00002_noise.h5'])
             self.assertEqual(read_summary(root/'run00002_noise.h5')['samples'], 40)
+            self.assertEqual(read_summary(root/'run00002_noise.h5')['product_version'], 'v1')
+            self.assertEqual(read_results_h5(root/'run00002_noise.h5')['product_version'], 'v1')
             import h5py
             with h5py.File(root/'run00001_noise.h5', 'r') as output:
                 self.assertEqual(output['summary/samples'][()], 40)

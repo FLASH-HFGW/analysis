@@ -119,7 +119,7 @@ printf 'Submitted job %s: run %s, account %s, partition %s, QoS %s\n' "$JOB_ID" 
 printf 'Monitor: squeue -j %s\n' "$JOB_ID"
 printf 'Stdout: %s/JOB_%s.out\nStderr: %s/JOB_%s.err\n' "$LOG_DIR" "$JOB_ID" "$LOG_DIR" "$JOB_ID"
 if [[ "$ANALYSIS_KIND" == noise ]]; then
-    printf 'Results: %s/JOB_%s/\n' "${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/jobs}" "$JOB_ID"
+    printf 'Results: %s/JOB_%s/\n' "${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/jobs}" "$JOB_ID"
 else
     printf 'Results: %s/benchmarks/slurm/JOB_%s/\n' "${HFGW_RUNTIME_ROOT:-$HOME/HFGW/analysis-runtime/autoreco/Run2}" "$JOB_ID"
 fi

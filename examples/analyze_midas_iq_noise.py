@@ -258,6 +258,7 @@ def main():
     parser.add_argument("--phase-lags", type=positive_int, nargs="+", default=[1, 10, 100],
                         help="Ritardi per delta fase, in campioni (default: 1 10 100)")
     parser.add_argument("--h5-only", action="store_true", help="Unico output HDF5 con dati, metadati e figure incorporate")
+    parser.add_argument("--product-version", choices=["v1"], help="Versione scientifica registrata nell'HDF5")
     parser.add_argument("--h5", action="store_true", help="Salva anche il dizionario completo in HDF5 (richiede h5py)")
     parser.add_argument("--filtered-bands", action="store_true", help="Verifiche IQ in bande simmetriche; abilita HDF5 e richiede scipy")
     parser.add_argument("--band-offsets-hz", type=float, nargs="+", default=[100e3, 250e3, 500e3, 1e6])
@@ -645,6 +646,9 @@ def main():
                                "scope": "local Python analysis; excludes input download and remote upload",
                                "timings": timings}
     results = build_results(summary, saved, band_checks.export() if band_checks is not None else None)
+    if args.product_version:
+        summary["product_version"] = args.product_version
+        results["product_version"] = args.product_version
     figures = [args.out_dir / (stem + suffix) for suffix in (".png", "_iq.png")]
     if args.h5 or args.h5_only or args.filtered_bands:
         results["figures"] = {path.stem: {"format": "png", "data": np.frombuffer(path.read_bytes(), dtype=np.uint8)}

@@ -66,6 +66,18 @@ class PilotTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate(p, 681)
 
+    def test_versioned_pipeline_rejects_untagged_products(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p=Path(directory)/'run00680_noise.h5'
+            product(p)
+            with self.assertRaisesRegex(ValueError,'product version'):
+                validate(p,680,product_version='v1')
+            tagged=read_results_h5(p)
+            tagged['summary']['product_version']='v1'
+            tagged['product_version']='v1'
+            save_results_h5(p,tagged)
+            validate(p,680,product_version='v1')
+
     def test_temperature_schema_and_complete_report(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

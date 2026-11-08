@@ -1,6 +1,6 @@
 #!/bin/bash
 # The tested LNF association is cygno/GPU; IQ calculations themselves use CPU.
-#SBATCH --job-name=noise_iq_pilot
+#SBATCH --job-name=noise_iq_v1
 #SBATCH --partition=GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -22,7 +22,7 @@ RUN=$((10#$HFGW_RUN))
 NAME=$(printf 'run%05d' "$RUN")
 PYTHON="${HFGW_PYTHON:-python3.9}"
 SOURCE_DIR="${HFGW_NOISE_SOURCE_DIR:-$HFGW_REPO_ROOT/examples}"
-OUT_ROOT="${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/jobs}"
+OUT_ROOT="${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/jobs}"
 OUTDIR="$OUT_ROOT/JOB_${SLURM_JOB_ID}"
 SCRATCH_ROOT="${HFGW_SCRATCH_ROOT:-${SLURM_TMPDIR:-/tmp/$USER}}"
 mkdir -p "$SCRATCH_ROOT" "$OUTDIR"
@@ -63,7 +63,7 @@ mv -- "$WORKDIR/${NAME}.mid.gz.part" "$WORKDIR/${NAME}.mid.gz"
 echo "Analyze I-iQ $NAME $(date -u +%FT%TZ)"
 ARGS=("$WORKDIR/${NAME}.mid.gz" --out-dir "$WORKDIR" \
     --global-reference "$WORKDIR/noise_reference.json" --iq-sign -1 \
-    --mode-workers 1 --h5-only --filtered-bands)
+    --mode-workers 1 --h5-only --filtered-bands --product-version v1)
 if [[ ${HFGW_MAX_EVENTS:-99999999} != 99999999 ]]; then
     ARGS+=(--max-events "$HFGW_MAX_EVENTS")
 fi

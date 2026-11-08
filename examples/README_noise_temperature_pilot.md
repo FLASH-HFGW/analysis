@@ -43,11 +43,11 @@ python3 examples/noise_temperature_pilot.py report
 Il secondo comando recupera lo stato corrente senza nuove sottomissioni;
 il terzo richiede tutti i risultati completi. Log e stati sono in:
 
-`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_minus1_20261108/`
+`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_v1_20261108/`
 
 HDF5 recuperati e confronto finale sono in:
 
-`/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/`
+`/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/`
 
 ## Confronto termico
 
@@ -72,6 +72,9 @@ File generati:
 Il flusso Slurm in [hpc/README.md](hpc/README.md) pubblica gli HDF5 verificati
 in GPFS sotto `noise_temperature_pilot_minus1_20261108/`; il controller HTCondor
 descritto sopra resta sospeso per istruzione dell'utente.
+I nuovi output scientifici usano `v1` nei metadati e nei nomi finali GPFS:
+`runNNNNN_noise_v1.h5` e `noise_temperature_comparison_v1.h5`.
+HPC e HTC pubblicano ogni run completo senza aspettare la conclusione del pilot.
 
 L'RMS aggregato è `sqrt(sum(n * rms**2) / sum(n))`. Le concentrazioni di fase
 si combinano come vettori complessi e non come medie degli angoli.
