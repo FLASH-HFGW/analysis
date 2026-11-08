@@ -20,7 +20,8 @@ def main():
     parser.add_argument('--max-events', type=positive_int, help='Default: stessi eventi del riepilogo')
     parser.add_argument('--out-dir', type=Path)
     args = parser.parse_args()
-    meta = json.loads(args.summary.read_text())
+    from iq_noise_io import read_summary
+    meta = read_summary(args.summary)
     source = args.file or Path(meta['input'])
     limit = args.max_events or len(meta['events'])
     out = args.out_dir or args.summary.parent

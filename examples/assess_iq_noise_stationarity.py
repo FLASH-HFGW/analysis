@@ -11,6 +11,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import numpy as np
+from aggregate_iq_noise import read_inputs
+from iq_noise_io import open_noise_arrays
 
 MODES=('TM010','TM011','TM012')
 COLORS=('#007F86','#7657A6','#D98726')
@@ -18,13 +20,12 @@ COLORS=('#007F86','#7657A6','#D98726')
 
 def assess(root, out):
     records=[]
-    for path in sorted(root.glob('*/run*_noise.json')):
-        data=json.loads(path.read_text())
+    for path, data, name in read_inputs([root]):
         if data.get('status')!='success' or not data.get('reached_eof'):
             raise ValueError('Incomplete run: '+str(path))
-        run=int(path.parent.name)
+        run=int(name.removeprefix('run'))
         events=data['events'];clock=(events[0]['midas_timestamp']+events[-1]['midas_timestamp'])/2
-        with np.load(path.with_suffix('.npz'),allow_pickle=False) as arrays:
+        with open_noise_arrays(path) as arrays:
             start=arrays['envelope_start_sample'];stop=arrays['envelope_stop_sample']
             weights=stop-start;centers=(start+stop-1)/2/data['fs_hz'];duration=data['samples']/data['fs_hz']
             for mode in MODES:

@@ -71,6 +71,31 @@ print('4321;hpc-cluster')
             self.assertIn('parent:shell-original-token:999', result.stdout)
             self.assertEqual(json.loads((root / 'submission.json').read_text())['token'], 'job-private-token')
 
+    def test_noise_selects_separate_payload_and_three_hour_limit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = self.setup_commands(root, lifetime=4000)
+            reference = root / 'reference.json'
+            reference.write_text('{"iq_sign": -1}')
+            result = subprocess.run(['bash', str(SCRIPT), '680', '--analysis', 'noise',
+                '--reference', str(reference), '--token-time', '3600'],
+                env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            capture = json.loads((root / 'submission.json').read_text())
+            self.assertEqual(capture['args'][-1], str(ROOT / 'examples/hpc/noise_job.sh'))
+            self.assertIn('--time=03:00:00', capture['args'])
+            self.assertNotIn('job-private-token', result.stdout + result.stderr)
+
+    def test_noise_missing_reference_never_requests_token(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = self.setup_commands(root)
+            env.pop('HFGW_NOISE_REFERENCE', None)
+            result = subprocess.run(['bash', str(SCRIPT), '680', '--analysis', 'noise'],
+                env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertFalse((root / 'token-call.json').exists())
+
     def test_token_failure_never_submits(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

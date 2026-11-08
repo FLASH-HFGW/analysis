@@ -9,18 +9,25 @@ import re
 
 import numpy as np
 
+from iq_noise_io import read_summary, open_noise_arrays
 from iq_noise_statistics import MODES, SIGMAS, SCHEMA, config_id, merge_moments, empty_episodes, merge_episodes, tail
 
 
 def read_inputs(paths):
     found = []
     for path in paths:
-        found.extend(sorted(path.rglob('run*_noise.json')) if path.is_dir() else [path])
+        if path.is_dir():
+            products = sorted(path.rglob('run*_noise*.h5'))
+            found.extend(products)
+            found.extend(p for p in sorted(path.rglob('run*_noise.json')) if p.with_suffix('.h5') not in products
+                         and p.with_name(p.stem + '_v0.h5') not in products)
+        else:
+            found.append(path)
     if not found:
         raise ValueError('Nessun riepilogo trovato')
     rows, ids = [], set()
     for path in found:
-        data = json.loads(path.read_text())
+        data = read_summary(path)
         name = Path(data['input']).name.split('.mid')[0]
         if name in ids:
             raise ValueError('Run duplicato: ' + name)
@@ -83,9 +90,9 @@ def aggregate(rows, out, allow_partial=False, expected_runs=None):
             raise ValueError('Configurazioni, riferimenti o ritardi incompatibili: ' + name)
         if any(data[key] != config[key] for key in ('fs_hz', 'input_range_v', 'iq_sign')):
             raise ValueError('Metadati incoerenti: ' + name)
-        with np.load(path.with_suffix('.npz'), allow_pickle=False) as z:
+        with open_noise_arrays(path) as z:
             for key in ('amplitude_edges_v', 'iq_edges_v', 'phase_edges_rad'):
-                edge = z[key]
+                edge = np.asarray(z[key])
                 if key in arrays and not np.array_equal(arrays[key], edge):
                     raise ValueError('Bin diversi: ' + name + ': ' + key)
                 arrays[key] = edge.copy()
@@ -96,7 +103,7 @@ def aggregate(rows, out, allow_partial=False, expected_runs=None):
                 for suffix, expected in [('amp', st['n']), ('iq', st['n']), ('phase', st['valid_phase'])] + [
                         ('delta_' + lag, v['pairs']) for lag, v in st['delta_circular'].items()]:
                     key = 'global_' + mode + '_' + suffix
-                    counts = z[key]
+                    counts = np.asarray(z[key])
                     if counts.dtype.kind not in 'iu' or np.any(counts < 0) or int(counts.sum()) != expected:
                         raise ValueError('Istogramma incoerente: ' + name + ': ' + key)
                     arrays[key] = arrays.get(key, np.zeros_like(counts)) + counts

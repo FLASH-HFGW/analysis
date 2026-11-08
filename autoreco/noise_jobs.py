@@ -18,7 +18,10 @@ def build_noise_jobs(run_numbers, output_dir, input_path, output_path,
     module = analysis_script.with_name('iq_noise_statistics.py')
     if not module.is_file():
         raise ValueError('Modulo statistiche non trovato: ' + str(module))
-    for value in (input_path, output_path, str(analysis_script), str(module)):
+    io_module = analysis_script.with_name('iq_noise_io.py')
+    if not io_module.is_file():
+        raise ValueError('Modulo I/O non trovato: ' + str(io_module))
+    for value in (input_path, output_path, str(analysis_script), str(module), str(io_module)):
         if any(c.isspace() for c in value) or any(c in value for c in '\"\'\\,;'):
             raise ValueError('Percorso HTCondor non supportato: ' + value)
     mode_workers = min(3, request_cpus)
@@ -32,7 +35,7 @@ def build_noise_jobs(run_numbers, output_dir, input_path, output_path,
         script.chmod(0o755)
         (directory/'noise_reference.json').write_bytes(contents)
         transfer=','.join((os.path.relpath(analysis_script,directory),
-                           os.path.relpath(module,directory),'noise_reference.json'))
+                           os.path.relpath(module,directory),os.path.relpath(io_module,directory),'noise_reference.json'))
         submit.write_text(f'''executable = script.sh
 arguments = {input_path} {run} {output_path} {analysis_script.name} noise_reference.json {iq_sign} {mode_workers}
 output = stdout-$(ClusterId).$(ProcID).txt

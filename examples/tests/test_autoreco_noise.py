@@ -60,6 +60,11 @@ class AutorecoNoiseTests(unittest.TestCase):
                 p=Path(directory)/('%05d'%run)
                 text=(p/'submit.sub').read_text()
                 self.assertIn('iq_noise_statistics.py',text)
+                self.assertIn('iq_noise_io.py',text)
+                payload = (p/'script.sh').read_text()
+                self.assertIn('--h5-only', payload)
+                self.assertIn('gfal-copy -f "$JOB_ROOT/${RUN_NAME}_noise.h5"', payload)
+                self.assertNotIn('for suffix in', payload)
                 self.assertIn('noise_reference.json -1',text)
                 self.assertIn('noise_reference.json',text)
                 self.assertNotIn('--max-events',(p/'script.sh').read_text())
@@ -105,7 +110,7 @@ class AutorecoNoiseTests(unittest.TestCase):
             self.assertFalse(list(Path(directory).glob('*/job_state.json')))
 
     def test_reconcile_validates_noise_output(self):
-        for complete in (False,True):
+        for complete, hdf5 in ((False, False), (True, False), (False, True), (True, True)):
             with tempfile.TemporaryDirectory() as directory:
                 p=Path(directory)
                 (p/'output-1.0.log').touch()
@@ -113,8 +118,13 @@ class AutorecoNoiseTests(unittest.TestCase):
                 (p/'noise_reference.json').write_text(json.dumps(ref))
                 result={'input':'/tmp/run00680.mid.gz','status':'success','reached_eof':complete,
                         'global_statistics':{'config':{'reference':ref}}}
-                (p/'run00680_noise.json').write_text(json.dumps(result))
-                (p/'run00680_noise.npz').touch()
+                if hdf5:
+                    sys.path.insert(0, str(ROOT/'examples'))
+                    from iq_noise_io import build_results, save_results_h5
+                    save_results_h5(p/'run00680_noise.h5', build_results(result, {}))
+                else:
+                    (p/'run00680_noise.json').write_text(json.dumps(result))
+                    (p/'run00680_noise.npz').touch()
                 state={'run_number':680,'cluster_id':'1','status':'submitted','analysis_kind':'noise'}
                 with mock.patch.object(ar,'get_job_status',return_value=4), \
                      mock.patch.object(ar,'job_completed_successfully',return_value=True), \

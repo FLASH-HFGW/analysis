@@ -758,7 +758,13 @@ def reconcile_job(
     if state.get("analysis_kind") == "noise":
         result_path = run_dir / f"run{run_number:05d}_noise.json"
         try:
-            result = json.loads(result_path.read_text())
+            h5_path = result_path.with_suffix(".h5")
+            if h5_path.is_file():
+                sys.path.insert(0, str(AUTORECO_DIR.parent / "examples"))
+                from iq_noise_io import read_summary
+                result = read_summary(h5_path)
+            else:
+                result = json.loads(result_path.read_text())
             if (result.get("status") != "success" or not result.get("reached_eof")
                     or "global_statistics" not in result):
                 raise ValueError("output noise non completo")
@@ -767,7 +773,7 @@ def reconcile_job(
                 raise ValueError("riferimento noise diverso da quello del job")
             if Path(result["input"]).name.split(".mid")[0] != f"run{run_number:05d}":
                 raise ValueError("numero run noise diverso da quello del job")
-            if not result_path.with_suffix(".npz").is_file():
+            if not h5_path.is_file() and not result_path.with_suffix(".npz").is_file():
                 raise ValueError("NPZ noise assente")
         except (OSError, ValueError, KeyError) as exc:
             state["status"] = "failed"

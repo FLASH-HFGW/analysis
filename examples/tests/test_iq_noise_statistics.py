@@ -235,6 +235,27 @@ class StatisticsTests(unittest.TestCase):
             manifest=root/'runs.txt';manifest.write_text('1\n2\n3\n')
             with self.assertRaisesRegex(ValueError,'mancanti'):aggregate(rows,root/'fail',expected_runs=manifest)
 
+    def test_filtered_checks_keep_pairs_across_spec(self):
+        from analyze_midas_iq_noise import FilteredBandChecks
+        args = types.SimpleNamespace(fs=5e6, input_range=5., iq_sign=-1,
+            band_offsets_hz=[100e3], band_centers_hz=[0., 0., 0.],
+            band_width_hz=50e3, band_taps=101, band_decimation=20)
+        theta = 2*np.pi*102e3*np.arange(8000)/args.fs
+        frames = np.zeros((8000, 8), dtype=np.int16)
+        for ci, cq in ((0, 1), (2, 3), (4, 5)):
+            frames[:, ci] = np.rint(10000*np.cos(theta))
+            frames[:, cq] = -np.rint(10000*np.sin(theta))
+        checks = FilteredBandChecks(args)
+        for index, part in enumerate(np.split(frames, [50, 2003])):
+            checks.update(part, index, index+1, 100+index)
+        result = checks.export()['modes']['TM010']['band_02']['events']
+        # Initial SPEC is wholly inside the FIR transient. Subsequent pairs
+        # include the boundary pair, so total pairs equals total samples - 1.
+        self.assertEqual(result['event_index'].tolist(), [1, 2])
+        self.assertEqual(result['increment_pairs'].sum(), result['n'].sum()-1)
+        np.testing.assert_allclose(result['increment_mean_rad'],
+                                   2*np.pi*2000*20/args.fs, atol=1e-5)
+
     def test_full_analysis_two_runs(self):
         analysis=importlib.import_module('analyze_midas_iq_noise')
         theta=np.arange(40)*.3
@@ -249,13 +270,34 @@ class StatisticsTests(unittest.TestCase):
             root=Path(directory)
             for run in (1,2):
                 source=root/('run%05d.mid'%run);source.touch()
-                argv=['noise',str(source),'--out-dir',str(root),'--phase-lags','1','3','--plot-points','10','--mode-workers',str(1 if run==1 else 3)]
+                argv=['noise',str(source),'--out-dir',str(root),'--phase-lags','1','3','--plot-points','10','--mode-workers',str(1 if run==1 else 3), '--filtered-bands', '--band-taps', '21']
+                if run == 2:
+                    argv.append('--h5-only')
                 with mock.patch.object(sys,'argv',argv),contextlib.redirect_stdout(io.StringIO()):analysis.main()
-            with np.load(root/'run00001_noise.npz') as serial, np.load(root/'run00002_noise.npz') as parallel:
-                self.assertEqual(set(serial.files),set(parallel.files))
+            from iq_noise_io import read_results_h5, flattened_arrays, read_summary
+            parallel = flattened_arrays(read_results_h5(root/'run00002_noise.h5'))
+            with np.load(root/'run00001_noise.npz') as serial:
+                self.assertEqual(set(serial.files), set(parallel))
                 for key in serial.files:
-                    np.testing.assert_array_equal(serial[key],parallel[key],err_msg=key)
+                    np.testing.assert_array_equal(serial[key], parallel[key], err_msg=key)
+            self.assertEqual([p.name for p in root.glob('run00002_noise*')], ['run00002_noise.h5'])
+            self.assertEqual(read_summary(root/'run00002_noise.h5')['samples'], 40)
+            import h5py
+            with h5py.File(root/'run00001_noise.h5', 'r') as output:
+                self.assertEqual(output['summary/samples'][()], 40)
+                self.assertTrue(output['summary/reached_eof'][()])
+                png = output['figures/run00001_noise/data'][:].tobytes()
+                self.assertTrue(png.startswith(b'\x89PNG\r\n\x1a\n'))
+                self.assertEqual(output['filtered_bands/modes/TM010/band_00/events/n'][0], 1)
+                with np.load(root/'run00001_noise.npz') as saved:
+                    np.testing.assert_array_equal(output['modes/TM010/amplitude_v'][:], saved['TM010_amplitude_v'])
+                    np.testing.assert_array_equal(output['arrays/global_TM010_amp'][:], saved['global_TM010_amp'])
+            # Remove legacy sidecars: aggregation must use the HDF5 files alone.
+            (root/'run00001_noise.json').unlink()
+            (root/'run00001_noise.npz').unlink()
+            (root/'run00002_noise.h5').rename(root/'run00002_noise_v0.h5')
             rows=read_inputs([root])
+            self.assertTrue(all(path.suffix == '.h5' for path, _, _ in rows))
             with contextlib.redirect_stdout(io.StringIO()):aggregate(rows,root/'global')
             summary=json.loads((root/'global/global_noise.json').read_text())
             self.assertEqual(summary['runs'],['run00001','run00002'])

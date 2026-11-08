@@ -64,9 +64,10 @@ logbook ed esclude run assenti o con `rucio_status` diverso da zero.
 
 Il payload usa CVMFS, GFAL e il servizio OAuth `t1`. Il submit trasferisce
 analisi, modulo statistiche e una copia del riferimento in ogni directory job.
-Il MIDAS viene scaricato nel disco locale e rimosso al termine. I risultati
-NPZ/JSON/PNG vengono copiati nella cartella remota dedicata e recuperati da
-HTCondor nella directory locale del run. Gli errori causano exit code non
+Il MIDAS viene scaricato nel disco locale e rimosso al termine. Il nuovo payload produce e pubblica un solo `runNNNNN_noise.h5`, recuperato
+anche da HTCondor nella directory locale del run. Contiene array, metadati,
+configurazione, riferimento e figure PNG incorporate; non pubblica sidecar
+NPZ/JSON/PNG. Gli errori causano exit code non
 nullo e hold. `runNNNNN_job_status.json` registra l'esito del payload.
 Prima di marcare un job noise riuscito l'autoreco verifica JSON completo,
 numero del run, riferimento e presenza del NPZ.
@@ -233,3 +234,52 @@ Report di prestazioni, profili, metriche e output di confronto restano in locale
 Anche i file NPZ, JSON e PNG generati per questi confronti sono artefatti di test,
 non risultati della campagna da pubblicare su GPFS. Conservarli come riferimento
 per tempi, memoria e correttezza durante le modifiche e il prossimo rilancio.
+
+## Dizionario dei risultati e verifiche IQ filtrate
+
+Lo script principale può salvare anche un contenitore HDF5 compresso:
+
+```bash
+python examples/analyze_midas_iq_noise.py /percorso/run00680.mid.gz \
+  --iq-sign -1 --h5 --out-dir /tmp/noise_h5
+```
+
+`--h5-only` produce invece un unico HDF5, incorporando anche le figure
+e rimuovendo i PNG temporanei soltanto dopo il salvataggio riuscito. È
+l’opzione usata dai nuovi payload autoreco. Un file da 1 MB per run è
+accettabile: non si impone una dimensione minima né il raggruppamento di run.
+La dimensione effettiva guida eventuali consolidamenti futuri.
+
+`build_results()` in `iq_noise_io.py` costruisce un dizionario con `schema_version`, `summary`,
+`arrays` (array comuni e istogrammi globali), `modes` (array per TM010/011/012)
+, `filtered_bands` e `figures`. `save_results_h5()` traduce i dizionari in gruppi e gli
+array in dataset; `None` e liste di record sono dataset JSON UTF-8 marcati
+con attributo `encoding=json`. NPZ, JSON e PNG restano disponibili.
+Il riepilogo include `reached_eof`, anche nelle analisi limitate.
+
+Per includere le verifiche per SPEC di ampiezza media, RMS, fase circolare
+e incrementi di fase nelle bande simmetriche:
+
+```bash
+python examples/analyze_midas_iq_noise.py /percorso/run00680.mid.gz \
+  --iq-sign -1 --filtered-bands --max-events 3 --out-dir /tmp/noise_bands
+```
+
+`--filtered-bands` abilita automaticamente HDF5. Richiede `h5py`, `scipy` e
+`analyze_iq_filtered_bands.py` accanto allo script. Usa la seconda lettura
+MIDAS, con FIR, oscillatore e coppie continui fra SPEC. Default: centro 0,
+offset ±100/250/500/1000 kHz, larghezza 50 kHz, FIR Kaiser 2001 tap,
+decimazione 20; il ritardo degli incrementi è quindi 4 microsecondi.
+Si configurano con `--band-centers-hz` (tre centri), `--band-offsets-hz`,
+`--band-width-hz`, `--band-taps`, `--band-decimation`.
+La fase è riferita all'oscillatore e la banda centrale include DC.
+Non viene stimata automaticamente la frequenza fisica di risonanza.
+
+Le colonne sono in `filtered_bands/modes/TM010/band_XX/events/` (e analoghi),
+con offset e centro memorizzati nel gruppo della banda. I timestamp MIDAS
+sono distinti dal tempo acquisito corretto per il ritardo FIR. I SPEC senza
+campioni validi dopo il transitorio non producono righe. Sono conservati
+conteggi di campioni e coppie per pesare le statistiche.
+
+Queste opzioni sono disponibili per l'esecuzione diretta: i payload autoreco
+attuali continuano a usare NPZ/JSON e non attivano le bande filtrate.

@@ -1,5 +1,67 @@
 # SLURM LNF — accesso diretto CVMFS/GFAL
 
+## Pilot IQ filtrato e temperature
+
+`submit_one_run.sh` conserva il percorso FFT predefinito. La nuova opzione
+`--analysis noise` seleziona invece `noise_job.sh`, con ricostruzione completa
+`analyze_midas_iq_noise.py --iq-sign -1 --filtered-bands --h5-only`.
+Richiede il riferimento di ampiezza condiviso, disponibile anche nel pacchetto
+trasferibile del pilot sotto `config/noise_reference.json`:
+
+```bash
+bash examples/hpc/submit_one_run.sh 680 --analysis noise \
+  --reference config/noise_reference.json --token-time 3600 --time 03:00:00
+```
+
+La modalità noise usa 1 CPU e 4 GB RAM, con limite predefinito di tre ore.
+La partizione resta `GPU`, perché l'associazione già verificata è `cygno/GPU`;
+viene riservata una GPU, ma il programma IQ attuale calcola sulla CPU.
+Il precedente benchmark FFT GPU resta un percorso distinto.
+
+Per i 12 run 680, 704, 727, 751, 774, 798, 821, 845, 868, 892, 915, 939,
+eseguire sulla login HPC, dalla radice del pacchetto aggiornato:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh prepare \
+  --reference config/noise_reference.json --temperatures config/temperatures.csv
+bash examples/hpc/run_noise_pilot.sh status
+# Eseguire il monitor in tmux o in un terminale persistente, quando si vuole avviare:
+bash examples/hpc/run_noise_pilot.sh watch --submit --max-active 4 --token-time 3600
+```
+
+`prepare` copia sorgenti, riferimento e temperature e ne registra gli SHA-256;
+non sottomette. `watch --submit` sottomette al massimo quattro job contemporanei,
+recupera i risultati dal filesystem condiviso e avvia i successivi con un token
+appena richiesto per ciascun job. In questo modo un unico token da un'ora non
+viene riutilizzato per tutti i turni di un array. Il tempo in coda può comunque
+farlo scadere prima del download: in quel caso il job fallisce e il monitor ferma
+le nuove sottomissioni. Non si conserva il token nei log o negli artefatti.
+Le credenziali servono al download iniziale; i risultati non vengono caricati su GPFS.
+
+Il monitor deve rimanere attivo sul login node: le ricostruzioni girano nei job.
+Per riprenderlo usare lo stesso comando: legge gli stati senza risottomettere
+i run già inviati. Un lock impedisce monitor simultanei per la stessa campagna.
+`watch --once` esegue un solo controllo senza nuove sottomissioni;
+`report` rigenera il confronto dopo che tutti i risultati sono completi.
+Una ricostruzione limitata con `--max-events` non è accettata come prodotto completo.
+
+Stati e log del controllo sono sotto:
+
+`$HOME/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_20261108/`
+
+Risultati HDF5 e confronto termico sono sotto:
+
+`$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/`
+
+Il sottoalbero `jobs/JOB_<id>/` conserva HDF5, log dell'analisi ed esito per ogni
+job. Solo un HDF5 validato (fine file, I−iQ, nove bande per modo) viene copiato
+nella radice per il report. Lo scratch unico viene eliminato soltanto dopo
+analisi e copia riuscite; in caso di errore viene conservato per diagnosi.
+Il confronto usa le temperature osservate nello stesso run entro i timestamp
+SPEC, con i limiti descritti in [README_noise_temperature_pilot.md](../README_noise_temperature_pilot.md).
+
+## Percorso FFT esistente
+
 Il payload ufficiale è `job.sh`. `jobsub.sh` richiama lo stesso payload dentro
 l'allocazione SLURM; `script.sh` mantiene la vecchia interfaccia a quattro argomenti.
 I test proxy precedenti non sono necessari per la configurazione diretta.

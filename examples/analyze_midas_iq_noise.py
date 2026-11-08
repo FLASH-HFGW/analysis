@@ -15,6 +15,8 @@ from pathlib import Path
 
 import numpy as np
 
+from iq_noise_io import build_results, save_results_h5, read_results_h5, flattened_arrays
+
 from iq_noise_statistics import RunStatistics, make_config, uniform_histogram, uniform_histogram2d
 
 MODES = {"TM010": (0, 1), "TM011": (2, 3), "TM012": (4, 5)}
@@ -177,6 +179,57 @@ def process_second_mode(mode, channels, frames, states, global_stats, args,
             "serial": serial, "samples_above": count})
 
 
+class FilteredBandChecks:
+    """Statistiche per SPEC con stato FIR e coppie continui tra eventi."""
+    def __init__(self, args):
+        from analyze_iq_filtered_bands import BandFilter
+        offsets = sorted(set([0.] + [sign * v for v in args.band_offsets_hz for sign in (-1, 1)]))
+        if not all(np.isfinite(v) for v in [*offsets, *args.band_centers_hz, args.band_width_hz]):
+            raise ValueError("Parametri delle bande non finiti")
+        if any(v <= args.band_width_hz for v in args.band_offsets_hz):
+            raise ValueError("Gli offset devono superare la larghezza di banda")
+        self.config = dict(fs_hz=args.fs, iq_sign=args.iq_sign, input_range_v=args.input_range,
+                           width_hz=args.band_width_hz, taps=args.band_taps,
+                           decimation=args.band_decimation, offsets_hz=offsets,
+                           centers_hz=args.band_centers_hz,
+                           increment_lag_s=args.band_decimation / args.fs,
+                           phase_reference="demodulation oscillator; central band includes DC",
+                           continuity="FIR, oscillator and increment pairs continuous across SPEC")
+        self.filters = {(mode, index): BandFilter(args.fs, center + offset, args.band_width_hz,
+                                                args.band_taps, args.band_decimation)
+                        for mode, center in zip(MODES, args.band_centers_hz)
+                        for index, offset in enumerate(offsets)}
+        self.previous = {key: None for key in self.filters}
+        self.rows = {key: [] for key in self.filters}
+        self.scale = 2 * args.input_range / 65535
+        self.iq_sign = args.iq_sign
+
+    def update(self, frames, event_index, serial, timestamp):
+        from analyze_iq_filtered_bands import statistics
+        for mode, (ci, cq) in MODES.items():
+            z = (frames[:, ci].astype(float) + 1j * self.iq_sign * frames[:, cq]) * self.scale
+            for key, band in self.filters.items():
+                if key[0] != mode:
+                    continue
+                t, filtered = band.process(z)
+                if not len(filtered):
+                    continue
+                row = dict(event_index=event_index, serial=serial, event_timestamp_unix=timestamp,
+                           acquired_start_s=float(t[0]), acquired_stop_s=float(t[-1]),
+                           **statistics(filtered, self.previous[key]))
+                self.previous[key] = filtered[-1]
+                self.rows[key].append(row)
+
+    def export(self):
+        modes = {mode: {} for mode in MODES}
+        for (mode, index), rows in self.rows.items():
+            modes[mode]["band_%02d" % index] = {
+                "offset_hz": self.config["offsets_hz"][index],
+                "center_hz": self.filters[mode, index].center,
+                "events": {name: np.asarray([row[name] for row in rows]) for name in rows[0]} if rows else {}}
+        return {"config": self.config, "modes": modes}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("file", type=Path, help="File .mid oppure .mid.gz")
@@ -186,7 +239,8 @@ def main():
     parser.add_argument("--fs", type=float, default=5e6, help="Campionamento [Hz]")
     parser.add_argument("--input-range", type=float, default=5.0,
                         help="Semintervallo ADC [V], default: +/-5 V")
-    parser.add_argument("--iq-sign", type=int, choices=(-1, 1), default=1)
+    parser.add_argument("--iq-sign", type=int, choices=(-1, 1), default=-1,
+                        help="Convenzione IQ: default I-iQ (-1)")
     parser.add_argument("--bins", type=positive_int, default=1024,
                         help="Bin per modo sull’intervallo osservato (default: 1024)")
     parser.add_argument("--iq-bins", type=positive_int, default=256,
@@ -203,6 +257,14 @@ def main():
                         help="JSON di riferimento condiviso per soglie 3/5/7 sigma")
     parser.add_argument("--phase-lags", type=positive_int, nargs="+", default=[1, 10, 100],
                         help="Ritardi per delta fase, in campioni (default: 1 10 100)")
+    parser.add_argument("--h5-only", action="store_true", help="Unico output HDF5 con dati, metadati e figure incorporate")
+    parser.add_argument("--h5", action="store_true", help="Salva anche il dizionario completo in HDF5 (richiede h5py)")
+    parser.add_argument("--filtered-bands", action="store_true", help="Verifiche IQ in bande simmetriche; abilita HDF5 e richiede scipy")
+    parser.add_argument("--band-offsets-hz", type=float, nargs="+", default=[100e3, 250e3, 500e3, 1e6])
+    parser.add_argument("--band-centers-hz", type=float, nargs=3, default=[0., 0., 0.])
+    parser.add_argument("--band-width-hz", type=float, default=50e3)
+    parser.add_argument("--band-taps", type=positive_int, default=2001)
+    parser.add_argument("--band-decimation", type=positive_int, default=20)
     args = parser.parse_args()
     if not np.isfinite(args.fs) or args.fs <= 0:
         parser.error("--fs deve essere finita e positiva")
@@ -211,6 +273,13 @@ def main():
     if not args.file.is_file():
         parser.error("File di input non trovato: %s" % args.file)
 
+    if args.replot_iq and args.file.suffix == ".h5":
+        results = read_results_h5(args.file)
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        plot_iq_results(flattened_arrays(results), results["summary"],
+                        args.out_dir / (args.file.stem + "_iq.png"), args.x_axis)
+        return
+
     if args.replot_iq:
         summary = json.loads(args.file.with_suffix(".json").read_text())
         args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -218,6 +287,13 @@ def main():
             plot_iq_results(saved, summary, args.out_dir / (args.file.stem + "_iq.png"), args.x_axis)
         print("Grafico IQ rigenerato dai dati salvati")
         return
+
+    if args.h5 or args.h5_only or args.filtered_bands:
+        import h5py  # Fail before scanning MIDAS if the requested writer is unavailable.
+    try:
+        band_checks = FilteredBandChecks(args) if args.filtered_bands else None
+    except ValueError as exc:
+        parser.error(str(exc))
 
     reference = json.loads(args.global_reference.read_text()) if args.global_reference else None
     config = make_config(args.fs, args.input_range, args.iq_sign, args.phase_lags, reference)
@@ -376,6 +452,8 @@ def main():
                 # Prima di leggere l'evento successivo tutti i modi devono essere completi.
                 for future in futures:
                     future.result()
+            if band_checks is not None:
+                band_checks.update(frames, seen, serial, int(event.header.timestamp))
             offset += len(frames)
             seen += 1
             if seen % 100 == 0:
@@ -556,7 +634,8 @@ def main():
     timings["plots"] = {"wall_s": time.perf_counter() - plot_started[0],
                         "cpu_s": time.process_time() - plot_started[1]}
     save_started = (time.perf_counter(), time.process_time())
-    np.savez_compressed(args.out_dir / (stem + ".npz"), **saved)
+    if not args.h5_only:
+        np.savez_compressed(args.out_dir / (stem + ".npz"), **saved)
     timings["save_npz"] = {"wall_s": time.perf_counter() - save_started[0],
                            "cpu_s": time.process_time() - save_started[1]}
     timings["total"] = {"wall_s": time.perf_counter() - analysis_started[0],
@@ -565,8 +644,18 @@ def main():
                                "mode_workers": args.mode_workers,
                                "scope": "local Python analysis; excludes input download and remote upload",
                                "timings": timings}
+    results = build_results(summary, saved, band_checks.export() if band_checks is not None else None)
+    figures = [args.out_dir / (stem + suffix) for suffix in (".png", "_iq.png")]
+    if args.h5 or args.h5_only or args.filtered_bands:
+        results["figures"] = {path.stem: {"format": "png", "data": np.frombuffer(path.read_bytes(), dtype=np.uint8)}
+                              for path in figures}
+        save_results_h5(args.out_dir / (stem + ".h5"), results)
     print("Tempi analisi: " + json.dumps(timings), flush=True)
-    (args.out_dir / (stem + ".json")).write_text(json.dumps(summary, indent=2) + "\n")
+    if args.h5_only:
+        for path in figures:
+            path.unlink()
+    else:
+        (args.out_dir / (stem + ".json")).write_text(json.dumps(summary, indent=2) + "\n")
     print("Analizzati %d eventi SPEC. Risultati: %s" % (processed, args.out_dir))
 
 

@@ -26,12 +26,12 @@ def prepare(run):
     state_path=directory/'repair_state.json'
     if state_path.exists():return directory,json.loads(state_path.read_text())
     sources=WORKBASE/'sources';sources.mkdir(exist_ok=True)
-    for name in ('correct_iq_noise_continuity.py','analyze_midas_iq_noise.py','iq_noise_statistics.py'):
+    for name in ('correct_iq_noise_continuity.py','analyze_midas_iq_noise.py','iq_noise_statistics.py','iq_noise_io.py'):
         target=sources/name
         if not target.exists():shutil.copy2(ROOT/'examples'/name,target)
     original=Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/job_to_submit_noise')/f'{run:05d}'
     name=f'run{run:05d}_noise'
-    transfer=[sources/n for n in ('correct_iq_noise_continuity.py','analyze_midas_iq_noise.py','iq_noise_statistics.py')]+[original/(name+ext) for ext in ('.json','.npz')]
+    transfer=[sources/n for n in ('correct_iq_noise_continuity.py','analyze_midas_iq_noise.py','iq_noise_statistics.py','iq_noise_io.py')]+[original/(name+ext) for ext in ('.json','.npz')]
     # Reuse environment/authentication/download/upload conventions of noise_job.sh.
     worker=(ROOT/'autoreco/noise_job.sh').read_text()
     env=worker[worker.index('export PYTHONPATH='):worker.index('command -v "$PYTHON"')]

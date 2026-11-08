@@ -87,3 +87,31 @@ bash examples/run_thermometers_batch.sh watch --submit --max-active 4
 `retry` senza `--run` prepara tutti i falliti. Archivia stato e pacchetto
 precedenti sotto `_attempts/`; rimuove dalla coda solo eventuali job del medesimo
 run e della medesima campagna. Non altera i risultati completi degli altri run.
+
+## Storia temporale delle temperature
+
+Dopo l'unione finale, dalla directory del repository:
+
+```bash
+python3 examples/plot_thermometers_history.py \
+  /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/thermometers_batch_00680_00939/thermometers_00680_00939.csv
+```
+
+Crea `thermometers_00680_00939_history.png` accanto al CSV della campagna,
+con tre pannelli: **Dale1.5K Cavità T [mK]**, **CMN143 MC T [mK]** e
+**CMN130 MC T [mK]**. Richiede matplotlib e il `.schema.json` accanto al CSV.
+Usa i canali temperatura AVS 15–17 (indici a base zero), verificando layout
+documentato e unità mK. Non applica conversioni, medie o interpolazioni.
+Esclude bank da input non completi; interrompe le linee per assenze superiori
+ a 300 secondi. I timestamp MIDAS sono visualizzati nel fuso Europe/Rome.
+
+Per scegliere input, intervallo di run, fuso, soglia delle lacune e output:
+
+```bash
+python3 examples/plot_thermometers_history.py /percorso/thermometers.csv \
+  --run-range 680 939 --timezone UTC --gap-seconds 600 \
+  --output /percorso/temperature.pdf
+```
+
+Senza argomenti lo script usa il CSV dell’estrazione interattiva:
+`/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/thermometers/thermometers_00680_00939.csv`.

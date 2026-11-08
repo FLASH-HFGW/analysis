@@ -19,8 +19,9 @@ misurate è un dato; un `.txt` con la selezione dei run è configurazione sorgen
    renderizzati. Questi file non vanno aggiunti a Git.
 4. **GPFS — `flash-data/analysis/autoreco/Run2/`.** Destinazione dei prodotti
    scientifici pubblicati e verificati. Non contiene lo stato della coda.
-   L'orientamento discusso per la produzione futura è raggruppare intervalli di
-   run in contenitori attorno a 1 GB, senza imporre un calendario giornaliero.
+   La dimensione effettiva guida il confezionamento: un contenitore completo
+   per run va bene anche da 1 MB. Evitare molti file per lo stesso run, senza
+   imporre una dimensione minima o un calendario giornaliero.
 
 Il flusso da ottenere uniformemente è:
 
@@ -40,8 +41,8 @@ decide quando recuperarli; il consolidamento decide quando pubblicarli. Il
 worker non deve conoscere l'organizzazione dei report o lo stato del logbook.
 
 Questa è l'architettura di destinazione. I publisher esistenti non sono stati
-riscritti durante questo riordino: ad esempio la modalità noise conserva il
-proprio upload per run e la modalità FFT temporale usa ancora archivi giornalieri.
+riscritti durante questo riordino: ad esempio la modalità noise pubblica ora un unico HDF5
+autosufficiente per run con i nuovi payload e la modalità FFT temporale usa ancora archivi giornalieri.
 La loro unificazione in contenitori per intervallo di run sarà un cambiamento
 funzionale distinto, da provare prima del rilancio completo.
 

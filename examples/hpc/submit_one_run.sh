@@ -16,6 +16,8 @@ Usage: submit_one_run.sh RUN [options]
   --max-events N       Maximum SPEC events (default: 99999999, effectively full run)
   --time LIMIT         SLURM walltime override (otherwise job.sh's 01:00:00)
   --log-dir DIR        SLURM stdout/stderr directory (default: $HOME/slurm_logs)
+  --analysis KIND      fft (default) or noise (I-iQ, filtered bands, HDF5)
+  --reference FILE     Common amplitude reference required for noise
   -h, --help           Show this help
 
 Examples:
@@ -36,10 +38,12 @@ OIDC_ACCOUNT=flash
 MAX_EVENTS=99999999
 WALLTIME=''
 LOG_DIR="${HFGW_SLURM_LOG_DIR:-$HOME/slurm_logs}"
+ANALYSIS_KIND=fft
+REFERENCE="${HFGW_NOISE_REFERENCE:-}"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir)
+        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference)
             [[ $# -ge 2 && -n $2 ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
                 --account) ACCOUNT=$2 ;;
@@ -50,6 +54,8 @@ while [[ $# -gt 0 ]]; do
                 --max-events) MAX_EVENTS=$2 ;;
                 --time) WALLTIME=$2 ;;
                 --log-dir) LOG_DIR=$2 ;;
+                --analysis) ANALYSIS_KIND=$2 ;;
+                --reference) REFERENCE=$2 ;;
             esac
             shift 2 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
@@ -63,7 +69,20 @@ TOKEN_TIME=$((10#$TOKEN_TIME))
 MAX_EVENTS=$((10#$MAX_EVENTS))
 (( TOKEN_TIME > 0 && MAX_EVENTS > 0 )) || { echo 'Token time and event limit must be positive' >&2; exit 2; }
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
-[[ -f "$REPO_ROOT/examples/hpc/job.sh" ]]
+JOB_SCRIPT="$REPO_ROOT/examples/hpc/job.sh"
+case "$ANALYSIS_KIND" in
+    fft) ;;
+    noise)
+        JOB_SCRIPT="$REPO_ROOT/examples/hpc/noise_job.sh"
+        [[ -f "$JOB_SCRIPT" && -n "$REFERENCE" && -f "$REFERENCE" ]] || {
+            echo 'Noise requires noise_job.sh and --reference FILE' >&2; exit 2;
+        }
+        export HFGW_NOISE_REFERENCE="$(readlink -f -- "$REFERENCE")"
+        [[ -n "$WALLTIME" ]] || WALLTIME=03:00:00
+        ;;
+    *) echo 'Analysis must be fft or noise' >&2; exit 2 ;;
+esac
+[[ -f "$JOB_SCRIPT" ]]
 command -v oidc-token >/dev/null || { echo 'Load oidc-agent on the login node first' >&2; exit 11; }
 command -v sbatch >/dev/null
 
@@ -93,11 +112,15 @@ LOG_DIR=$(cd -- "$LOG_DIR" && pwd)
 SBATCH_ARGS=(--parsable --account="$ACCOUNT" --partition="$PARTITION" --qos="$QOS"
     --export=ALL,BEARER_TOKEN --output="$LOG_DIR/JOB_%j.out" --error="$LOG_DIR/JOB_%j.err")
 if [[ -n "$WALLTIME" ]]; then SBATCH_ARGS+=(--time="$WALLTIME"); fi
-JOB_RESPONSE=$(sbatch "${SBATCH_ARGS[@]}" "$REPO_ROOT/examples/hpc/job.sh")
+JOB_RESPONSE=$(sbatch "${SBATCH_ARGS[@]}" "$JOB_SCRIPT")
 JOB_ID=${JOB_RESPONSE%%;*}
 [[ $JOB_ID =~ ^[0-9]+$ ]] || { echo 'Unexpected sbatch response; check squeue before retrying' >&2; exit 22; }
 printf 'Submitted job %s: run %s, account %s, partition %s, QoS %s\n' "$JOB_ID" "$RUN" "$ACCOUNT" "$PARTITION" "$QOS"
 printf 'Monitor: squeue -j %s\n' "$JOB_ID"
 printf 'Stdout: %s/JOB_%s.out\nStderr: %s/JOB_%s.err\n' "$LOG_DIR" "$JOB_ID" "$LOG_DIR" "$JOB_ID"
-printf 'Results: %s/benchmarks/slurm/JOB_%s/\n' "${HFGW_RUNTIME_ROOT:-$HOME/HFGW/analysis-runtime/autoreco/Run2}" "$JOB_ID"
+if [[ "$ANALYSIS_KIND" == noise ]]; then
+    printf 'Results: %s/JOB_%s/\n' "${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_minus1_20261108/jobs}" "$JOB_ID"
+else
+    printf 'Results: %s/benchmarks/slurm/JOB_%s/\n' "${HFGW_RUNTIME_ROOT:-$HOME/HFGW/analysis-runtime/autoreco/Run2}" "$JOB_ID"
+fi
 )
