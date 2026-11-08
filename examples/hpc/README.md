@@ -4,22 +4,16 @@
 
 Il flusso IQ usa **Python 3.9**, già presente sui worker LNF. I pacchetti CVMFS
 3.11 non comprendono l'interprete: non si presume più che `python3.11` esista.
-NumPy, h5py, Matplotlib e MIDAS provengono dal CVMFS Python 3.9. SciPy, assente
-in quella collezione, viene installato come wheel binaria in un venv utente
-sul filesystem condiviso, senza modificare il sistema o il CVMFS.
+NumPy, SciPy, h5py, Matplotlib e MIDAS provengono interamente da CVMFS FLASH:
+`/cvmfs/sft-flash.infn.it/package/python3.9/site-packages/` e dal percorso MIDAS
+dello stesso repository. Anche i nuovi payload HTC puntano a CVMFS FLASH.
+Non è previsto un setup pip o un venv. I vecchi percorsi venv vengono ignorati;
+`PYTHONPATH` viene ricostruito e la user-site viene disabilitata.
 
-Una sola volta sul login node:
-
-```bash
-bash examples/hpc/run_noise_pilot.sh setup-env
-```
-
-Il setup crea `$HOME/HFGW/analysis-runtime/autoreco/Run2/environments/noise_py39_v1/`,
-installa la sola `scipy==1.13.1` da PyPI, senza compilazioni, e prova l'ambiente.
-Login node e worker scelgono automaticamente lo stesso venv e lo esportano
-alla sottomissione. Usare `HFGW_NOISE_VENV` per un percorso condiviso diverso;
-per un'installazione offline impostare `HFGW_NOISE_WHEELHOUSE` alla directory
-contenente la wheel. I pacchetti e il venv restano fuori da Git.
+Il controllo di ambiente verifica che ciascuna libreria scientifica sia stata
+caricata da CVMFS, anche sul worker prima del download MIDAS. Se SciPy non è
+ancora propagato o viene trovato fuori CVMFS, il flusso si ferma prima del calcolo.
+Il comando `check-env` può essere ripetuto dopo la propagazione della pubblicazione.
 
 Prima di sottomettere si può provare l'ambiente, senza job o download MIDAS:
 

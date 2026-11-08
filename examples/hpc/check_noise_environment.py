@@ -2,6 +2,8 @@
 import importlib
 import io
 import json
+import os
+from pathlib import Path
 import sys
 
 
@@ -10,7 +12,12 @@ def check_environment():
         modules = {name: importlib.import_module(name)
                    for name in ('numpy', 'scipy', 'h5py', 'matplotlib', 'midas.file_reader')}
     except ImportError as exc:
-        raise RuntimeError('IQ dependency unavailable. Run: bash examples/hpc/run_noise_pilot.sh setup-env') from exc
+        raise RuntimeError('IQ dependency unavailable in CVMFS. Check FLASH repository propagation, then rerun check-env.') from exc
+    if os.environ.get('HFGW_NOISE_CVMFS_ONLY') == '1':
+        root = Path(os.environ['HFGW_CVMFS_ROOT']).resolve()
+        for name, module in modules.items():
+            if not Path(module.__file__).resolve().is_relative_to(root):
+                raise RuntimeError(f'{name} was loaded outside FLASH CVMFS: {module.__file__}')
     from scipy.signal import fftconvolve, firwin
     from scipy.stats import rankdata
     import numpy as np

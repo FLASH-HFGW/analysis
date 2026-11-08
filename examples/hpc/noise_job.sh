@@ -54,7 +54,7 @@ for module in analyze_midas_iq_noise.py iq_noise_statistics.py iq_noise_io.py an
 done
 cp -- "$HFGW_NOISE_REFERENCE" "$WORKDIR/noise_reference.json"
 # Check the numerical dependencies before transferring a full MIDAS.
-"$PYTHON" -c 'import numpy, scipy, h5py, matplotlib, midas.file_reader'
+"$PYTHON" "$HFGW_REPO_ROOT/examples/hpc/check_noise_environment.py"
 URL="davs://xfer-archive.cr.cnaf.infn.it:8443/${HFGW_INPUT_PATH:-flash/data/LNF}/${NAME}.mid.gz"
 echo "Download $NAME $(date -u +%FT%TZ)"
 gfal-copy "$URL" "$WORKDIR/${NAME}.mid.gz.part"

@@ -66,7 +66,7 @@ set -Eeuo pipefail
 RUN_NUMBER=$1
 RUN_NAME=$(printf 'run%05d' "$RUN_NUMBER")
 JOB_ROOT=$PWD
-PYTHON=${NOISE_PYTHON:-python3}
+PYTHON=${NOISE_PYTHON:-python3.9}
 mkdir -p results
 WORKDIR=$(mktemp -d "${_CONDOR_SCRATCH_DIR:-$PWD}/noise-pilot.XXXXXX")
 trap 'rm -rf -- "$WORKDIR"' EXIT

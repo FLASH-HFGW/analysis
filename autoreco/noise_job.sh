@@ -14,7 +14,7 @@ REFERENCE=$5
 IQ_SIGN=$6
 MODE_WORKERS=${7:-1}
 JOB_ROOT=$PWD
-PYTHON=${NOISE_PYTHON:-python3}
+PYTHON=${NOISE_PYTHON:-python3.9}
 WORKDIR=$(mktemp -d "${_CONDOR_SCRATCH_DIR:-$PWD}/noise-work.XXXXXX")
 RUN_NAME=$(printf 'run%05d' "$RUN_NUMBER")
 export MPLCONFIGDIR="$WORKDIR/matplotlib"
@@ -31,14 +31,15 @@ finish() {
     exit "$rc"
 }
 trap finish EXIT
-export PYTHONPATH="/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-packages:/cvmfs/mazzitel-personalrepo.infn.it/package/midas/python:/cvmfs/mazzitel-personalrepo.infn.it/FLASH/lib/fllib:${PYTHONPATH:-}"
+export PYTHONPATH="/cvmfs/sft-flash.infn.it/package/python3.9/site-packages:/cvmfs/sft-flash.infn.it/package/midas/python:/cvmfs/sft-flash.infn.it/FLASH/lib/fllib"
+export PYTHONNOUSERSITE=1
 export X509_CERT_DIR=/cvmfs/grid.cern.ch/etc/grid-security/certificates
 export SSL_CERT_DIR="$X509_CERT_DIR"
 if ! command -v gfal-copy >/dev/null 2>&1; then
     if ! command -v module >/dev/null 2>&1 && [[ -f /etc/profile.d/modules.sh ]]; then
         source /etc/profile.d/modules.sh
     fi
-    module use /cvmfs/mazzitel-personalrepo.infn.it/modules/modulefiles/x86_64-el9
+    module use /cvmfs/sft-flash.infn.it/modules/modulefiles/x86_64-el9
     module load gfal/1.9.0
 fi
 command -v "$PYTHON"

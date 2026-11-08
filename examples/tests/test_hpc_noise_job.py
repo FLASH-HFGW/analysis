@@ -22,7 +22,7 @@ class HpcNoiseTests(unittest.TestCase):
             'python3.9': '''#!/usr/bin/python3
 import json, os, sys
 from pathlib import Path
-if sys.argv[1] == '-c':
+if sys.argv[1] == '-c' or sys.argv[1].endswith('check_noise_environment.py'):
     Path(os.environ['ENV_CAPTURE']).write_text(json.dumps({'pythonpath':os.environ['PYTHONPATH']}))
     sys.exit(0)
 Path(os.environ['ANALYSIS_ARGS']).write_text(json.dumps(sys.argv[1:]))
