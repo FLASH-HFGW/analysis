@@ -2,6 +2,22 @@
 
 ## Pilot IQ filtrato e temperature
 
+Il flusso IQ usa **Python 3.11**, selezionando prima i pacchetti numerici
+`package/python3.11/site-packages` del CVMFS LNF. SciPy non è presente nella
+collezione Python 3.9. La collezione 3.9 viene aggiunta dopo quella 3.11 per le
+dipendenze pure Python `packaging`, `dateutil` e `six`; NumPy, SciPy, h5py e
+Matplotlib provengono dalla collezione 3.11. Il flusso FFT mantiene Python 3.9.
+
+Prima di sottomettere si può provare l'ambiente, senza job o download MIDAS:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh check-env
+```
+
+Il controllo stampa interprete, versioni e percorsi e prova una convoluzione,
+un HDF5 compresso e una figura PNG. Viene eseguito automaticamente anche
+all'avvio di `watch --submit`, prima di contattare lo scheduler.
+
 `submit_one_run.sh` conserva il percorso FFT predefinito. La nuova opzione
 `--analysis noise` seleziona invece `noise_job.sh`, con ricostruzione completa
 `analyze_midas_iq_noise.py --iq-sign -1 --filtered-bands --h5-only`.
@@ -53,6 +69,19 @@ i run già inviati. Un lock impedisce monitor simultanei per la stessa campagna.
 `watch --once` esegue un solo controllo senza nuove sottomissioni;
 `report` rigenera il confronto dopo che tutti i risultati sono completi.
 Una ricostruzione limitata con `--max-events` non è accettata come prodotto completo.
+
+Per riprovare i run falliti dopo una correzione dell'ambiente:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh check-env
+bash examples/hpc/run_noise_pilot.sh retry-failed
+bash examples/hpc/run_noise_pilot.sh watch --submit --max-active 4 --token-time 3600
+```
+
+`retry-failed` non sottomette: verifica che i job falliti non siano ancora in
+Slurm, archivia i vecchi stati in `attempts/` e rimette in `prepared` solo quei
+run. Log, output dei vecchi job, run completi e gli altri run preparati restano
+conservati. Non modificare a mano gli stati per riprovare un fallimento.
 
 Stati e log del controllo sono sotto:
 

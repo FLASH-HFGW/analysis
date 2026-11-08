@@ -79,6 +79,35 @@ def verify_sources(campaign, manifest):
             raise ValueError(f'Frozen source changed: {name}; use a new campaign')
 
 
+def retry_failed(campaign, manifest):
+    """Reset failed jobs only after checking Slurm; retain all prior attempts."""
+    import fcntl
+    with (campaign / 'watch.lock').open('w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        states = {r: json.loads((campaign / f'run{r:05d}.json').read_text()) for r in manifest['runs']}
+        failed = {r: s for r, s in states.items() if s['status'] == 'failed'}
+        if not failed:
+            print('No failed runs; nothing changed.')
+            return
+        active = {int(line.split()[0]) for line in execute(['squeue', '-h', '-u', os.environ['USER'], '-o', '%A']).splitlines()
+                  if line.strip() and line.split()[0].isdigit()}
+        if any(s.get('job_id') in active for s in failed.values()):
+            raise ValueError('A failed run still has an active Slurm job; no state changed')
+        attempts = campaign / 'attempts'
+        attempts.mkdir(exist_ok=True)
+        for run, state in failed.items():
+            archive = attempts / f'run{run:05d}_JOB_{state.get("job_id", "unknown")}.json'
+            if archive.exists():
+                raise ValueError(f'Attempt already archived: {archive}; inspect state before retrying')
+        for run, state in failed.items():
+            archive = attempts / f'run{run:05d}_JOB_{state.get("job_id", "unknown")}.json'
+            save(archive, state)
+            previous = list(state.get('previous_attempts', []))
+            previous.append(str(archive))
+            save(campaign / f'run{run:05d}.json', dict(run=run, status='prepared', previous_attempts=previous))
+        print('Prepared failed runs for retry:', ', '.join(map(str, failed)), '; no jobs submitted.')
+
+
 def cycle(args, manifest):
     campaign = args.campaign.resolve()
     output = Path(manifest['output'])
@@ -165,7 +194,7 @@ def cycle(args, manifest):
 def main():
     home = Path.home() / 'HFGW'
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['prepare', 'watch', 'status', 'report'])
+    parser.add_argument('command', choices=['prepare', 'watch', 'status', 'report', 'check-env', 'retry-failed'])
     parser.add_argument('--campaign', type=Path, default=home / 'analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_v1_20261108')
     parser.add_argument('--output', type=Path, default=home / 'analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108')
     parser.add_argument('--reference', type=Path)
@@ -181,10 +210,18 @@ def main():
     args = parser.parse_args()
     if args.max_active < 1 or args.token_time < 1:
         parser.error('Concurrency and token time must be positive')
+    if args.command == 'check-env' or (args.command == 'watch' and args.submit):
+        from hpc.check_noise_environment import check_environment
+        check_environment()
+        if args.command == 'check-env':
+            return
     if args.command == 'prepare':
         prepare(args)
         return
     manifest = json.loads((args.campaign / 'manifest.json').read_text())
+    if args.command == 'retry-failed':
+        retry_failed(args.campaign, manifest)
+        return
     if args.command == 'status':
         states = [json.loads((args.campaign / f'run{r:05d}.json').read_text()) for r in manifest['runs']]
         print(json.dumps(dict(Counter(s['status'] for s in states)), indent=2))

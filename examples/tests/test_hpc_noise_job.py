@@ -19,10 +19,12 @@ class HpcNoiseTests(unittest.TestCase):
                          'if [[ $DOWNLOAD_RC != 0 ]]; then exit "$DOWNLOAD_RC"; fi\n'
                          'printf raw > "$2"\n',
             'srun': '#!/bin/bash\necho srun >> "$TEST_CALLS"\nexec "$@"\n',
-            'python3.9': '''#!/usr/bin/python3
+            'python3.11': '''#!/usr/bin/python3
 import json, os, sys
 from pathlib import Path
-if sys.argv[1] == '-c': sys.exit(0)
+if sys.argv[1] == '-c':
+    Path(os.environ['ENV_CAPTURE']).write_text(json.dumps({'pythonpath':os.environ['PYTHONPATH']}))
+    sys.exit(0)
 Path(os.environ['ANALYSIS_ARGS']).write_text(json.dumps(sys.argv[1:]))
 out = Path(sys.argv[sys.argv.index('--out-dir')+1])
 (out/'run00680_noise.h5').write_bytes(b'simulated-HDF5')
@@ -40,7 +42,7 @@ sys.exit(int(os.environ['ANALYSIS_RC']))
                    HFGW_REPO_ROOT=str(ROOT), HFGW_CVMFS_ROOT=str(root/'cvmfs'),
                    HFGW_NOISE_REFERENCE=str(reference), HFGW_NOISE_SOURCE_DIR=str(ROOT/'examples'),
                    HFGW_NOISE_OUTPUT_ROOT=str(root/'results'), HFGW_SCRATCH_ROOT=str(root/'scratch'),
-                   HFGW_PYTHON='python3.9', HFGW_MAX_EVENTS='99999999',
+                   HFGW_PYTHON='python3.11', HFGW_MAX_EVENTS='99999999', ENV_CAPTURE=str(root/'environment.json'),
                    BEARER_TOKEN='private-test-token', TEST_CALLS=str(root/'calls'),
                    ANALYSIS_ARGS=str(root/'args.json'), DOWNLOAD_RC=str(download_rc), ANALYSIS_RC=str(analysis_rc))
         result = subprocess.run(['bash',str(ROOT/'examples/hpc/noise_job.sh')],env=env,capture_output=True,text=True)
@@ -56,6 +58,9 @@ sys.exit(int(os.environ['ANALYSIS_RC']))
             self.assertIn('--filtered-bands',args)
             self.assertIn('--h5-only',args)
             self.assertEqual(args[args.index('--product-version')+1], 'v1')
+            paths=json.loads((root/'environment.json').read_text())['pythonpath'].split(':')
+            self.assertEqual(paths[0],str(root/'cvmfs/package/python3.11/site-packages'))
+            self.assertEqual(paths[1],str(root/'cvmfs/package/python3.9/site-packages'))
             self.assertNotIn('--max-events',args)
             self.assertEqual((root/'calls').read_text().count('transfer'),1)
             self.assertTrue((out/'run00680_noise.h5').exists())

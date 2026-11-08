@@ -37,6 +37,36 @@ class SlurmPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Frozen source changed'):
                 noise_pilot.verify_sources(args.campaign, manifest)
 
+    def test_retry_archives_failures_without_submitting_or_changing_other_runs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args,manifest=self.prepare(Path(directory))
+            for run,job in [(680,4293),(704,4294)]:
+                (args.campaign/f'run{run:05d}.json').write_text(json.dumps(dict(run=run,status='failed',job_id=job,error='scipy missing')))
+            with mock.patch.object(noise_pilot,'execute',return_value='') as command:
+                noise_pilot.retry_failed(args.campaign,manifest)
+            self.assertEqual(command.call_count,1)
+            self.assertEqual(command.call_args.args[0][0],'squeue')
+            for run,job in [(680,4293),(704,4294)]:
+                state=json.loads((args.campaign/f'run{run:05d}.json').read_text())
+                self.assertEqual(state['status'],'prepared')
+                self.assertNotIn('job_id',state)
+                archived=json.loads((args.campaign/f'attempts/run{run:05d}_JOB_{job}.json').read_text())
+                self.assertEqual(archived['error'],'scipy missing')
+                self.assertEqual(len(state['previous_attempts']),1)
+            untouched=json.loads((args.campaign/'run00727.json').read_text())
+            self.assertEqual(untouched,dict(run=727,status='prepared'))
+
+    def test_retry_refuses_a_job_still_visible_in_slurm(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args,manifest=self.prepare(Path(directory))
+            p=args.campaign/'run00680.json'
+            p.write_text(json.dumps(dict(run=680,status='failed',job_id=4293)))
+            before=p.read_bytes()
+            with mock.patch.object(noise_pilot,'execute',return_value='4293\n'):
+                with self.assertRaisesRegex(ValueError,'active Slurm job'):
+                    noise_pilot.retry_failed(args.campaign,manifest)
+            self.assertEqual(p.read_bytes(),before)
+
     def test_rolling_submission_limits_jobs_and_requests_fresh_tokens_via_launcher(self):
         with tempfile.TemporaryDirectory() as directory:
             args, manifest = self.prepare(Path(directory))
