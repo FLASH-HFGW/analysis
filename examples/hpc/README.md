@@ -2,11 +2,24 @@
 
 ## Pilot IQ filtrato e temperature
 
-Il flusso IQ usa **Python 3.11**, selezionando prima i pacchetti numerici
-`package/python3.11/site-packages` del CVMFS LNF. SciPy non è presente nella
-collezione Python 3.9. La collezione 3.9 viene aggiunta dopo quella 3.11 per le
-dipendenze pure Python `packaging`, `dateutil` e `six`; NumPy, SciPy, h5py e
-Matplotlib provengono dalla collezione 3.11. Il flusso FFT mantiene Python 3.9.
+Il flusso IQ usa **Python 3.9**, già presente sui worker LNF. I pacchetti CVMFS
+3.11 non comprendono l'interprete: non si presume più che `python3.11` esista.
+NumPy, h5py, Matplotlib e MIDAS provengono dal CVMFS Python 3.9. SciPy, assente
+in quella collezione, viene installato come wheel binaria in un venv utente
+sul filesystem condiviso, senza modificare il sistema o il CVMFS.
+
+Una sola volta sul login node:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh setup-env
+```
+
+Il setup crea `$HOME/HFGW/analysis-runtime/autoreco/Run2/environments/noise_py39_v1/`,
+installa la sola `scipy==1.13.1` da PyPI, senza compilazioni, e prova l'ambiente.
+Login node e worker scelgono automaticamente lo stesso venv e lo esportano
+alla sottomissione. Usare `HFGW_NOISE_VENV` per un percorso condiviso diverso;
+per un'installazione offline impostare `HFGW_NOISE_WHEELHOUSE` alla directory
+contenente la wheel. I pacchetti e il venv restano fuori da Git.
 
 Prima di sottomettere si può provare l'ambiente, senza job o download MIDAS:
 

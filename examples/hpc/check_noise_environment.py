@@ -6,8 +6,11 @@ import sys
 
 
 def check_environment():
-    modules = {name: importlib.import_module(name)
-               for name in ('numpy', 'scipy', 'h5py', 'matplotlib', 'midas.file_reader')}
+    try:
+        modules = {name: importlib.import_module(name)
+                   for name in ('numpy', 'scipy', 'h5py', 'matplotlib', 'midas.file_reader')}
+    except ImportError as exc:
+        raise RuntimeError('IQ dependency unavailable. Run: bash examples/hpc/run_noise_pilot.sh setup-env') from exc
     from scipy.signal import fftconvolve, firwin
     from scipy.stats import rankdata
     import numpy as np

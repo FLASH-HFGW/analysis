@@ -16,12 +16,11 @@ set +x
 : "${HFGW_RUN:?Run required}"
 : "${HFGW_NOISE_REFERENCE:?Common reference required}"
 : "${BEARER_TOKEN:?Token must be exported from the login node}"
-export HFGW_PYTHON_VERSION=3.11
-source "$HFGW_REPO_ROOT/examples/hpc/environment.sh"
+source "$HFGW_REPO_ROOT/examples/hpc/noise_python.sh"
 [[ $HFGW_RUN =~ ^[0-9]+$ ]] || exit 2
 RUN=$((10#$HFGW_RUN))
 NAME=$(printf 'run%05d' "$RUN")
-PYTHON="${HFGW_PYTHON:-python3.11}"
+PYTHON="$HFGW_PYTHON"
 SOURCE_DIR="${HFGW_NOISE_SOURCE_DIR:-$HFGW_REPO_ROOT/examples}"
 OUT_ROOT="${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/jobs}"
 OUTDIR="$OUT_ROOT/JOB_${SLURM_JOB_ID}"

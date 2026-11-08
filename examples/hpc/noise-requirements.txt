@@ -1,0 +1,3 @@
+# Binary wheel for the Python 3.9 interpreter already installed on LNF workers.
+# NumPy 2.0.2, h5py, Matplotlib and MIDAS are provided by CVMFS Python 3.9.
+scipy==1.13.1
