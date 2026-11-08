@@ -10,3 +10,10 @@ Il baseline numerico misurato è esterno:
 Il launcher noise passa esplicitamente quel percorso. Il baseline precedente
 è stato conservato senza cambiare i valori. I test creano riferimenti sintetici
 temporanei, senza dipendere dalle misure reali.
+
+## Pilot IQ e temperature
+
+`noise_temperature_pilot.json` fissa selezione dei run, convenzione I−iQ,
+destinazione GPFS e URL/SHA-256 del contenitore scientifico di riferimento e
+temperature. Il contenitore e i dati misurati restano su GPFS; Git conserva
+soltanto la configurazione necessaria per recuperarli e verificarli.

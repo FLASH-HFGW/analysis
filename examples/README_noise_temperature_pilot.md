@@ -67,6 +67,11 @@ File generati:
 - `central_rms_vs_temperature.png`: confronti della banda centrale con i tre sensori;
 - `band_rms_by_run.png`: andamento dei livelli delle nove bande;
 - `comparison_summary.json`: copertura e limiti di interpretazione.
+- `noise_temperature_comparison.h5`: tabelle, figure e provenienza nello stesso contenitore.
+
+Il flusso Slurm in [hpc/README.md](hpc/README.md) pubblica gli HDF5 verificati
+in GPFS sotto `noise_temperature_pilot_minus1_20261108/`; il controller HTCondor
+descritto sopra resta sospeso per istruzione dell'utente.
 
 L'RMS aggregato è `sqrt(sum(n * rms**2) / sum(n))`. Le concentrazioni di fase
 si combinano come vettori complessi e non come medie degli angoli.

@@ -1,0 +1,20 @@
+{
+  "runs": [
+    680,
+    704,
+    727,
+    751,
+    774,
+    798,
+    821,
+    845,
+    868,
+    892,
+    915,
+    939
+  ],
+  "iq_sign": -1,
+  "inputs_url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_temperature_pilot_minus1_20261108/noise_temperature_pilot_scientific_inputs.h5",
+  "inputs_sha256": "4a9828bcf399424ebfc153bd12065b8e792f8294897476f83fe867a79588dff4",
+  "output_url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_temperature_pilot_minus1_20261108"
+}

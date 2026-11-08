@@ -19,24 +19,30 @@ viene riservata una GPU, ma il programma IQ attuale calcola sulla CPU.
 Il precedente benchmark FFT GPU resta un percorso distinto.
 
 Per i 12 run 680, 704, 727, 751, 774, 798, 821, 845, 868, 892, 915, 939,
-eseguire sulla login HPC, dalla radice del pacchetto aggiornato:
+eseguire sulla login HPC, dalla radice del clone Git:
 
 ```bash
-bash examples/hpc/run_noise_pilot.sh prepare \
-  --reference config/noise_reference.json --temperatures config/temperatures.csv
+git pull --ff-only origin main
+bash examples/hpc/run_noise_pilot.sh prepare
 bash examples/hpc/run_noise_pilot.sh status
 # Eseguire il monitor in tmux o in un terminale persistente, quando si vuole avviare:
 bash examples/hpc/run_noise_pilot.sh watch --submit --max-active 4 --token-time 3600
 ```
 
-`prepare` copia sorgenti, riferimento e temperature e ne registra gli SHA-256;
-non sottomette. `watch --submit` sottomette al massimo quattro job contemporanei,
+`prepare` scarica da GPFS l'HDF5 con riferimento e temperature, ne verifica
+lo SHA-256 fissato in `config/noise_temperature_pilot.json`, quindi copia
+sorgenti e input nell'area locale registrandone i checksum. I dati misurati
+non sono in Git. Restano accettati anche `--reference FILE --temperatures CSV`
+per specificare entrambi gli input locali.
+
+`prepare` non sottomette. `watch --submit` sottomette al massimo quattro job contemporanei,
 recupera i risultati dal filesystem condiviso e avvia i successivi con un token
 appena richiesto per ciascun job. In questo modo un unico token da un'ora non
 viene riutilizzato per tutti i turni di un array. Il tempo in coda può comunque
 farlo scadere prima del download: in quel caso il job fallisce e il monitor ferma
 le nuove sottomissioni. Non si conserva il token nei log o negli artefatti.
-Le credenziali servono al download iniziale; i risultati non vengono caricati su GPFS.
+Il token del worker serve al download iniziale. Il monitor sul login node
+ottiene separatamente un token corrente per pubblicare i risultati su GPFS.
 
 Il monitor deve rimanere attivo sul login node: le ricostruzioni girano nei job.
 Per riprenderlo usare lo stesso comando: legge gli stati senza risottomettere
@@ -55,7 +61,21 @@ Risultati HDF5 e confronto termico sono sotto:
 
 Il sottoalbero `jobs/JOB_<id>/` conserva HDF5, log dell'analisi ed esito per ogni
 job. Solo un HDF5 validato (fine file, I−iQ, nove bande per modo) viene copiato
-nella radice per il report. Lo scratch unico viene eliminato soltanto dopo
+nella radice per il report. Un run diventa `complete` solo dopo la pubblicazione
+e verifica su GPFS: upload con checksum GFAL, riscaricamento e confronto SHA-256.
+Un errore di trasferimento lascia `publication_pending`, conserva il risultato
+locale e blocca nuove sottomissioni; il monitor riprova la pubblicazione senza
+rilanciare il calcolo. Non sovrascrive file remoti esistenti con contenuto diverso.
+
+La cartella scientifica GPFS autorizzata è:
+
+`flash/analysis/autoreco/Run2/noise_temperature_pilot_minus1_20261108/`
+
+Contiene l'HDF5 degli input, `runNNNNN_noise.h5` per ogni run completato e,
+alla fine, `noise_temperature_comparison.h5` con tabelle, figure e provenienza.
+Log, stati e ricevute di trasferimento restano sul filesystem HPC.
+
+Lo scratch unico viene eliminato soltanto dopo
 analisi e copia riuscite; in caso di errore viene conservato per diagnosi.
 Il confronto usa le temperature osservate nello stesso run entro i timestamp
 SPEC, con i limiti descritti in [README_noise_temperature_pilot.md](../README_noise_temperature_pilot.md).

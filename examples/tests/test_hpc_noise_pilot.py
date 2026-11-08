@@ -1,13 +1,16 @@
 import argparse
 import json
+import hashlib
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 from unittest import mock
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from hpc import noise_pilot
+from iq_noise_io import build_results, save_results_h5
 
 
 class SlurmPilotTests(unittest.TestCase):
@@ -64,6 +67,53 @@ class SlurmPilotTests(unittest.TestCase):
             self.assertEqual(command.call_args.args[0][0],'squeue')
             self.assertEqual(status['failed_runs'],[680])
             self.assertEqual(status['counts'],{'failed':1,'prepared':11})
+
+    def test_prepare_bootstraps_external_inputs_without_committing_data(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            args,_=self.prepare(root)
+            inputs=build_results({'purpose':'noise_temperature_pilot_inputs','iq_sign':-1},{})
+            inputs['inputs']={name:np.frombuffer((root/name).read_bytes(),dtype=np.uint8)
+                              for name in ('reference.json','temperatures.csv','temperatures.schema.json')}
+            inputs['inputs']['noise_reference.json']=inputs['inputs'].pop('reference.json')
+            args.campaign=root/'new-campaign';args.reference=None;args.temperatures=None
+            def fetched(url,destination,digest):
+                self.assertTrue(url.startswith('davs://'))
+                self.assertEqual(len(digest),64)
+                save_results_h5(destination,inputs)
+            with mock.patch.object(noise_pilot,'fetch',side_effect=fetched) as download:
+                noise_pilot.prepare(args)
+            self.assertEqual(download.call_count,1)
+            reference=json.loads((args.campaign/'sources/noise_reference.json').read_text())
+            self.assertEqual(reference['iq_sign'],-1)
+            manifest=json.loads((args.campaign/'manifest.json').read_text())
+            self.assertIn('noise_temperature_pilot_minus1_20261108',manifest['gpfs_url'])
+
+    def test_publication_failure_retries_without_resubmitting_scientific_job(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);args,manifest=self.prepare(root)
+            state=args.campaign/'run00680.json'
+            state.write_text(json.dumps(dict(run=680,status='submitted',job_id=500)))
+            jobdir=args.output/'jobs/JOB_500';jobdir.mkdir()
+            (jobdir/'job_status.json').write_text('{"run":680,"exit_code":0}')
+            (jobdir/'run00680_noise.h5').write_bytes(b'simulated-valid-HDF5')
+            args.submit=True
+            with mock.patch('noise_temperature_pilot.validate',return_value={}), \
+                 mock.patch.object(noise_pilot,'execute',return_value='500 RUNNING\n') as scheduler, \
+                 mock.patch.object(noise_pilot,'publish',side_effect=RuntimeError('Temporary authentication failure')):
+                status=noise_pilot.cycle(args,manifest)
+            self.assertEqual(scheduler.call_count,1)
+            self.assertEqual(status['publication_pending'],[680])
+            self.assertEqual(status['failed_runs'],[])
+            args.submit=False
+            remote=dict(url=manifest['gpfs_url']+'/run00680_noise.h5',
+                        sha256=hashlib.sha256(b'simulated-valid-HDF5').hexdigest())
+            with mock.patch('noise_temperature_pilot.validate',return_value={}), \
+                 mock.patch.object(noise_pilot,'execute',side_effect=AssertionError('No resubmission expected')), \
+                 mock.patch.object(noise_pilot,'publish',return_value=remote):
+                status=noise_pilot.cycle(args,manifest)
+            self.assertEqual(status['counts'],{'complete':1,'prepared':11})
+            self.assertEqual(json.loads(state.read_text())['gpfs'],remote)
 
 
 if __name__ == '__main__':

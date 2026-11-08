@@ -19,6 +19,7 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'examples'))
 from noise_temperature_pilot import RUNS, SOURCE_NAMES, save, now
+from iq_noise_publish import publish, fetch, sha256
 
 
 def execute(args, env=None):
@@ -33,14 +34,25 @@ def prepare(args):
     if (campaign / 'manifest.json').exists():
         print('Existing campaign preserved:', campaign)
         return
-    if not args.reference or not args.temperatures:
-        raise ValueError('prepare requires --reference and --temperatures')
+    preset = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())
+    if bool(args.reference) != bool(args.temperatures):
+        raise ValueError('Provide both --reference and --temperatures, or neither')
+    if not args.reference:
+        import h5py
+        campaign.mkdir(parents=True, exist_ok=True)
+        inputs = campaign / 'scientific_inputs.h5'
+        fetch(preset['inputs_url'], inputs, preset['inputs_sha256'])
+        with h5py.File(inputs, 'r') as source:
+            for name in ('noise_reference.json', 'temperatures.csv', 'temperatures.schema.json'):
+                (campaign / name).write_bytes(source['inputs'][name][:].tobytes())
+        args.reference = campaign / 'noise_reference.json'
+        args.temperatures = campaign / 'temperatures.csv'
     reference = json.loads(args.reference.read_text())
     if reference['iq_sign'] != -1:
         raise ValueError('The shared reference must use I-iQ')
     sources = campaign / 'sources'
     sources.mkdir(parents=True, exist_ok=True)
-    for name in (*SOURCE_NAMES, 'report_noise_temperature.py', 'plot_thermometers_history.py'):
+    for name in (*SOURCE_NAMES, 'report_noise_temperature.py', 'plot_thermometers_history.py', 'iq_noise_publish.py'):
         shutil.copy2(ROOT / 'examples' / name, sources / name)
     shutil.copy2(args.reference, sources / 'noise_reference.json')
     shutil.copy2(args.temperatures, sources / 'temperatures.csv')
@@ -52,7 +64,7 @@ def prepare(args):
         save(campaign / f'run{run:05d}.json', dict(run=run, status='prepared'))
     manifest = dict(runs=RUNS, iq_sign=-1, output=str(output), created_utc=now(),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources.iterdir()},
-                    scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it',
+                    scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it', gpfs_url=preset['output_url'],
                     note='CPU IQ calculations; tested association cygno/GPU reserves one GPU per job')
     save(campaign / 'manifest.json', manifest)
     print('Prepared runs:', ', '.join(map(str, RUNS)))
@@ -77,7 +89,9 @@ def cycle(args, manifest):
             if len(parts) == 2 and parts[0].isdigit():
                 queued[int(parts[0])] = parts[1]
     for run, state in states.items():
-        if state['status'] != 'submitted':
+        if state['status'] == 'complete' and manifest.get('gpfs_url') and not state.get('gpfs'):
+            state['status'] = 'publication_pending'
+        if state['status'] not in ('submitted', 'publication_pending'):
             continue
         directory = output / 'jobs' / f'JOB_{state["job_id"]}'
         status_file = directory / 'job_status.json'
@@ -100,6 +114,14 @@ def cycle(args, manifest):
                 state.update(status='complete', completed_utc=now(), sha256=digest)
             except Exception as exc:
                 state.update(status='failed', error=str(exc))
+            if state['status'] == 'complete' and manifest.get('gpfs_url'):
+                try:
+                    remote = publish(destination, manifest['gpfs_url'].rstrip('/') + '/' + destination.name,
+                                     campaign / 'remote_checks')
+                    state.update(gpfs=remote, completed_utc=now())
+                    state.pop('publication_error', None)
+                except Exception as exc:
+                    state.update(status='publication_pending', publication_error=str(exc))
         elif state['job_id'] not in queued:
             accounting = execute(['sacct', '-X', '-n', '-j', str(state['job_id']), '--format=State,ExitCode', '-P'])
             if accounting.strip():
@@ -109,7 +131,8 @@ def cycle(args, manifest):
         save(campaign / f'run{run:05d}.json', state)
     failed = [r for r, s in states.items() if s['status'] == 'failed']
     active = sum(s['status'] == 'submitted' for s in states.values())
-    if args.submit and not failed:
+    publication_pending = [r for r, s in states.items() if s['status'] == 'publication_pending']
+    if args.submit and not failed and not publication_pending:
         for run, state in states.items():
             if active >= args.max_active:
                 break
@@ -130,6 +153,7 @@ def cycle(args, manifest):
             active += 1
             print(response, flush=True)
     status = dict(counts=dict(Counter(s['status'] for s in states.values())), failed_runs=failed,
+                  publication_pending=publication_pending,
                   active=active, queue_states=queued, updated_utc=now())
     save(campaign / 'status.json', status)
     print(json.dumps(status), flush=True)
@@ -163,6 +187,9 @@ def main():
         states = [json.loads((args.campaign / f'run{r:05d}.json').read_text()) for r in manifest['runs']]
         print(json.dumps(dict(Counter(s['status'] for s in states)), indent=2))
         return
+    if not manifest.get('gpfs_url'):
+        manifest['gpfs_url'] = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())['output_url']
+        save(args.campaign / 'manifest.json', manifest)
     verify_sources(args.campaign, manifest)
     if args.command == 'watch':
         import fcntl
@@ -177,10 +204,21 @@ def main():
                 if args.once:
                     return
                 time.sleep(60)
+    comparison = Path(manifest['output']) / 'noise_temperature_comparison.h5'
+    receipt = args.campaign / 'gpfs_comparison.json'
+    if args.command == 'watch' and receipt.exists() and comparison.exists():
+        previous = json.loads(receipt.read_text())
+        if previous['sha256'] == sha256(comparison):
+            print('Comparison already published and verified:', previous['url'])
+            return
     # Use the frozen reporting source and frozen temperature observations too.
     sys.path.insert(0, str(args.campaign / 'sources'))
     from report_noise_temperature import report
     report(Path(manifest['output']), args.campaign / 'sources/temperatures.csv', manifest['runs'])
+    remote = publish(comparison, manifest['gpfs_url'].rstrip('/') + '/' + comparison.name,
+                     args.campaign / 'remote_checks')
+    save(receipt, remote)
+    print('Scientific comparison published and downloaded/verified:', remote['url'])
 
 
 if __name__ == '__main__':
