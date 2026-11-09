@@ -1,5 +1,30 @@
 # Pilot IQ filtrato e temperature, run 680–939
 
+## Produzione completa HTC, 9 novembre 2026
+
+Il controller supporta anche l'intero intervallo inclusivo 680–939 (260 run).
+La produzione autorizzata usa una nuova campagna e una nuova directory GPFS,
+senza cambiare la sospensione del vecchio pilot né sovrascriverne gli HDF5.
+Conserva le due passate, il riferimento comune e i filtri continui, con i
+sorgenti ottimizzati congelati all'atto della preparazione.
+
+```bash
+python3 examples/noise_temperature_pilot.py prepare \
+  --campaign /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109 \
+  --output /home/mazzitel/HFGW/analysis-work/Run2/reports/noise_fullrange_v1_20261109 \
+  --run-range 680 939 --authorize-submissions \
+  --gpfs-url davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v1_20261109
+python3 examples/noise_temperature_pilot.py watch --submit --max-active 24 \
+  --campaign /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109
+```
+
+Eseguire il monitor in un processo persistente. Ogni worker verifica le librerie
+FLASH CVMFS prima di scaricare il MIDAS. Il controller recupera, valida e
+pubblica ciascun HDF5 completo con verifica SHA-256, poi libera il posto per
+il run successivo. I job richiedono ciascuno 1 CPU, 4 GB RAM e 60 GB scratch.
+`--authorize-submissions` abilita solo una **nuova** campagna: ripetere `prepare`
+non modifica configurazione o sospensione di una campagna già esistente.
+
 La campagna ricostruisce integralmente 12 run distribuiti nell'intervallo:
 680, 704, 727, 751, 774, 798, 821, 845, 868, 892, 915, 939.
 Usa `analyze_midas_iq_noise.py --iq-sign -1 --filtered-bands --h5-only`,

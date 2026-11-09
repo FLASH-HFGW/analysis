@@ -6,12 +6,14 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from iq_noise_io import build_results, save_results_h5, read_results_h5
-from noise_temperature_pilot import validate, cycle
+from noise_temperature_pilot import validate, cycle, prepare
+import noise_temperature_pilot as pilot
 from report_noise_temperature import pearson, summarize_product, temperatures_by_run, report
 
 
@@ -31,6 +33,34 @@ def product(path, run=680, sign=-1, complete=True):
 
 
 class PilotTests(unittest.TestCase):
+    def test_new_range_campaign_freezes_sources_and_existing_pause_is_preserved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inputs = root / 'inputs'
+            inputs.mkdir()
+            for run in (680, 681):
+                (inputs / f'run{run:05d}.mid.gz').touch()
+            reference = root / 'reference.json'
+            reference.write_text('{"iq_sign": -1}')
+            temperatures = root / 'temperatures.csv'
+            temperatures.write_text('run,time_unix\n')
+            temperatures.with_suffix('.schema.json').write_text('{}')
+            with mock.patch.object(pilot, 'INPUT_ROOT', inputs), mock.patch.object(pilot, 'REFERENCE', reference):
+                manifest = prepare(root/'campaign', root/'output', temperatures, [681, 680],
+                                   'davs://example/new-range', True)
+                self.assertEqual(manifest['runs'], [680, 681])
+                self.assertFalse(manifest['submissions_paused'])
+                self.assertEqual(manifest['gpfs_url'], 'davs://example/new-range')
+                worker = (root/'campaign/00680/script.sh').read_text()
+                self.assertIn('check_noise_environment.py', worker)
+                self.assertIn('HFGW_CVMFS_ROOT=/cvmfs/sft-flash.infn.it', worker)
+                self.assertIn('check_noise_environment.py', (root/'campaign/00680/submit.sub').read_text())
+                paused = prepare(root/'paused', root/'output2', temperatures, [680])
+                self.assertTrue(paused['submissions_paused'])
+                reused = prepare(root/'paused', root/'output2', temperatures, [680,681],
+                                 'davs://example/changed', True)
+                self.assertEqual(reused, paused)
+
     def test_paused_campaign_cannot_submit(self):
         with self.assertRaisesRegex(ValueError, 'paused'):
             cycle(Path('/unused'), {'submissions_paused': True}, 4, True)

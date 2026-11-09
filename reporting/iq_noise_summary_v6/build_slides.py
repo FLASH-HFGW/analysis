@@ -74,6 +74,7 @@ def load_snapshot(published, out):
                             ('fs_hz', 'iq_sign', 'width_hz', 'taps', 'decimation', 'offsets_hz', 'centers_hz')})
         metadata[run] = dict(path=str(path), sha256=digest(path), samples=int(summary['samples']),
                              events=len(summary['events']), acquired_s=summary['acquired_duration_s'],
+                             mean_amplitude_v={mode: summary['modes'][mode]['mean_amplitude_v'] for mode in MODES},
                              config_id=summary['global_statistics']['config_id'])
         rows.extend(summarize_product(path, run, temperatures[run], product_version='v1'))
     if any(cfg != configs[0] for cfg in configs) or len({d['config_id'] for d in metadata.values()}) != 1:
@@ -156,22 +157,20 @@ def figure_paths(rows, temperatures, snapshot, points, out):
     for sensor, label, color in [(15, 'Cavity', COLORS[0]), (16, 'CMN143 mixing chamber', COLORS[1]), (17, 'CMN130 mixing chamber', COLORS[2])]:
         raw = sorted(p for run in temperatures.values() for p in run[sensor])
         axes[0].plot([datetime.fromtimestamp(t, TZ) for t, _ in raw], [v for _, v in raw], color=color, lw=1, label=label)
-    for run in snapshot['expected_runs']:
-        pts = temperatures[run][15]
-        x = datetime.fromtimestamp(float(np.median([t for t, _ in pts])), TZ)
-        done = run in runs
-        axes[1].scatter(x, run, color=COLORS[0] if done else '#B3BBC4', s=35,
-                        marker='o' if done else 'x')
-        axes[1].annotate(str(run), (x, run), xytext=(4, 4), textcoords='offset points', fontsize=9)
-    for ax in axes:
-        ax.axvspan(datetime.fromtimestamp(points['TM010'][-1]['time'], TZ),
-                   datetime.fromtimestamp(max(t for p in temperatures.values() for t, _ in p[15]), TZ),
-                   color='#CCD2DB', alpha=.22)
+    for mode, color in zip(MODES, COLORS):
+        x = [datetime.fromtimestamp(p['time'], TZ) for p in points[mode]]
+        y = [snapshot['metadata'][run]['mean_amplitude_v'][mode]*1000 for run in runs]
+        axes[1].plot(x, y, 'o-', color=color, ms=4, lw=1.2, label=mode)
+    for run, p in zip(runs, points['TM010']):
+        axes[1].annotate(str(run), (datetime.fromtimestamp(p['time'], TZ),
+                          snapshot['metadata'][run]['mean_amplitude_v']['TM010']*1000),
+                          xytext=(0, 7), textcoords='offset points', fontsize=8, ha='center')
     axes[0].set(ylabel='Observed AVS temperature [mK]')
     axes[0].legend(loc='upper right', ncol=3, fontsize=9)
-    axes[1].set(ylabel='Pilot run', xlabel='Acquisition date/time · Europe/Rome (CEST)')
+    axes[1].set(ylabel='Mean |I − iQ| [mV]', xlabel='Acquisition date/time · Europe/Rome (CEST)')
+    axes[1].legend(loc='upper right', ncol=3, fontsize=9)
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter('%d %b\n%H:%M', tz=TZ))
-    fig.suptitle(scope + ' · coloured points are reconstructed; crosses are pending', fontsize=12)
+    fig.suptitle(scope + ' · full-band mean amplitudes of selected runs', fontsize=12)
     fig.tight_layout(); save(fig, 'pilot_temperature_coverage')
 
     fig, axes = plt.subplots(3, 1, figsize=(12, 5.3), sharex=True)
@@ -241,7 +240,7 @@ def figure_paths(rows, temperatures, snapshot, points, out):
     return paths
 
 
-def historical_deck(baseline, out):
+def historical_deck(baseline, out, version='v6'):
     model=json.loads((baseline/'slide_model.json').read_text())
     original=slides.Presentation(baseline/'iq_noise_summary_v5.pptx')
     assets=out/'assets';assets.mkdir(exist_ok=True)
@@ -252,20 +251,21 @@ def historical_deck(baseline, out):
         for number,(picture,item) in enumerate(zip(pictures,items)):
             path=assets/f'historical_slide_{index+1:02d}_{number}.{picture.image.ext}'
             path.write_bytes(picture.image.blob);item['path']=str(path)
-        slide['footer']='HISTORICAL 260-RUN CONTEXT · v5 | UPDATED DECK v6'
+        slide['footer']=f'HISTORICAL 260-RUN CONTEXT · v5 | UPDATED DECK {version}'
         slide['notes']='Historical 260-run result retained from the 2 November v5 deck.\n'+slide['notes']
     deck=slides.Deck();deck.slides=copy.deepcopy(model[:-1])
     return deck
 
 
-def append_pilot(deck, paths, snapshot, points, stats):
+def append_pilot(deck, paths, snapshot, points, stats, version='v6', prepared='9 November 2026'):
     n=len(snapshot['runs']); expected=len(snapshot['expected_runs']); label=f'PRELIMINARY v1 PILOT · {n}/{expected} RUNS'
     source='Source: published runNNNNN_noise_v1.h5; pinned AVS metadata; snapshot.json and numeric tables.'
     def page(title, subtitle, notes):
         s=deck.new(title,subtitle,source,notes);s['footer']=label;return s
-    s=page('Filtered-IQ pilot: measured coverage',f'{n}/{expected} planned complete runs · {snapshot["runs"][0]}–{snapshot["runs"][-1]} · I − iQ',
+    s=page('Selected runs: temperatures and mode amplitudes',f'{n}/{expected} planned complete runs · {snapshot["runs"][0]}–{snapshot["runs"][-1]} · I − iQ',
            'Only the published complete v1 runs are included. Missing runs: '+str(snapshot['missing_runs'])+'. '
-           'Temperature curves are actual AVS observations from the full campaign. Run summaries use only finite readings from the same run within SPEC timestamp bounds. No interpolation or extrapolation.')
+           'Temperature curves are actual AVS observations from the full campaign. Lower panel: full-band sample mean of |I-iQ| in volts, converted to mV, for each selected complete run and mode; no FIR filtering or DC subtraction. '
+           'Run summaries use only finite readings from the same run within SPEC timestamp bounds. No interpolation or extrapolation.')
     deck.image(s,.5,1.75,12.3,4.75,paths['pilot_temperature_coverage'])
     s=page('Nine equal filters per mode',f'{n} complete runs · 50 kHz nominal bands · centre and ±100, ±250, ±500, ±1000 kHz',
            'Causal Kaiser FIR, 2001 taps, decimation 20; FIR state, oscillator and increment pairs remain continuous across SPEC. '
@@ -280,7 +280,7 @@ def append_pilot(deck, paths, snapshot, points, stats):
     s=page('Temperature associations are descriptive',f'{n} per-run observations · colours encode time · no independent-sample p-values',
            'Shown quantity is relative mean-square IQ amplitude (power), not amplitude variance after DC subtraction. '
            'Central and sideband powers show different signs of association with cavity temperature. '
-           'Time and temperature co-vary; sideband power also correlates strongly with time. Eight selected runs and many explored bands do not establish causation or independent temperature sensitivity.')
+           f'Time and temperature co-vary; sideband power also correlates strongly with time. {n} selected runs and many explored bands do not establish causation or independent temperature sensitivity.')
     deck.image(s,.5,1.7,12.25,4.95,paths['noise_power_vs_cavity_temperature'])
     s=page('Phase structure changes mainly in the centre',f'Central phase resultant and symmetric-sideband power balance · {n}/{expected} runs',
            'R is the magnitude of the sample-weighted circular first moment, combined as complex vectors, not an average of angles. '
@@ -305,8 +305,8 @@ def append_pilot(deck, paths, snapshot, points, stats):
     title=deck.slides[0]
     for item in title['items']:
         if item['kind']=='text' and 'Version v5' in item['text']:
-            item['text']=f'Data: 24–25 July 2026 | Version v6 · 8 November 2026 | Filtered pilot: {n}/{expected} runs'
-    title['notes']+=f'\nUpdated 8 November 2026: {n}/{expected} complete v1 filtered pilot runs appended; final conclusions updated.'
+            item['text']=f'Data: 24–25 July 2026 | Version {version} · {prepared} | Filtered pilot: {n}/{expected} runs'
+    title['notes']+=f'\nUpdated {prepared}: {n}/{expected} complete v1 filtered pilot runs appended; final conclusions updated.'
 
 
 def main():
@@ -314,21 +314,23 @@ def main():
     parser.add_argument('--published',type=Path,default=PUBLISHED)
     parser.add_argument('--baseline',type=Path,default=WORK/'iq_noise_summary_v5')
     parser.add_argument('--out',type=Path,default=WORK/'iq_noise_summary_v6')
+    parser.add_argument('--version', default='v6')
     args=parser.parse_args();args.out.mkdir(parents=True,exist_ok=True)
     rows,temperatures,snapshot=load_snapshot(args.published,args.out)
     points=condensed(rows,snapshot['runs']);stats=statistics(points,rows)
     (args.out/'data/pilot_findings.json').write_text(json.dumps(stats,indent=2)+'\n')
     write_csv(args.out/'data/condensed_by_run.csv',[dict(mode=mode,**p) for mode in MODES for p in points[mode]])
     paths=figure_paths(rows,temperatures,snapshot,points,args.out)
-    deck=historical_deck(args.baseline,args.out)
-    append_pilot(deck,paths,snapshot,points,stats)
-    slides.export(deck,args.out,version='v6')
-    (args.out/'README.md').write_text('# IQ noise summary v6 — preliminary filtered pilot\n\n'
+    prepared=datetime.now(TZ).strftime('%-d %B %Y')
+    deck=historical_deck(args.baseline,args.out,args.version)
+    append_pilot(deck,paths,snapshot,points,stats,args.version,prepared)
+    slides.export(deck,args.out,version=args.version,prepared=prepared)
+    (args.out/'README.md').write_text(f'# IQ noise summary {args.version} — preliminary filtered pilot\n\n'
         +f'Published complete runs: {snapshot["runs"]}. Missing planned runs: {snapshot["missing_runs"]}.\n\n'
         +'Historical 260-run context from v5 is retained; six new pilot slides replace the old closing slide. '
         +'New figures are generated only from validated complete I−iQ v1 HDF5 products and pinned same-run AVS observations. '
         +'No causal or detection claim is made. Full data provenance, hashes and coverage are in data/snapshot.json.\n\n'
-        +'Rebuild from the repository: `python3 reporting/iq_noise_summary_v6/build_slides.py`.\n')
+        +f'Rebuild from the repository: `python3 reporting/iq_noise_summary_v6/build_slides.py --version {args.version} --out {args.out}`.\n')
     print(json.dumps(stats,indent=2))
 
 

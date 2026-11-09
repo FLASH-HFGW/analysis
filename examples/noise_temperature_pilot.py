@@ -23,6 +23,8 @@ TEMPERATURES = Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/thermome
 RESULTS = Path('/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108')
 SOURCE_NAMES = ('analyze_midas_iq_noise.py', 'iq_noise_statistics.py',
                 'iq_noise_io.py', 'analyze_iq_filtered_bands.py')
+INPUT_ROOT = Path('/home/mazzitel/flash-data/data/LNF')
+REFERENCE = Path('/home/mazzitel/HFGW/analysis-work/Run2/references/noise_reference.json')
 
 
 def now():
@@ -42,20 +44,24 @@ def execute(args, cwd=None):
     return result.stdout
 
 
-def prepare(campaign, output, temperatures):
+def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_submissions=False):
     path = campaign / 'manifest.json'
     if path.exists():
         return json.loads(path.read_text())
-    for run in RUNS:
-        if not (Path('/home/mazzitel/flash-data/data/LNF') / f'run{run:05d}.mid.gz').is_file():
+    runs = sorted(set(RUNS if runs is None else runs))
+    if not runs or any(run < 0 for run in runs):
+        raise ValueError('Need nonnegative run numbers')
+    for run in runs:
+        if not (INPUT_ROOT / f'run{run:05d}.mid.gz').is_file():
             raise ValueError(f'Missing input run {run}')
     sources = campaign / 'sources'
     sources.mkdir(parents=True, exist_ok=True)
-    reference = Path('/home/mazzitel/HFGW/analysis-work/Run2/references/noise_reference.json')
+    reference = REFERENCE
     if json.loads(reference.read_text())['iq_sign'] != -1:
         raise ValueError('Reference must use I-iQ')
     for name in SOURCE_NAMES:
         shutil.copy2(ROOT / 'examples' / name, sources / name)
+    shutil.copy2(ROOT / 'examples/hpc/check_noise_environment.py', sources / 'check_noise_environment.py')
     shutil.copy2(reference, sources / 'noise_reference.json')
     shutil.copy2(temperatures, sources / 'temperatures.csv')
     shutil.copy2(temperatures.with_suffix('.schema.json'), sources / 'temperatures.schema.json')
@@ -74,6 +80,8 @@ export MPLCONFIGDIR="$WORKDIR/matplotlib"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 export PYTHONUNBUFFERED=1
 ''' + environment + '''
+export HFGW_NOISE_CVMFS_ONLY=1 HFGW_CVMFS_ROOT=/cvmfs/sft-flash.infn.it
+"$PYTHON" check_noise_environment.py
 export BEARER_TOKEN
 BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
 echo "Download $RUN_NAME $(date -u +%FT%TZ)"
@@ -87,19 +95,20 @@ echo "Complete $RUN_NAME $(date -u +%FT%TZ)"
     tag = campaign.name
     output.mkdir(parents=True, exist_ok=True)
     preset = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())
-    manifest = dict(runs=RUNS, iq_sign=-1, tag=tag, output=str(output.resolve()), created_utc=now(),
-                    product_version='v1', gpfs_url=preset['output_url'], submissions_paused=True,
+    manifest = dict(runs=runs, iq_sign=-1, tag=tag, output=str(output.resolve()), created_utc=now(),
+                    product_version='v1', gpfs_url=gpfs_url or preset['output_url'],
+                    submissions_paused=not authorize_submissions,
                     temperatures=str(sources / 'temperatures.csv'),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                    for p in sources.iterdir() if p.is_file()},
                     analysis_flags=['--iq-sign', '-1', '--h5-only', '--filtered-bands'],
                     resources=dict(cpus_per_job=1, memory='4GB', disk='60GB'))
-    for run in RUNS:
+    for run in runs:
         directory = campaign / f'{run:05d}'
         directory.mkdir(exist_ok=True)
         (directory / 'script.sh').write_text(script)
         (directory / 'script.sh').chmod(0o755)
-        transfer = ','.join('../sources/' + name for name in (*SOURCE_NAMES, 'noise_reference.json'))
+        transfer = ','.join('../sources/' + name for name in (*SOURCE_NAMES, 'noise_reference.json', 'check_noise_environment.py'))
         (directory / 'submit.sub').write_text(f'''executable = script.sh
 arguments = {run}
 output = stdout-$(ClusterId).$(ProcID).txt
@@ -252,11 +261,19 @@ def main():
     parser.add_argument('--submit', action='store_true')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--max-active', type=int, default=4)
+    parser.add_argument('--run-range', nargs=2, type=int, metavar=('FIRST', 'LAST'))
+    parser.add_argument('--gpfs-url', help='New campaign scientific output directory')
+    parser.add_argument('--authorize-submissions', action='store_true',
+                        help='Enable submissions when preparing a new explicitly authorized campaign')
     args = parser.parse_args()
     if args.max_active < 1:
         parser.error('--max-active must be positive')
     if args.command == 'prepare':
-        print(json.dumps(prepare(args.campaign, args.output, args.temperatures), indent=2))
+        if args.run_range and args.run_range[0] > args.run_range[1]:
+            parser.error('Invalid run range')
+        runs = range(args.run_range[0], args.run_range[1]+1) if args.run_range else None
+        print(json.dumps(prepare(args.campaign, args.output, args.temperatures, runs,
+                                 args.gpfs_url, args.authorize_submissions), indent=2))
         return
     manifest = json.loads((args.campaign / 'manifest.json').read_text())
     if args.command == 'status':
