@@ -15,7 +15,7 @@ from matplotlib.cm import ScalarMappable
 
 from noise_temperature_pilot import validate
 from report_noise_v2 import report
-from report_noise_temperature import temperatures_by_run
+from report_noise_temperature import temperatures_by_run, write_csv
 
 MODES=('TM010','TM011','TM012')
 COLORS=('#007F86','#7657A6','#D98726')
@@ -62,7 +62,7 @@ def figures(directory,baseline,out,sha):
             r_central_temperature_after_time=float(diagnostics['r_temperature_after_linear_time']))
 
     raw_t=temperatures_by_run(temperature,set(range(680,940)))
-    fig,axes=plt.subplots(2,1,figsize=(12,5.1),sharex=True,gridspec_kw={'height_ratios':[2,1]})
+    fig,axes=plt.subplots(2,1,figsize=(12,5.1),sharex=True,gridspec_kw={'height_ratios':[1,1.15]})
     for sensor,label,color in [(15,'Cavity',COLORS[0]),(16,'CMN143',COLORS[1]),(17,'CMN130',COLORS[2])]:
         points=sorted(p for run in raw_t.values() for p in run[sensor])
         axes[0].plot([datetime.fromtimestamp(t,TZ) for t,_ in points],[v for _,v in points],lw=1,color=color,label=label)
@@ -70,14 +70,28 @@ def figures(directory,baseline,out,sha):
     for mode,color in zip(MODES,COLORS):
         g=grouped[mode]
         axes[1].plot([datetime.fromtimestamp(r['spec_midpoint_unix'],TZ) for r in g],
-                     [r['ac_rms_input_v']*1e9 for r in g],'o-',color=color,ms=4,label=mode)
+                     [100*(r['ac_rms_input_v']/g[0]['ac_rms_input_v']-1) for r in g],
+                     'o-',color=color,ms=4,label=mode)
+    relative=np.array([[100*(r['ac_rms_input_v']/grouped[mode][0]['ac_rms_input_v']-1)
+                        for r in grouped[mode]] for mode in MODES])
+    write_csv(report_dir/'ac_rms_relative_to_run680.csv',[
+        dict(run=int(r['run']),mode=mode,spec_midpoint_unix=r['spec_midpoint_unix'],
+             change_pct=float(relative[i,j]),mode_range_min_pct=float(relative[:,j].min()),
+             mode_range_max_pct=float(relative[:,j].max()))
+        for i,mode in enumerate(MODES) for j,r in enumerate(grouped[mode])])
+    times=[datetime.fromtimestamp(r['spec_midpoint_unix'],TZ) for r in grouped['TM010']]
+    axes[1].fill_between(times,relative.min(axis=0),relative.max(axis=0),color='#AAB3BD',alpha=.2,
+                         label='Min–max across modes',zorder=0)
+    axes[1].axhline(0,color='#66768A',lw=.6)
     for run,r in zip(runs,grouped['TM010']):
-        axes[1].annotate(str(run),(datetime.fromtimestamp(r['spec_midpoint_unix'],TZ),r['ac_rms_input_v']*1e9),
+        change=100*(r['ac_rms_input_v']/grouped['TM010'][0]['ac_rms_input_v']-1)
+        axes[1].annotate(str(run),(datetime.fromtimestamp(r['spec_midpoint_unix'],TZ),change),
                          xytext=(0,7),textcoords='offset points',ha='center',fontsize=8)
-    axes[1].legend(ncol=3,fontsize=8)
-    axes[1].set(ylabel='Full-band AC RMS [nV]',xlabel='Acquisition clock time · Europe/Rome (CEST)')
+    axes[1].legend(ncol=4,fontsize=8,loc='upper left')
+    axes[1].margins(y=.24)
+    axes[1].set(ylabel='RMS change from run 680 [%]',xlabel='Acquisition clock time · Europe/Rome (CEST)')
     axes[1].xaxis.set_major_formatter(mdates.DateFormatter('%d %b\n%H:%M',tz=TZ))
-    fig.suptitle('12/12 complete v2 pilot runs · one complex run mean removed · nominal input-referred volts')
+    fig.suptitle('Common starting level: each mode is referenced to its own run 680 RMS')
     fig.tight_layout();save(fig,'v2_temperature_and_ac')
 
     fig,axes=plt.subplots(3,1,figsize=(12,5.3),sharex=True)
@@ -146,8 +160,10 @@ def figures(directory,baseline,out,sha):
 
 def append(deck,page,pictures,findings):
     captions=[
-        ('Selected runs: temperatures and AC amplitudes','12/12 complete v2 runs · full-band complex AC RMS · nominal input normalization','v2_temperature_and_ac',
-         'One complex mean per run is removed; the three lower curves are full-band AC RMS, not mean envelope amplitudes. Temperatures are actual AVS readings; no interpolated observations.'),
+        ('Selected runs: common origin and relative drift','12/12 complete v2 runs · every mode starts at 0% in run 680 · actual acquisition dates','v2_temperature_and_ac',
+         'One complex mean per run is removed. Lower curves show 100*(AC_RMS_mode(run)/AC_RMS_mode(680)-1), not absolute voltage. '
+         'Only the first selected run is the baseline; subsequent runs retain measured differences. Grey fill is the minimum-to-maximum range across three modes, not an uncertainty or stochastic diffusion estimate. '
+         'Constant gain cancels in these ratios. Temperatures are actual AVS readings; no interpolated observations.'),
         ('Nine equal frequency bands after DC removal','Three modes × nine nominal 50 kHz filters · continuous FIR state across SPEC','v2_nine_band_levels',
          'Input run mean removed before mixing and FIR. Filter-output coherent means are retained in the principal RMS. Nominal input-referred nV; no RF watts or noise-temperature interpretation.'),
         ('Removing DC changes the central-band drift','Same twelve runs and filters · v1/v2 central RMS compared with the sidebands','v1_v2_central_drift',

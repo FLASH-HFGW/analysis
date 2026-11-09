@@ -94,3 +94,10 @@ La precedente slide 3 delle definizioni diventa la 4: quattro riquadri distinti
 per segnale complesso, inviluppo/fase, DC/AC e quantità quadratiche, con unità
 e normalizzazione separate. Si rigenera con gli stessi input della v12,
 usando `--version v13` e una nuova directory `--out`.
+
+La v14 cambia la slide 22: ogni modo parte dallo stesso livello relativo (0%
+nel run 680), con variazione RMS percentuale contro la data di acquisizione.
+La fascia grigia mostra il minimo-massimo fra i tre modi, non un'incertezza o
+una misura di diffusione stocastica. I valori sono salvati in
+`data/v2_pilot/ac_rms_relative_to_run680.csv`. Le temperature rimangono assolute.
+La v14 conserva l'istantanea dei tempi e della diagnosi CPU della v13.
