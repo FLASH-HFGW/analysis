@@ -22,6 +22,61 @@ COLORS=('#007F86','#7657A6','#D98726')
 TZ=ZoneInfo('Europe/Rome')
 
 
+def explain_bands(deck,page,assets):
+    """Pedagogical schematic; no measured resonance or spectrum is invented."""
+    f=np.linspace(-1.2,1.2,2400)
+    background=1.+.65*np.exp(-((f-.35)/.26)**2)+.08*np.cos(3*f)
+    offsets=[-1.,-.5,-.25,-.1,0.,.1,.25,.5,1.]
+    fig,axes=plt.subplots(2,1,figsize=(10,4.1),sharex=True,sharey=True)
+    for i,ax in enumerate(axes):
+        for center in offsets:
+            ax.axvspan(center-.025,center+.025,color='#007F86' if center==0 else '#D98726',alpha=.22)
+        ax.plot(f,background,color='#24364B',lw=1.5)
+        ax.set(ylim=(0,3.5),xlim=(-1.2,1.2),yticks=[],ylabel='Schematic level')
+        ax.spines[['top','right']].set_visible(False)
+        ax.grid(axis='x',alpha=.15)
+        if i==0:
+            ax.annotate('',xy=(0,3.15),xytext=(0,1.08),arrowprops=dict(arrowstyle='-|>',color='#C23B43',lw=2))
+            ax.annotate('Constant IQ offset (DC)',xy=(0,3.1),xytext=(.2,2.95),fontsize=10,color='#C23B43',
+                        arrowprops=dict(arrowstyle='-',color='#C23B43'))
+            ax.set_title('Before: fluctuating signal + one constant complex offset',fontsize=11,loc='left')
+        else:
+            ax.set_title('After: subtract the run mean; fluctuations in the central band remain',fontsize=11,loc='left')
+            ax.annotate('No DC line',xy=(0,1.08),xytext=(-.35,2.75),fontsize=10,color='#C23B43',
+                        arrowprops=dict(arrowstyle='->',color='#C23B43'))
+    axes[-1].set_xticks(offsets,['−1000','−500','−250','−100','0','+100','+250','+500','+1000'])
+    axes[-1].tick_params(axis='x',labelsize=8)
+    axes[-1].set_xlabel('Frequency offset from the electronic reference [kHz]')
+    fig.tight_layout()
+    path=assets/'sidebands_and_dc_schematic.png'
+    fig.savefig(path,dpi=200,bbox_inches='tight',facecolor='white')
+    fig.savefig(assets/'sidebands_and_dc_schematic.pdf',bbox_inches='tight',facecolor='white')
+    plt.close(fig)
+    s=page('Frequency bands and DC: what are we selecting?',
+           'Schematic illustration · repeated independently for each of the three modes','METHODS | FREQUENCY BANDS',
+           'This is an explanatory drawing in arbitrary units, not a measured spectrum or fitted cavity response. '
+           'Orange windows are analysis sidebands, not evidence of physical modulation sidebands or additional cavity modes. '
+           'All nine FIR windows have nominal width 50 kHz; their centres are baseband offsets, not fitted resonance centres. '
+           'Baseband zero is the electronic reference and need not coincide with the physical resonance. '
+           'Subtracting one complex run mean removes a constant zero-frequency component before mixing/FIR; it does not remove the central 50 kHz band or all low-frequency drift.',
+           'Source: analysis filter definitions and run-mean subtraction. Diagram is illustrative; no measured amplitudes are represented.')
+    for x,title,detail,color in [(.7,'One cavity mode','TM010 / TM011 / TM012',COLORS[0]),
+                                 (4.7,'I/Q downconversion','Measure two voltage quadratures',COLORS[1]),
+                                 (8.7,'Complex baseband','z = I − jQ; zero is a reference',COLORS[2])]:
+        deck.rect(s,x,1.85,3.55,.95,'#FFFFFF')
+        deck.text(s,x+.15,1.98,3.25,.35,title,18,True,color)
+        deck.text(s,x+.15,2.43,3.25,.27,detail,12)
+    for x in (4.28,8.28):deck.text(s,x,2.13,.4,.5,'→',24,True)
+    deck.image(s,.55,3.,8.6,3.45,path)
+    deck.bullets(s,9.35,3.15,3.25,[
+        'Central band: 0 kHz, shaded in teal.',
+        'Eight sidebands: ±100, ±250, ±500 and ±1000 kHz; orange.',
+        'Each window is 50 kHz wide.',
+        'DC removal: zAC = z − mean_run(z).'
+    ],15,.16)
+    deck.text(s,.8,6.48,11.7,.3,'Zero frequency is an electronic reference; the cavity resonance is not assumed to sit at zero.',13,True)
+
+
 def figures(directory,baseline,out,sha):
     paths=sorted(directory.glob('run*_noise_v2.h5'))
     runs=[int(p.name[3:8]) for p in paths]

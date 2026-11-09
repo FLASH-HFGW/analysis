@@ -107,3 +107,11 @@ curve modo–banda è riferita al proprio RMS nel run 680. I tre pannelli usano
 la stessa scala percentuale e la data reale di acquisizione. I livelli assoluti
 rimangono negli HDF5 e nelle tabelle; il grafico mostra la deriva relativa.
 I 324 punti sono in `data/v2_pilot/band_rms_relative_to_run680.csv`.
+
+La v16 aggiunge dopo le definizioni una slide divulgativa (nuova slide 5):
+modo RF → downconversion I/Q → spettro in banda base, con banda centrale e
+otto finestre laterali da 50 kHz. Un disegno prima/dopo distingue la linea DC
+dalle fluttuazioni che restano nella banda centrale. È uno schema in unità
+arbitrarie, non un dato o una curva di risonanza misurata; lo zero di banda
+base non viene identificato con la risonanza. Il disegno è esportato anche
+come PDF in `assets/sidebands_and_dc_schematic.pdf`.

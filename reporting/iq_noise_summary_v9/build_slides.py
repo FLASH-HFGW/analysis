@@ -199,6 +199,9 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
     deck.text(s,.8,6.12,11.7,.6,
               f'σA = std(A) differs from RMS_AC. Nominal gain: {gain:g} dB, specified in the calibration JSON.\nVoltages ÷ 10^(GdB/20); mean-square voltages ÷ 10^(GdB/10); phase unchanged. V² are not RF watts.',14)
 
+    from iq_noise_summary_v12 import pilot
+    pilot.explain_bands(deck,page,assets)
+
     s=page('Outputs: a small number of aggregate products',
            'Current production formats; legacy NPZ/JSON/PNG sidecars are not the publication target.','PRODUCTS',
            'Scientific product versions v1/v2 differ from the presentation version. Per-run v1 worker output is renamed with _v1 at publication. '
