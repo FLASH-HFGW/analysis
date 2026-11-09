@@ -2,6 +2,52 @@
 
 ## Pilot IQ filtrato e temperature
 
+### Pilot v2: prova del run 680, poi gli altri undici
+
+Il controller legge la versione dal manifest dopo `prepare`. Per v2 sono
+obbligatori calibrazione esplicita e cartella GPFS separata. La preparazione
+congela modulo v2, calibrazione, report e osservazioni termiche. Una campagna
+v1 già esistente non può essere riutilizzata come v2.
+
+Sulla login HPC, dopo `git pull --ff-only origin main`, entrare in una sessione
+persistente (`tmux new -s noise-v2`) ed eseguire:
+
+```bash
+PILOT_V2="$HOME/HFGW/analysis-runtime/autoreco/Run2/noise_temperature_pilot_slurm_v2_20261109"
+OUTPUT_V2="$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v2_20261109"
+
+bash examples/hpc/run_noise_pilot.sh prepare \
+  --campaign "$PILOT_V2" --output "$OUTPUT_V2" --product-version v2 \
+  --calibration config/noise_calibration_v2.json \
+  --gpfs-url davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_temperature_pilot_v2_20261109
+
+bash examples/hpc/run_noise_pilot.sh watch --campaign "$PILOT_V2" \
+  --submit --only-run 680 --max-active 1 \
+  --resource gpu --partition GPU --token-time 3600
+```
+
+Il secondo comando sottomette il run completo, lo segue e termina solo quando
+stato e HDF5 sono validi e la pubblicazione GPFS è stata scaricata e verificata.
+Non sottomette gli altri undici. Se il job fallisce si ferma; se la pubblicazione
+resta pendente la ritenta senza ricostruire il run. Al messaggio
+`Selected run complete and published: 680`, controllare il risultato e avviare:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh watch --campaign "$PILOT_V2" \
+  --submit --max-active 4 --resource gpu --partition GPU --token-time 3600
+```
+
+Il run 680 completo viene riusato. Al termine viene generato e pubblicato
+anche `noise_temperature_comparison_v2.h5`. Con `Ctrl+B`, poi `D`, si lascia
+tmux attivo; `tmux attach -t noise-v2` lo riapre. Per consultare solo lo stato:
+
+```bash
+bash examples/hpc/run_noise_pilot.sh status --campaign "$PILOT_V2"
+```
+
+La partizione GPU è quella già autorizzata per `cygno`; ogni job usa una CPU
+e riserva una GPU. `--resource cpu` resta disponibile per account abilitati.
+
 Il flusso IQ usa **Python 3.9**, già presente sui worker LNF. I pacchetti CVMFS
 3.11 non comprendono l'interprete: non si presume più che `python3.11` esista.
 NumPy, SciPy, h5py, Matplotlib e MIDAS provengono interamente da CVMFS FLASH:

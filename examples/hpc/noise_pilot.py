@@ -31,10 +31,22 @@ def execute(args, env=None):
 
 def prepare(args):
     campaign = args.campaign.resolve()
+    version = getattr(args, 'product_version', 'v1')
     if (campaign / 'manifest.json').exists():
+        previous=json.loads((campaign/'manifest.json').read_text())
+        if previous.get('product_version','v1') != version:
+            raise ValueError('Existing campaign has another version; choose a new campaign')
         print('Existing campaign preserved:', campaign)
         return
     preset = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())
+    gpfs_url = getattr(args,'gpfs_url',None) or preset['output_url']
+    if version == 'v2':
+        from iq_noise_v2 import load_calibration
+        if not getattr(args,'calibration',None) or not getattr(args,'gpfs_url',None):
+            raise ValueError('v2 requires --calibration FILE and a separate --gpfs-url')
+        load_calibration(args.calibration)
+        if gpfs_url.rstrip('/') == preset['output_url'].rstrip('/'):
+            raise ValueError('v2 needs a separate GPFS directory')
     if bool(args.reference) != bool(args.temperatures):
         raise ValueError('Provide both --reference and --temperatures, or neither')
     if not args.reference:
@@ -54,6 +66,10 @@ def prepare(args):
     sources.mkdir(parents=True, exist_ok=True)
     for name in (*SOURCE_NAMES, 'report_noise_temperature.py', 'plot_thermometers_history.py', 'iq_noise_publish.py'):
         shutil.copy2(ROOT / 'examples' / name, sources / name)
+    if version == 'v2':
+        for name in ('iq_noise_v2.py','report_noise_v2.py'):
+            shutil.copy2(ROOT/'examples'/name,sources/name)
+        shutil.copy2(args.calibration,sources/'noise_calibration.json')
     shutil.copy2(args.reference, sources / 'noise_reference.json')
     shutil.copy2(args.temperatures, sources / 'temperatures.csv')
     shutil.copy2(args.temperatures.with_suffix('.schema.json'), sources / 'temperatures.schema.json')
@@ -64,8 +80,8 @@ def prepare(args):
         save(campaign / f'run{run:05d}.json', dict(run=run, status='prepared'))
     manifest = dict(runs=RUNS, iq_sign=-1, output=str(output), created_utc=now(),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources.iterdir()},
-                    scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it', gpfs_url=preset['output_url'],
-                    product_version='v1',
+                    scheduler='slurm', host='hpc-slurmui-010.lnf.infn.it', gpfs_url=gpfs_url,
+                    product_version=version,
                     note='CPU IQ calculations; --resource cpu requests no GPU; legacy GPU allocation remains explicit')
     save(campaign / 'manifest.json', manifest)
     print('Prepared runs:', ', '.join(map(str, RUNS)))
@@ -131,7 +147,8 @@ def cycle(args, manifest):
                 if result['exit_code'] != 0 or result['run'] != run:
                     raise ValueError(f'Worker failed: {result}')
                 from noise_temperature_pilot import validate
-                source = directory / f'run{run:05d}_noise.h5'
+                suffix = '_v2' if manifest.get('product_version') == 'v2' else ''
+                source = directory / f'run{run:05d}_noise{suffix}.h5'
                 validate(source, run, product_version=manifest.get('product_version'))
                 digest = hashlib.sha256(source.read_bytes()).hexdigest()
                 destination = output / source.name
@@ -169,12 +186,16 @@ def cycle(args, manifest):
                 break
             if state['status'] != 'prepared':
                 continue
+            if getattr(args,'only_run',None) is not None and run != args.only_run:
+                continue
             env = os.environ.copy()
             env.update(HFGW_NOISE_SOURCE_DIR=str(campaign / 'sources'), HFGW_NOISE_OUTPUT_ROOT=str(output / 'jobs'))
             command = ['bash', str(ROOT / 'examples/hpc/submit_one_run.sh'), str(run), '--analysis', 'noise',
                        '--reference', str(campaign / 'sources/noise_reference.json'), '--token-time', str(args.token_time),
                        '--time', args.time, '--account', args.account, '--qos', args.qos,
                        '--resource', getattr(args, 'resource', 'gpu')]
+            if manifest.get('product_version') == 'v2':
+                command.extend(['--product-version','v2','--calibration',str(campaign/'sources/noise_calibration.json')])
             if args.partition:
                 command.extend(['--partition', args.partition])
             response = execute(command, env=env)
@@ -203,6 +224,10 @@ def main():
     parser.add_argument('--output', type=Path, default=home / 'analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108')
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--temperatures', type=Path)
+    parser.add_argument('--product-version',choices=['v1','v2'],default='v1')
+    parser.add_argument('--calibration',type=Path)
+    parser.add_argument('--gpfs-url')
+    parser.add_argument('--only-run',type=int,help='Submit only this run and stop monitoring after its verified publication')
     parser.add_argument('--submit', action='store_true')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--max-active', type=int, default=4)
@@ -225,6 +250,8 @@ def main():
         prepare(args)
         return
     manifest = json.loads((args.campaign / 'manifest.json').read_text())
+    if args.only_run is not None and args.only_run not in manifest['runs']:
+        parser.error('--only-run must belong to the prepared pilot')
     if args.command == 'retry-failed':
         retry_failed(args.campaign, manifest)
         return
@@ -233,6 +260,8 @@ def main():
         print(json.dumps(dict(Counter(s['status'] for s in states)), indent=2))
         return
     if not manifest.get('gpfs_url'):
+        if manifest.get('product_version') == 'v2':
+            raise ValueError('v2 manifest is missing its separate GPFS output directory')
         manifest['gpfs_url'] = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())['output_url']
         save(args.campaign / 'manifest.json', manifest)
     verify_sources(args.campaign, manifest)
@@ -244,12 +273,18 @@ def main():
                 status = cycle(args, manifest)
                 if status['failed_runs']:
                     raise RuntimeError('Failed runs; further submissions stopped: ' + str(status['failed_runs']))
+                if args.only_run is not None:
+                    selected=json.loads((args.campaign/f'run{args.only_run:05d}.json').read_text())
+                    if selected['status']=='complete':
+                        print('Selected run complete and published:',args.only_run)
+                        return
                 if status['counts'].get('complete') == len(manifest['runs']):
                     break
                 if args.once:
                     return
                 time.sleep(60)
-    comparison = Path(manifest['output']) / 'noise_temperature_comparison.h5'
+    version=manifest.get('product_version','v1')
+    comparison = Path(manifest['output']) / ('noise_temperature_comparison_v2.h5' if version=='v2' else 'noise_temperature_comparison.h5')
     receipt = args.campaign / 'gpfs_comparison.json'
     if args.command == 'watch' and receipt.exists() and comparison.exists():
         previous = json.loads(receipt.read_text())
@@ -258,9 +293,14 @@ def main():
             return
     # Use the frozen reporting source and frozen temperature observations too.
     sys.path.insert(0, str(args.campaign / 'sources'))
-    from report_noise_temperature import report
-    report(Path(manifest['output']), args.campaign / 'sources/temperatures.csv', manifest['runs'],
-           product_version=manifest.get('product_version'))
+    if version=='v2':
+        from report_noise_v2 import report
+        report([Path(manifest['output'])/f'run{run:05d}_noise_v2.h5' for run in manifest['runs']],
+               args.campaign/'sources/temperatures.csv',Path(manifest['output']))
+    else:
+        from report_noise_temperature import report
+        report(Path(manifest['output']), args.campaign / 'sources/temperatures.csv', manifest['runs'],
+               product_version=manifest.get('product_version'))
     remote_name = comparison.stem + '_v1.h5' if manifest.get('product_version') == 'v1' else comparison.name
     remote = publish(comparison, manifest['gpfs_url'].rstrip('/') + '/' + remote_name,
                      args.campaign / 'remote_checks')

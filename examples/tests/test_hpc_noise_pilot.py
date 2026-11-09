@@ -37,6 +37,46 @@ class SlurmPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Frozen source changed'):
                 noise_pilot.verify_sources(args.campaign, manifest)
 
+    def test_v2_preparation_and_single_run_gate_use_frozen_calibration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            args,_=self.prepare(root)
+            args.campaign=root/'campaign-v2';args.output=root/'output-v2'
+            args.product_version='v2'
+            args.calibration=noise_pilot.ROOT/'config/noise_calibration_v2.json'
+            args.gpfs_url='davs://example/pilot-v2'
+            noise_pilot.prepare(args)
+            manifest=json.loads((args.campaign/'manifest.json').read_text())
+            self.assertEqual(manifest['product_version'],'v2')
+            self.assertTrue((args.campaign/'sources/report_noise_v2.py').is_file())
+            noise_pilot.verify_sources(args.campaign,manifest)
+            args.submit=True;args.max_active=4;args.only_run=680
+            with mock.patch.object(noise_pilot,'execute',return_value='Submitted job 500: run 680\n') as command:
+                status=noise_pilot.cycle(args,manifest)
+            self.assertEqual(status['counts'],{'submitted':1,'prepared':11})
+            self.assertEqual(command.call_count,1)
+            argv=command.call_args.args[0]
+            self.assertEqual(argv[argv.index('--product-version')+1],'v2')
+            self.assertEqual(argv[argv.index('--calibration')+1],str(args.campaign/'sources/noise_calibration.json'))
+            jobdir=args.output/'jobs/JOB_500';jobdir.mkdir()
+            (jobdir/'job_status.json').write_text('{"run":680,"exit_code":0}')
+            (jobdir/'run00680_noise_v2.h5').write_bytes(b'valid-v2')
+            with mock.patch('noise_temperature_pilot.validate',return_value={}) as validate, \
+                 mock.patch.object(noise_pilot,'execute',return_value='500 RUNNING\n') as command, \
+                 mock.patch.object(noise_pilot,'publish',return_value={'url':'davs://example/pilot-v2/run00680_noise_v2.h5'}) as published:
+                status=noise_pilot.cycle(args,manifest)
+            self.assertEqual(status['counts'],{'complete':1,'prepared':11})
+            self.assertEqual(command.call_count,1)
+            self.assertEqual(validate.call_args.kwargs['product_version'],'v2')
+            self.assertEqual(published.call_args.args[1],'davs://example/pilot-v2/run00680_noise_v2.h5')
+
+    def test_v2_refuses_reusing_v1_campaign(self):
+        with tempfile.TemporaryDirectory() as directory:
+            args,_=self.prepare(Path(directory))
+            args.product_version='v2'
+            with self.assertRaisesRegex(ValueError,'another version'):
+                noise_pilot.prepare(args)
+
     def test_retry_archives_failures_without_submitting_or_changing_other_runs(self):
         with tempfile.TemporaryDirectory() as directory:
             args,manifest=self.prepare(Path(directory))
