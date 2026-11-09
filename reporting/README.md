@@ -101,3 +101,9 @@ La fascia grigia mostra il minimo-massimo fra i tre modi, non un'incertezza o
 una misura di diffusione stocastica. I valori sono salvati in
 `data/v2_pilot/ac_rms_relative_to_run680.csv`. Le temperature rimangono assolute.
 La v14 conserva l'istantanea dei tempi e della diagnosi CPU della v13.
+
+La v15 estende la stessa rappresentazione alla slide 23: ciascuna delle 27
+curve modo–banda è riferita al proprio RMS nel run 680. I tre pannelli usano
+la stessa scala percentuale e la data reale di acquisizione. I livelli assoluti
+rimangono negli HDF5 e nelle tabelle; il grafico mostra la deriva relativa.
+I 324 punti sono in `data/v2_pilot/band_rms_relative_to_run680.csv`.

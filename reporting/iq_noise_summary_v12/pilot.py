@@ -94,7 +94,8 @@ def figures(directory,baseline,out,sha):
     fig.suptitle('Common starting level: each mode is referenced to its own run 680 RMS')
     fig.tight_layout();save(fig,'v2_temperature_and_ac')
 
-    fig,axes=plt.subplots(3,1,figsize=(12,5.3),sharex=True)
+    fig,axes=plt.subplots(3,1,figsize=(12,5.3),sharex=True,sharey=True)
+    band_relative_rows=[]
     for ax,mode in zip(axes,MODES):
         for index,offset in enumerate((-1e6,-5e5,-2.5e5,-1e5,0,1e5,2.5e5,5e5,1e6)):
             values=[]
@@ -102,12 +103,20 @@ def figures(directory,baseline,out,sha):
                 with h5py.File(path) as source:
                     events=source[f'filtered_bands/modes/{mode}/band_{index:02d}/events']
                     values.append(float(np.sqrt(np.average(events['rms_input_v'][:]**2,weights=events['n'][:])))*1e9)
-            ax.plot(hours,values,'o-' if offset==0 else '--' if offset<0 else '-',
+            values=np.asarray(values)
+            changes=100*(values/values[0]-1)
+            for run,date,value in zip(runs,times,changes):
+                band_relative_rows.append(dict(run=run,mode=mode,offset_hz=offset,
+                                               acquisition_date=date.isoformat(),change_pct=float(value)))
+            ax.plot(times,changes,'o-' if offset==0 else '--' if offset<0 else '-',
                     lw=1.5 if offset==0 else .8,ms=2,label=f'{offset/1000:+g} kHz',
                     color='#24364B' if offset==0 else ('#3B82B8','#007F86','#A46E18','#965F96')[int(np.where(np.array([1e5,2.5e5,5e5,1e6])==abs(offset))[0][0])])
-        ax.set_ylabel(mode+'\nRMS [nV]')
+        ax.axhline(0,color='#66768A',lw=.5)
+        ax.set_ylabel(mode+'\nRMS change [%]')
     axes[0].legend(ncol=5,fontsize=8,loc='lower center',bbox_to_anchor=(.5,1.02))
-    axes[-1].set_xlabel('Acquisition clock time from run 680 [h]')
+    axes[-1].set_xlabel('Acquisition clock time · Europe/Rome (CEST)')
+    axes[-1].xaxis.set_major_formatter(mdates.DateFormatter('%d %b\n%H:%M',tz=TZ))
+    write_csv(report_dir/'band_rms_relative_to_run680.csv',band_relative_rows)
     fig.tight_layout();save(fig,'v2_nine_band_levels')
 
     fig,axes=plt.subplots(1,3,figsize=(12,4.1),sharex=True,sharey=True)
@@ -164,8 +173,10 @@ def append(deck,page,pictures,findings):
          'One complex mean per run is removed. Lower curves show 100*(AC_RMS_mode(run)/AC_RMS_mode(680)-1), not absolute voltage. '
          'Only the first selected run is the baseline; subsequent runs retain measured differences. Grey fill is the minimum-to-maximum range across three modes, not an uncertainty or stochastic diffusion estimate. '
          'Constant gain cancels in these ratios. Temperatures are actual AVS readings; no interpolated observations.'),
-        ('Nine equal frequency bands after DC removal','Three modes × nine nominal 50 kHz filters · continuous FIR state across SPEC','v2_nine_band_levels',
-         'Input run mean removed before mixing and FIR. Filter-output coherent means are retained in the principal RMS. Nominal input-referred nV; no RF watts or noise-temperature interpretation.'),
+        ('Nine frequency bands: common origin and drift','Each mode–band curve starts at 0% in run 680 · common vertical scale · actual acquisition dates','v2_nine_band_levels',
+         'Input run mean removed before mixing and FIR. Filter-output coherent means are retained in the principal RMS. '
+         'Each curve is 100*(RMS_mode,band(run)/RMS_mode,band(680)-1), with an independent fixed baseline for that mode and band. '
+         'All panels share the same percentage scale; absolute band levels are not compared in this plot. Constant normalization gain cancels.'),
         ('Removing DC changes the central-band drift','Same twelve runs and filters · v1/v2 central RMS compared with the sidebands','v1_v2_central_drift',
          'The v1 central TM011 decline reverses after run-mean subtraction. A changing constant complex component accounted for much of the earlier difference; this does not identify its hardware or physical origin.'),
         ('Temperature associations after removing run DC','12 run summaries · r|time removes an intercept and a linear time trend','v2_temperature_associations',
