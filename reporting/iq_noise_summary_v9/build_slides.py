@@ -154,19 +154,50 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
     for x in (3.32,6.52,9.72):deck.text(s,x,4.73,.4,.5,'←',25,True)
     deck.text(s,.7,6.1,11.9,.5,'Reset only between runs. Local scratch is cleaned after success; persistent HDF5 copies are retained.',15)
 
+    s=page('Code structure: reading, analysis and export',
+           'analyze_midas_iq_noise.py orchestrates reading, statistics, filtering and HDF5 export.','METHODS | CODE',
+           'Pass 1 computes raw amplitude statistics and, in v2, ComplexMoments for the complete selected run. '
+           'Pass 2 retains raw RunStatistics for comparison and feeds run-mean-subtracted IQ to FilteredBandChecks in v2. '
+           'BandFilter preserves FIR tails and oscillator sample position across SPEC; FilterWorkspace shares bounded caches. '
+           'Exports contain independent raw and DC-removed definitions; iq_noise_io serializes the result and embedded figures.')
+    deck.rect(s,.7,1.85,11.9,.85,'#FFFFFF')
+    deck.text(s,.95,2.,11.4,.4,'main(): arguments → reference / calibration → run configuration',22,True,slides.COLORS[0])
+    deck.text(s,2.15,2.73,.5,.45,'↓',25,True)
+    code_blocks=[(.7,'PASS 1 · establish run moments',
+                  'MidasFile(..., use_numpy=True)\nanalyze_mode()\nComplexMoments.update() [v2]\n→ run means, ranges and traces',slides.COLORS[0]),
+                 (4.7,'PASS 2 · process the stream',
+                  'process_second_mode()\nRunStatistics.update()\nFilteredBandChecks.update()\nBandFilter.process()',slides.COLORS[1]),
+                 (8.7,'EXPORT · one scientific file',
+                  'RunStatistics.export()\nFilteredBandChecks.export()\nbuild_results()\nsave_results_h5()',slides.COLORS[2])]
+    for x,title,body,color in code_blocks:
+        deck.rect(s,x,3.25,3.55,2.45,'#FFFFFF')
+        deck.rect(s,x,3.25,.06,2.45,color)
+        deck.text(s,x+.17,3.43,3.18,.65,title,17,True,color)
+        deck.text(s,x+.17,4.3,3.18,1.05,body,13)
+    for x in (4.28,8.28):deck.text(s,x,4.3,.4,.5,'→',25,True)
+    deck.text(s,.8,6.,11.7,.65,
+              'Statistics: iq_noise_statistics.py · DC/AC: iq_noise_v2.py\nFIR bands: analyze_iq_filtered_bands.py · HDF5: iq_noise_io.py',15)
+
     s=page('Definitions: raw amplitude, DC and AC are different',
            'v1 and v2 share the raw convention; filtered v2 removes one complex mean per run.','METHODS',
            'Amplitude standard deviation in v1 is not the complex AC RMS in v2. No mean is removed separately per SPEC. '
            'The band-output coherent mean is retained in the principal filtered RMS. '
            'The nominal scalar normalization does not also apply frequency-dependent kz.')
-    deck.text(s,.8,2.,11.7,.65,'z = I − jQ        A = |z|        phase = arg(z)',27,True)
-    deck.text(s,.8,3.,11.7,.65,'μz = mean_run(z)        zAC = z − μz',27,True,slides.COLORS[0])
-    deck.text(s,.8,4.,11.7,.65,'RMS²total = |μz|² + mean(|zAC|²)',27,True,slides.COLORS[1])
-    deck.bullets(s,.8,5.,11.7,[
-        'v1 thresholds: mean(A) + k std(A), k = 3, 5, 7; these are not detection significances.',
-        'v2 normalization: explicit calibration JSON; divide voltages by 10^(GdB/20).',
-        f'Current nominal G = {gain:g} dB; no calibrated RF watts or noise-temperature claim.'
-    ],17,.1)
+    cards=[(.7,1.9,'Complex signal',slides.COLORS[0],'z = I − jQ     [V]',
+            'I and Q are the measured voltage quadratures.'),
+           (6.8,1.9,'Envelope and phase',slides.COLORS[1],'A = |z|     [V]\nφ = arg(z)     [rad]',''),
+           (.7,4.,'Run DC and complex AC',slides.COLORS[2],
+            'μz = mean_run(z)     [V]\nzAC = z − μz     [V]\nRMS_AC = √mean(|zAC|²)     [V]',''),
+           (6.8,4.,'Mean-square voltages',slides.NAVY,
+            'PDC = |μz|²     [V²]\nPAC = mean(|zAC|²)     [V²]\nPtotal = PDC + PAC     [V²]','')]
+    for x,y,title,color,formula,detail in cards:
+        deck.rect(s,x,y,5.8,1.85,'#FFFFFF')
+        deck.rect(s,x,y,.06,1.85,color)
+        deck.text(s,x+.2,y+.14,5.3,.4,title,19,True,color)
+        deck.text(s,x+.2,y+.69,5.3,1.05,formula,20)
+        if detail:deck.text(s,x+.2,y+1.3,5.3,.4,detail,13)
+    deck.text(s,.8,6.12,11.7,.6,
+              f'σA = std(A) differs from RMS_AC. Nominal gain: {gain:g} dB, specified in the calibration JSON.\nVoltages ÷ 10^(GdB/20); mean-square voltages ÷ 10^(GdB/10); phase unchanged. V² are not RF watts.',14)
 
     s=page('Outputs: a small number of aggregate products',
            'Current production formats; legacy NPZ/JSON/PNG sidecars are not the publication target.','PRODUCTS',

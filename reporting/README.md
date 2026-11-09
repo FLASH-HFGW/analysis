@@ -87,3 +87,10 @@ python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
   --periodicity-directory /home/mazzitel/HFGW/analysis-work/Run2/staging/legacy-repository/autoreco/noise_continuous/periodicity_run680 \
   --version v12 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v12
 ```
+
+La v13 aggiunge dopo il flusso operativo un diagramma del codice (slide 3),
+con le funzioni dei due passaggi e i moduli di statistica, DC/AC, FIR e HDF5.
+La precedente slide 3 delle definizioni diventa la 4: quattro riquadri distinti
+per segnale complesso, inviluppo/fase, DC/AC e quantità quadratiche, con unità
+e normalizzazione separate. Si rigenera con gli stessi input della v12,
+usando `--version v13` e una nuova directory `--out`.
