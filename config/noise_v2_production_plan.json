@@ -50,5 +50,24 @@
     939
   ],
   "campaign": "/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v2_20261109",
-  "gpfs_url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v2_20261109"
+  "gpfs_url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v2_20261109",
+  "scientific_pilot_validation": {
+    "complete": true,
+    "runs": [
+      680,
+      704,
+      727,
+      751,
+      774,
+      798,
+      821,
+      845,
+      868,
+      892,
+      915,
+      939
+    ],
+    "evidence": "12 complete published HPC v2 HDF5s validated and imported into the bulk campaign; comparison in presentation v12 data/v2_pilot.",
+    "cpu_allocation_fix_still_pending": true
+  }
 }

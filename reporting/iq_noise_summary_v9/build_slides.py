@@ -76,7 +76,7 @@ def affinity_snapshot(root):
         scope='Two sampled physical hosts; does not map all 95 offload environments or establish a controlled throughput benchmark.')
 
 
-def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
+def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=None,periodicity_directory=None):
     out.mkdir(parents=True,exist_ok=True)
     assets=out/'assets';assets.mkdir(exist_ok=True)
     data=out/'data';data.mkdir(exist_ok=True)
@@ -85,6 +85,10 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
     original=slides.Presentation(baseline/'iq_noise_summary_v8.pptx')
     with h5py.File(v2) as source:
         gain=float(source['dc_removed/calibration/configuration/total_db'][()])
+    pilot_data=periodicity_data=None
+    if v2_pilot is not None:
+        from iq_noise_summary_v12 import pilot
+        pilot_pictures,pilot_findings,pilot_data=pilot.figures(v2_pilot,baseline,out,sha)
     deck=slides.Deck();mapping=[]
     def page(title,subtitle,section,notes='',source='Source: current analysis code and versioned HDF5 products; rebuild provenance in data/snapshot.json.'):
         s=deck.new(title,subtitle,source,notes)
@@ -124,7 +128,8 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
         'Measure amplitude, phase, IQ structure, threshold exceedances and filtered-band levels.',
         'Separate within-run fluctuations, between-run drift and temperature associations.',
         '1,000 SPEC per run; 1,048,576 complex samples per SPEC and mode.',
-        'Evidence sets: 260 historical full-band runs; 12 complete filtered v1 runs; one full-run v2 example here.'
+        ('Evidence sets: 260 historical full-band runs; 12 complete filtered v1 and v2 pilot runs.' if pilot_data is not None
+         else 'Evidence sets: 260 historical full-band runs; 12 complete filtered v1 runs; one full-run v2 example here.')
     ],19,.2)
 
     s=page('From MIDAS to verified scientific products',
@@ -243,6 +248,15 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
     for number in (4,5,6,7):reuse(number,'SINGLE RUN | RAW DIAGNOSTICS')
     reuse(9,'SINGLE RUN | SPECTRAL CHECK',
           'Run 680 · first five SPEC blocks (1.049 s) · continuous-stream spectrum and covariance.')
+    if periodicity_directory is not None:
+        from iq_noise_summary_v12 import pilot
+        plot,periodicity_data=pilot.periodicity(periodicity_directory,assets,sha)
+        spectral=deck.slides[-1]
+        for item in spectral['items']:
+            if item['kind']=='image':item['path']=str(plot)
+        deck.text(spectral,10.15,5.55,2.55,.98,
+                  'Lag = time separation.\n1 sample = 0.2 μs.\nRe R / R0 = real\nnormalized covariance.\nZero lag = 1 (not shown).',11)
+        spectral['notes']+=' '+periodicity_data['definition']+' Positive: concordant IQ fluctuations; negative: opposite; zero: no linear real-part correlation, not statistical independence.'
 
     s1=validate(v1,680,'v1');s2=validate(v2,680,'v2')
     metrics=[]
@@ -279,7 +293,7 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
         'Phase winding alone does not identify a coherent periodic signal.',
         f"Run-DC removal changes central TM011 RMS by {next(r['change_pct'] for r in metrics if r['mode']=='TM011'):+.2f}% in run 680."
     ],[
-        'Complete the v2 pilot and retain DC/AC separately for every mode.',
+        ('Use the complete v2 pilot to separate complex offsets from fluctuations.' if pilot_data is not None else 'Complete the v2 pilot and retain DC/AC separately for every mode.'),
         'Validate the magnitude-noise model and low-amplitude phase artefacts.',
         'Obtain numerical kz(f) curves before a full RF calibration.'
     ],'Source: run 680 raw diagnostics, five-SPEC spectral check, and complete run 680 v2.',
@@ -308,31 +322,34 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
         'Test a common trend without labelling it as independently measured gain.'
     ],'Source: historical 260-run summaries retained from v5/v8; current v1 production is a separate campaign.')
 
-    for number in (20,21,22,23,24):reuse(number,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
-    # Existing numerical table becomes the closing scientific summary of this section.
-    reuse(25,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
-    s=deck.slides[-1]
-    for item in s['items']:
-        if item['kind']=='text' and item['text']==s['title']:item['text']='Temperature: conclusions and next steps'
-        elif item['kind']=='text' and item['text'].startswith('Next:'):
-            item['text']=slides.wrap('Next: complete the DC-removed v2 pilot; compare temperature with time and common trends; calibrate the frequency response.',item['w'],item['size'])
-    s['title']='Temperature: conclusions and next steps'
-    s['notes']+=' v2 currently contributes one full-run example only; no mixed-version thermal regression is shown.'
+    if pilot_data is not None:
+        pilot.append(deck,page,pilot_pictures,pilot_findings)
+    else:
+        for number in (20,21,22,23,24):reuse(number,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
+        reuse(25,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
+        s=deck.slides[-1]
+        for item in s['items']:
+            if item['kind']=='text' and item['text']==s['title']:item['text']='Temperature: conclusions and next steps'
+            elif item['kind']=='text' and item['text'].startswith('Next:'):
+                item['text']=slides.wrap('Next: complete the DC-removed v2 pilot; compare temperature with time and common trends; calibrate the frequency response.',item['w'],item['size'])
+        s['title']='Temperature: conclusions and next steps'
+        s['notes']+=' v2 currently contributes one full-run example only; no mixed-version thermal regression is shown.'
 
     stamp=datetime.now(ZoneInfo('Europe/Rome')).isoformat()
     snapshot=dict(built_rome=stamp,deck_version=version,baseline=str(baseline),
         baseline_model_sha256=sha(baseline/'slide_model.json'),baseline_pptx_sha256=sha(baseline/'iq_noise_summary_v8.pptx'),
         run680_v1=dict(path=str(v1),sha256=sha(v1)),run680_v2=dict(path=str(v2),sha256=sha(v2)),
         h5_roots_v2=h5_roots,scientific_gain_db=gain,
-        scopes=dict(historical_full_band_runs=260,filtered_v1_pilot_runs=12,v2_runs_used_here=[680]),
+        scopes=dict(historical_full_band_runs=260,filtered_v1_pilot_runs=12,v2_runs_used_here=pilot_data['runs'] if pilot_data else [680]),
         reused_slide_mapping=mapping,
         affinity_diagnosis_included=affinity is not None,
+        v2_pilot=pilot_data,periodicity=periodicity_data,
         note='Reorganization draft; baseline charts remain tied to their original evidence sets; v2 is not merged into v1.')
     (data/'snapshot.json').write_text(json.dumps(snapshot,indent=2)+'\n')
     slides.export(deck,out,version=version,prepared=datetime.now(ZoneInfo('Europe/Rome')).strftime('%-d %B %Y'))
     (out/'README.md').write_text(f'# IQ noise summary {version} — reorganized narrative\n\n'
         'Scope/methods/storage → single run and conclusions → ensemble and conclusions → temperatures and conclusions.\n'
-        'Historical full-band 260-run context, complete 12-run v1 filtered pilot and one complete v2 run are labelled separately.\n'
+        'Scientific evidence sets are labelled separately; full v2 pilot inclusion is recorded in data/snapshot.json.\n'
         'Diagram blocks and text are editable in PPTX. Numerical comparison and provenance are in data/.\n')
 
 
@@ -345,10 +362,12 @@ if __name__=='__main__':
     parser.add_argument('--version',default='v9')
     parser.add_argument('--include-timings',action='store_true')
     parser.add_argument('--affinity-diagnostics',type=Path)
+    parser.add_argument('--v2-pilot-directory',type=Path)
+    parser.add_argument('--periodicity-directory',type=Path)
     parser.add_argument('--htc-output',type=Path,default=WORK/'noise_fullrange_v1_20261109')
     parser.add_argument('--htc-campaign',type=Path,default=Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109'))
     args=parser.parse_args()
     timings=timing_snapshot(args.htc_output,args.htc_campaign) if args.include_timings else None
     affinity=affinity_snapshot(args.affinity_diagnostics) if args.affinity_diagnostics else None
     if affinity is not None and timings is None:parser.error('--affinity-diagnostics requires --include-timings')
-    build(args.baseline,args.v1,args.v2,args.out,args.version,timings,affinity)
+    build(args.baseline,args.v1,args.v2,args.out,args.version,timings,affinity,args.v2_pilot_directory,args.periodicity_directory)

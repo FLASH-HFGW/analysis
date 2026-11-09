@@ -70,3 +70,20 @@ python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
   --affinity-diagnostics /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_cpu_diagnostic_20261109 \
   --version v11 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v11
 ```
+
+La v12 include tutti i dodici HDF5 v2 pubblicati, validati separatamente dalla
+v1, e aggiorna la sezione termica con: ampiezze AC riferite all'ingresso nominale,
+nove bande dopo sottrazione della media complessa del run, confronto v1/v2,
+correlazioni prima/dopo rimozione del trend temporale lineare e residui dopo
+divisione per il trend comune descrittivo. Il trend comune non è un guadagno
+misurato indipendentemente. Tabelle, figure, HDF5 aggregato e checksum sono in
+`data/v2_pilot/`. La slide 11 rigenera il grafico storico con etichette esplicite
+per lag e autocovarianza normalizzata; conserva il suo ambito di cinque SPEC.
+
+```bash
+python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
+  --affinity-diagnostics /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_cpu_diagnostic_20261109 \
+  --v2-pilot-directory /home/mazzitel/HFGW/analysis-work/Run2/reports/pilot_v2_snapshot_20261109 \
+  --periodicity-directory /home/mazzitel/HFGW/analysis-work/Run2/staging/legacy-repository/autoreco/noise_continuous/periodicity_run680 \
+  --version v12 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v12
+```
