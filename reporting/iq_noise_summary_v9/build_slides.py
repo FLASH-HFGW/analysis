@@ -10,6 +10,7 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import sys
 from zoneinfo import ZoneInfo
@@ -21,6 +22,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from noise_temperature_pilot import validate
+from iq_noise_io import read_summary
 
 WORK=Path('/home/mazzitel/HFGW/analysis-work/Run2/reports')
 
@@ -32,7 +34,30 @@ def sha(path):
     return h.hexdigest()
 
 
-def build(baseline,v1,v2,out):
+def timing_snapshot(output,campaign):
+    rows=[]
+    for path in sorted(output.glob('run*_noise.h5')):
+        s=read_summary(path)
+        if s.get('status')!='success' or not s.get('reached_eof') or s.get('product_version')!='v1':
+            continue
+        run=int(path.name[3:8]);t=s['performance']['timings']['total']
+        state=json.loads((campaign/f'{run:05d}/state.json').read_text())
+        log=campaign/f'{run:05d}/stdout-{state["cluster"]}.0.txt'
+        marks={k:datetime.fromisoformat(v.replace('Z','+00:00')) for k,v in
+               re.findall(r'^(Download|Analysis|Complete) run\d+ (\S+)',log.read_text(),re.M)}
+        rows.append(dict(run=run,cluster=state['cluster'],analysis_min=t['wall_s']/60,
+                         cpu_wall_pct=100*t['cpu_s']/t['wall_s'],
+                         download_min=(marks['Analysis']-marks['Download']).total_seconds()/60,
+                         product_sha256=sha(path),log_sha256=sha(log)))
+    if not rows:raise ValueError('No complete current HTC timing evidence')
+    return dict(built_rome=datetime.now(ZoneInfo('Europe/Rome')).isoformat(),htc_runs=rows,
+        hpc_source='User-provided sacct and worker logs for jobs 4297 and 4311; v2 HDF5 performance for run 680.',
+        hpc=[dict(label='HPC v1 before optimization',job=4297,analysis_min=(106*60+58)/60,download_min=215/60,cpu_wall_pct=100*6361/6418),
+             dict(label='HPC v1 optimized',job=4311,analysis_min=(71*60+56)/60,download_min=119/60,cpu_wall_pct=100*4278/4316)],
+        limitations='Early completed HTC subset, not a matched-run/hardware benchmark. CPU/wall is process accounting, not hypervisor telemetry; these jobs started before the 90-job increase.')
+
+
+def build(baseline,v1,v2,out,version='v9',timings=None):
     out.mkdir(parents=True,exist_ok=True)
     assets=out/'assets';assets.mkdir(exist_ok=True)
     data=out/'data';data.mkdir(exist_ok=True)
@@ -44,7 +69,7 @@ def build(baseline,v1,v2,out):
     deck=slides.Deck();mapping=[]
     def page(title,subtitle,section,notes='',source='Source: current analysis code and versioned HDF5 products; rebuild provenance in data/snapshot.json.'):
         s=deck.new(title,subtitle,source,notes)
-        s['footer']=section+' | DECK v9'
+        s['footer']=section+' | DECK '+version
         return s
     def reuse(number,section,subtitle=None):
         s=copy.deepcopy(old[number-1])
@@ -58,7 +83,7 @@ def build(baseline,v1,v2,out):
             for item in s['items']:
                 if item['kind']=='text' and item['text']==s['subtitle']:item['text']=subtitle
             s['subtitle']=subtitle
-        s['footer']=section+' | DECK v9'
+        s['footer']=section+' | DECK '+version
         deck.slides.append(s)
         mapping.append(dict(slide=len(deck.slides),baseline_v8_slide=number,title=s['title']))
     def conclusions(title,section,findings,next_steps,source,notes=''):
@@ -121,7 +146,7 @@ def build(baseline,v1,v2,out):
 
     s=page('Outputs: a small number of aggregate products',
            'Current production formats; legacy NPZ/JSON/PNG sidecars are not the publication target.','PRODUCTS',
-           'Scientific product versions v1/v2 differ from presentation version v9. Per-run v1 worker output is renamed with _v1 at publication. '
+           'Scientific product versions v1/v2 differ from the presentation version. Per-run v1 worker output is renamed with _v1 at publication. '
            'Comparison HDF5s include tables, figures and provenance. A final comparison requires the complete campaign.')
     outputs=[('PER RUN','runNNNNN_noise_v1.h5 / runNNNNN_noise_v2.h5','Raw diagnostics; bands; v2 DC/AC and calibration.'),
              ('CAMPAIGN','noise_temperature_comparison_v1.h5 / _v2.h5','Weighted per-run tables, temperature associations and figures.'),
@@ -154,6 +179,34 @@ def build(baseline,v1,v2,out):
         'Scratch, watch logs and loose plot files stay in local work areas.'
     ],18,.25)
     deck.text(s,.8,5.95,11.6,.65,'GPFS publication copies and verifies the HDF5; it does not delete persistent local copies.',17,True)
+
+    if timings is not None:
+        (data/'execution_timings.json').write_text(json.dumps(timings,indent=2)+'\n')
+        rows=timings['htc_runs']
+        median=lambda key:float(np.median([r[key] for r in rows]))
+        with h5py.File(v2) as source:
+            wall=float(source['summary/performance/timings/total/wall_s'][()])
+            cpu=float(source['summary/performance/timings/total/cpu_s'][()])
+        s=page('HTC and HPC: per-run time versus pool throughput',
+            f'One CPU per job · HTC: first {len(rows)} completed v1 runs · HPC: run 680 · not a matched hardware benchmark',
+            'EXECUTION | MEASURED SNAPSHOT',timings['limitations']+' '
+            'HPC timing uses the srun step; HTC and v2 use Python analysis timers, including plots. '
+            'Queue waiting and final controller publication are excluded. A low CPU/wall ratio identifies time outside process CPU; it does not diagnose whether scheduling, throttling or I/O caused it.',
+            'Sources: user-provided Slurm accounting (4297, 4311), v2 run 680 HDF5, current HTC HDF5/logs; data/execution_timings.json.')
+        headings=[(.7,4.5,'Evidence'),(5.2,2.0,'Analysis [min]'),(7.8,2.2,'Download [min]'),(10.55,2.,'CPU / wall')]
+        for x,w,label in headings:deck.text(s,x,1.95,w,.4,label,15,True)
+        values=[(r['label'],f"{r['analysis_min']:.1f}",f"{r['download_min']:.1f}",f"{r['cpu_wall_pct']:.1f}%") for r in timings['hpc']]
+        values += [('HPC v2: full run',f'{wall/60:.1f}','—',f'{100*cpu/wall:.1f}%'),
+                   (f'HTC v1: median of {len(rows)}',f"{median('analysis_min'):.1f}",f"{median('download_min'):.1f}",f"{median('cpu_wall_pct'):.1f}%")]
+        for i,row in enumerate(values):
+            for (x,w,_),value in zip(headings,row):deck.text(s,x,2.55+i*.51,w,.4,value,17)
+        fast=[r for r in rows if r['cpu_wall_pct']>=90]
+        slow=[r for r in rows if r['cpu_wall_pct']<90]
+        deck.bullets(s,.8,4.9,11.8,[
+            f'HTC variability: {len(fast)} completed runs near full CPU use; {len(slow)} below 90%. Cause not measured; this is not a controlled 24/48/90-job scaling test.',
+            'HPC: unused GPU reserved; cygno/CPU access rejected. HTC: 95 workers × 8 CPUs, but ~6 GB RAM permits one current 4-GB job per worker.',
+            'Tokens do not cap job count; a persistent monitor publishes results. Next: diagnose CPU availability and measure campaign throughput.'
+        ],15,.12)
 
     # Single-run section: retain the measured figures and their original scope.
     for number in (4,5,6,7):reuse(number,'SINGLE RUN | RAW DIAGNOSTICS')
@@ -236,7 +289,7 @@ def build(baseline,v1,v2,out):
     s['notes']+=' v2 currently contributes one full-run example only; no mixed-version thermal regression is shown.'
 
     stamp=datetime.now(ZoneInfo('Europe/Rome')).isoformat()
-    snapshot=dict(built_rome=stamp,deck_version='v9',baseline=str(baseline),
+    snapshot=dict(built_rome=stamp,deck_version=version,baseline=str(baseline),
         baseline_model_sha256=sha(baseline/'slide_model.json'),baseline_pptx_sha256=sha(baseline/'iq_noise_summary_v8.pptx'),
         run680_v1=dict(path=str(v1),sha256=sha(v1)),run680_v2=dict(path=str(v2),sha256=sha(v2)),
         h5_roots_v2=h5_roots,scientific_gain_db=gain,
@@ -244,8 +297,8 @@ def build(baseline,v1,v2,out):
         reused_slide_mapping=mapping,
         note='Reorganization draft; baseline charts remain tied to their original evidence sets; v2 is not merged into v1.')
     (data/'snapshot.json').write_text(json.dumps(snapshot,indent=2)+'\n')
-    slides.export(deck,out,version='v9',prepared=datetime.now(ZoneInfo('Europe/Rome')).strftime('%-d %B %Y'))
-    (out/'README.md').write_text('# IQ noise summary v9 — reorganized narrative\n\n'
+    slides.export(deck,out,version=version,prepared=datetime.now(ZoneInfo('Europe/Rome')).strftime('%-d %B %Y'))
+    (out/'README.md').write_text(f'# IQ noise summary {version} — reorganized narrative\n\n'
         'Scope/methods/storage → single run and conclusions → ensemble and conclusions → temperatures and conclusions.\n'
         'Historical full-band 260-run context, complete 12-run v1 filtered pilot and one complete v2 run are labelled separately.\n'
         'Diagram blocks and text are editable in PPTX. Numerical comparison and provenance are in data/.\n')
@@ -257,4 +310,10 @@ if __name__=='__main__':
     parser.add_argument('--v1',type=Path,default=WORK/'pilot_snapshot_20261109/run00680_noise_v1.h5')
     parser.add_argument('--v2',type=Path,default=WORK/'noise_v2_development_20261109/run680_full_published/run00680_noise_v2.h5')
     parser.add_argument('--out',type=Path,default=WORK/'iq_noise_summary_v9')
-    args=parser.parse_args();build(args.baseline,args.v1,args.v2,args.out)
+    parser.add_argument('--version',default='v9')
+    parser.add_argument('--include-timings',action='store_true')
+    parser.add_argument('--htc-output',type=Path,default=WORK/'noise_fullrange_v1_20261109')
+    parser.add_argument('--htc-campaign',type=Path,default=Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109'))
+    args=parser.parse_args()
+    timings=timing_snapshot(args.htc_output,args.htc_campaign) if args.include_timings else None
+    build(args.baseline,args.v1,args.v2,args.out,args.version,timings)
