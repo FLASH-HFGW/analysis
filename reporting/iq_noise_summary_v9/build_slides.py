@@ -54,10 +54,29 @@ def timing_snapshot(output,campaign):
         hpc_source='User-provided sacct and worker logs for jobs 4297 and 4311; v2 HDF5 performance for run 680.',
         hpc=[dict(label='HPC v1 before optimization',job=4297,analysis_min=(106*60+58)/60,download_min=215/60,cpu_wall_pct=100*6361/6418),
              dict(label='HPC v1 optimized',job=4311,analysis_min=(71*60+56)/60,download_min=119/60,cpu_wall_pct=100*4278/4316)],
-        limitations='Early completed HTC subset, not a matched-run/hardware benchmark. CPU/wall is process accounting, not hypervisor telemetry; these jobs started before the 90-job increase.')
+        limitations='Early completed HTC subset, not a matched-run/hardware benchmark or a controlled 24/48/90-job scaling test. CPU/wall is process accounting, not hypervisor telemetry.')
 
 
-def build(baseline,v1,v2,out,version='v9',timings=None):
+def affinity_snapshot(root):
+    observations=[];hashes={}
+    for path in sorted(root.glob('affinity-*/diagnostic.json')):
+        observed=json.loads(path.read_text())
+        host=observed['host']
+        probe=root/host/'diagnostic.json'
+        measured=json.loads(probe.read_text())
+        pinned=[p for p in observed['processes'] if p['affinity']=='0' and p['state']=='R (running)']
+        observations.append(dict(offload_host=host,production_processes_on_cpu0=len(pinned),
+                                 distinct_outer_cgroups=len({p['cgroup'] for p in pinned}),
+                                 probe_affinity=measured['affinity'],probe_cpu_wall_pct=measured['cpu_wall_pct'],
+                                 scheduler_settings=observed['settings']))
+        hashes[str(path)]=sha(path);hashes[str(probe)]=sha(probe)
+    if len(observations)<2:raise ValueError('Need two-host affinity evidence')
+    return dict(observations=observations,source_sha256=hashes,
+        conclusion='Runnable analyses in distinct offload cgroups share CPU 0 on sampled physical hosts; scheduler-assigned CPU 1 probes receive ~98% CPU. No production affinity was changed.',
+        scope='Two sampled physical hosts; does not map all 95 offload environments or establish a controlled throughput benchmark.')
+
+
+def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None):
     out.mkdir(parents=True,exist_ok=True)
     assets=out/'assets';assets.mkdir(exist_ok=True)
     data=out/'data';data.mkdir(exist_ok=True)
@@ -193,6 +212,10 @@ def build(baseline,v1,v2,out,version='v9',timings=None):
             'HPC timing uses the srun step; HTC and v2 use Python analysis timers, including plots. '
             'Queue waiting and final controller publication are excluded. A low CPU/wall ratio identifies time outside process CPU; it does not diagnose whether scheduling, throttling or I/O caused it.',
             'Sources: user-provided Slurm accounting (4297, 4311), v2 run 680 HDF5, current HTC HDF5/logs; data/execution_timings.json.')
+        if affinity is not None:
+            (data/'affinity_diagnosis.json').write_text(json.dumps(affinity,indent=2)+'\n')
+            s['notes']+=' '+affinity['conclusion']+' '+affinity['scope']
+            s['source']='Sources: Slurm/HDF5 timers; HTC logs; measured offload affinity and CPU probes. Evidence and hashes in data/.'
         headings=[(.7,4.5,'Evidence'),(5.2,2.0,'Analysis [min]'),(7.8,2.2,'Download [min]'),(10.55,2.,'CPU / wall')]
         for x,w,label in headings:deck.text(s,x,1.95,w,.4,label,15,True)
         values=[(r['label'],f"{r['analysis_min']:.1f}",f"{r['download_min']:.1f}",f"{r['cpu_wall_pct']:.1f}%") for r in timings['hpc']]
@@ -202,11 +225,19 @@ def build(baseline,v1,v2,out,version='v9',timings=None):
             for (x,w,_),value in zip(headings,row):deck.text(s,x,2.55+i*.51,w,.4,value,17)
         fast=[r for r in rows if r['cpu_wall_pct']>=90]
         slow=[r for r in rows if r['cpu_wall_pct']<90]
-        deck.bullets(s,.8,4.9,11.8,[
+        findings=[
             f'HTC variability: {len(fast)} completed runs near full CPU use; {len(slow)} below 90%. Cause not measured; this is not a controlled 24/48/90-job scaling test.',
             'HPC: unused GPU reserved; cygno/CPU access rejected. HTC: 95 workers × 8 CPUs, but ~6 GB RAM permits one current 4-GB job per worker.',
             'Tokens do not cap job count; a persistent monitor publishes results. Next: diagnose CPU availability and measure campaign throughput.'
-        ],15,.12)
+        ]
+        if affinity is not None:
+            counts=sorted(r['production_processes_on_cpu0'] for r in affinity['observations'])
+            findings=[
+                f'Measured contention on two physical hosts: {counts[0]} and {counts[-1]} analyses pinned to CPU 0; scheduler-assigned CPU 1 probes reached ~98% CPU.',
+                '95 offload environments are not 95 physical nodes. HPC reserves an unused GPU; cygno access to the CPU partition was rejected.',
+                'Before mass v2: coordinate outer/inner CPU affinity, benchmark allocated cores, then scale. Tokens do not impose a four-job cap.'
+            ]
+        deck.bullets(s,.8,4.9,11.8,findings,15,.12)
 
     # Single-run section: retain the measured figures and their original scope.
     for number in (4,5,6,7):reuse(number,'SINGLE RUN | RAW DIAGNOSTICS')
@@ -295,6 +326,7 @@ def build(baseline,v1,v2,out,version='v9',timings=None):
         h5_roots_v2=h5_roots,scientific_gain_db=gain,
         scopes=dict(historical_full_band_runs=260,filtered_v1_pilot_runs=12,v2_runs_used_here=[680]),
         reused_slide_mapping=mapping,
+        affinity_diagnosis_included=affinity is not None,
         note='Reorganization draft; baseline charts remain tied to their original evidence sets; v2 is not merged into v1.')
     (data/'snapshot.json').write_text(json.dumps(snapshot,indent=2)+'\n')
     slides.export(deck,out,version=version,prepared=datetime.now(ZoneInfo('Europe/Rome')).strftime('%-d %B %Y'))
@@ -312,8 +344,11 @@ if __name__=='__main__':
     parser.add_argument('--out',type=Path,default=WORK/'iq_noise_summary_v9')
     parser.add_argument('--version',default='v9')
     parser.add_argument('--include-timings',action='store_true')
+    parser.add_argument('--affinity-diagnostics',type=Path)
     parser.add_argument('--htc-output',type=Path,default=WORK/'noise_fullrange_v1_20261109')
     parser.add_argument('--htc-campaign',type=Path,default=Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109'))
     args=parser.parse_args()
     timings=timing_snapshot(args.htc_output,args.htc_campaign) if args.include_timings else None
-    build(args.baseline,args.v1,args.v2,args.out,args.version,timings)
+    affinity=affinity_snapshot(args.affinity_diagnostics) if args.affinity_diagnostics else None
+    if affinity is not None and timings is None:parser.error('--affinity-diagnostics requires --include-timings')
+    build(args.baseline,args.v1,args.v2,args.out,args.version,timings,affinity)

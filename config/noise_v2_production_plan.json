@@ -1,0 +1,24 @@
+{
+  "schema": "noise-production-readiness-v1",
+  "product_version": "v2",
+  "run_range_inclusive": [680, 939],
+  "calibration_file": "config/noise_calibration_v2.json",
+  "bulk_submission_started": false,
+  "status": "awaiting_cpu_allocation_validation",
+  "bulk_max_active": null,
+  "required_checks": [
+    "Validate the complete 12-run v2 scientific pilot and its calibration provenance.",
+    "Coordinate CPU allocation between outer offload containers and inner HTCondor; use the allocated physical CPU set.",
+    "Measure CPU-bound probes and production CPU/wall on multiple underlying physical hosts after correction.",
+    "Check host/core placement, RAM, download throughput and verified GPFS publication before choosing bulk concurrency."
+  ],
+  "diagnostic_evidence": {
+    "date": "2026-11-09",
+    "jobs": [3192, 3193, 3194, 3195, 3196, 3197],
+    "tier2_wn006_runnable_analyses_pinned_to_cpu0": 7,
+    "tier2_wn009_runnable_analyses_pinned_to_cpu0": 3,
+    "scheduler_assigned_cpu1_probe_cpu_wall_pct": [98.6464, 98.2875],
+    "scope": "Two physical hosts sampled; 95 offload names do not establish 95 independent physical nodes."
+  },
+  "note": "Operational readiness record, not a submission command or scheduler override. The ongoing v1 campaign and the HPC v2 pilot are separate. Do not copy the v1 90-job cap into bulk v2 without validating physical CPU allocation."
+}

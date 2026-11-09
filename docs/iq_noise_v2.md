@@ -1,5 +1,29 @@
 # IQ noise v2: DC, guadagno nominale e trend comuni
 
+## Preparazione della produzione massiva
+
+Il piano è registrato in [noise_v2_production_plan.json](../config/noise_v2_production_plan.json).
+La produzione massiva HTC v2 non è stata avviata e il limite di concorrenza
+resta da determinare: non si riusa automaticamente il limite di 90 della v1.
+Il pilot HPC v2 dei 12 run rimane un'attività separata.
+
+Il 9 novembre sei job diagnostici (3192–3197) hanno osservato, su due host
+fisici, sette e tre analisi pronte a calcolare ma tutte vincolate alla CPU 0.
+I probe assegnati dallo scheduler alla CPU 1 hanno ricevuto circa il 98% di CPU.
+I 95 nomi `offload-*` identificano ambienti contenitore, non dimostrano la
+disponibilità di 95 nodi fisici indipendenti. Non sono state cambiate affinità
+dei processi di produzione né impostazioni della facility.
+
+Prima della produzione massiva v2 si deve coordinare l'assegnazione CPU fra
+contenitori esterni e scheduler interno, rispettando i core fisici allocati.
+Si verificano poi su più host: affinità, rapporto CPU/wall di un carico CPU-bound,
+tempi di un run completo, memoria, download e pubblicazione verificata.
+Solo dopo si sceglie il limite operativo e si aumenta la concorrenza per gradi.
+Spostare tutti i job sulla CPU 1 riprodurrebbe la stessa contesa.
+
+Le prove complete sono conservate nell'area runtime esterna a Git:
+`noise_cpu_diagnostic_20261109/diagnosis.md`, `summary.json` e i `diagnostic.json`.
+
 La v2 mantiene I−iQ, il flusso continuo tra SPEC e i nove FIR della v1.
 Non modifica i prodotti v1 né i sorgenti congelati della produzione HTC in corso.
 Il nuovo prodotto si chiama `runNNNNN_noise_v2.h5`.

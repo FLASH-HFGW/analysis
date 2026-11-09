@@ -57,3 +57,16 @@ I numeri, gli hash degli input e i limiti del confronto sono salvati in
 python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
   --version v10 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v10
 ```
+
+La v11 corregge l'interpretazione delle risorse con la diagnosi misurata:
+gli ambienti offload campionati condividono host fisici e più analisi vengono
+vincolate alla stessa CPU 0. La slide sui tempi include le prove di affinità,
+il risultato dei probe sulla CPU 1 e il requisito di validare l'allocazione
+prima di scalare la produzione massiva v2. Copia misure e hash in
+`data/affinity_diagnosis.json`.
+
+```bash
+python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
+  --affinity-diagnostics /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_cpu_diagnostic_20261109 \
+  --version v11 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v11
+```
