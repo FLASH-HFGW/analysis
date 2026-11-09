@@ -14,7 +14,7 @@ python3 examples/noise_temperature_pilot.py prepare \
   --output /home/mazzitel/HFGW/analysis-work/Run2/reports/noise_fullrange_v1_20261109 \
   --run-range 680 939 --authorize-submissions \
   --gpfs-url davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v1_20261109
-python3 examples/noise_temperature_pilot.py watch --submit --max-active 48 \
+python3 examples/noise_temperature_pilot.py watch --submit --max-active 90 \
   --campaign /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109
 ```
 
