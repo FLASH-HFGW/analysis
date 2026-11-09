@@ -19,6 +19,8 @@ source "$HFGW_REPO_ROOT/examples/hpc/noise_python.sh"
 RUN=$((10#$HFGW_RUN))
 NAME=$(printf 'run%05d' "$RUN")
 PYTHON="$HFGW_PYTHON"
+PRODUCT_VERSION="${HFGW_NOISE_PRODUCT_VERSION:-v1}"
+[[ "$PRODUCT_VERSION" == v1 || "$PRODUCT_VERSION" == v2 ]] || exit 2
 SOURCE_DIR="${HFGW_NOISE_SOURCE_DIR:-$HFGW_REPO_ROOT/examples}"
 OUT_ROOT="${HFGW_NOISE_OUTPUT_ROOT:-$HOME/HFGW/analysis-work/Run2/reports/noise_temperature_pilot_v1_20261108/jobs}"
 OUTDIR="$OUT_ROOT/JOB_${SLURM_JOB_ID}"
@@ -51,6 +53,12 @@ for module in analyze_midas_iq_noise.py iq_noise_statistics.py iq_noise_io.py an
     cp -- "$SOURCE_DIR/$module" "$WORKDIR/"
 done
 cp -- "$HFGW_NOISE_REFERENCE" "$WORKDIR/noise_reference.json"
+if [[ "$PRODUCT_VERSION" == v2 ]]; then
+    : "${HFGW_NOISE_CALIBRATION:?v2 requires an explicit calibration}"
+    cp -- "$SOURCE_DIR/iq_noise_v2.py" "$WORKDIR/"
+    cp -- "$HFGW_NOISE_CALIBRATION" "$WORKDIR/noise_calibration.json"
+    PYTHONPATH="$WORKDIR:$PYTHONPATH" "$PYTHON" -c 'from pathlib import Path; from iq_noise_v2 import load_calibration; import sys; c=load_calibration(Path(sys.argv[1])); print("Normalization: total dB =", c["configuration"]["total_db"], "; SHA256 =", c["sha256"])' "$WORKDIR/noise_calibration.json"
+fi
 # Check the numerical dependencies before transferring a full MIDAS.
 "$PYTHON" "$HFGW_REPO_ROOT/examples/hpc/check_noise_environment.py"
 URL="davs://xfer-archive.cr.cnaf.infn.it:8443/${HFGW_INPUT_PATH:-flash/data/LNF}/${NAME}.mid.gz"
@@ -62,7 +70,10 @@ mv -- "$WORKDIR/${NAME}.mid.gz.part" "$WORKDIR/${NAME}.mid.gz"
 echo "Analyze I-iQ $NAME $(date -u +%FT%TZ)"
 ARGS=("$WORKDIR/${NAME}.mid.gz" --out-dir "$WORKDIR" \
     --global-reference "$WORKDIR/noise_reference.json" --iq-sign -1 \
-    --mode-workers 1 --h5-only --filtered-bands --product-version v1)
+    --mode-workers 1 --h5-only --filtered-bands --product-version "$PRODUCT_VERSION")
+if [[ "$PRODUCT_VERSION" == v2 ]]; then
+    ARGS+=(--calibration "$WORKDIR/noise_calibration.json")
+fi
 if [[ ${HFGW_MAX_EVENTS:-99999999} != 99999999 ]]; then
     ARGS+=(--max-events "$HFGW_MAX_EVENTS")
 fi

@@ -19,6 +19,8 @@ Usage: submit_one_run.sh RUN [options]
   --analysis KIND      fft (default) or noise (I-iQ, filtered bands, HDF5)
   --reference FILE     Common amplitude reference required for noise
   --resource KIND      noise allocation: cpu (no GPU) or gpu (legacy default)
+  --product-version V  noise scientific version: v1 (default) or v2
+  --calibration FILE   Explicit normalization JSON, required for v2; frozen at submission
   -h, --help           Show this help
 
 Examples:
@@ -41,11 +43,13 @@ WALLTIME=''
 LOG_DIR="${HFGW_SLURM_LOG_DIR:-$HOME/slurm_logs}"
 ANALYSIS_KIND=fft
 RESOURCE=gpu
+PRODUCT_VERSION=v1
+CALIBRATION=''
 REFERENCE="${HFGW_NOISE_REFERENCE:-}"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference|--resource)
+        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference|--resource|--product-version|--calibration)
             [[ $# -ge 2 && -n $2 ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
                 --account) ACCOUNT=$2 ;;
@@ -59,6 +63,8 @@ while [[ $# -gt 0 ]]; do
                 --analysis) ANALYSIS_KIND=$2 ;;
                 --reference) REFERENCE=$2 ;;
                 --resource) RESOURCE=$2 ;;
+                --product-version) PRODUCT_VERSION=$2 ;;
+                --calibration) CALIBRATION=$2 ;;
             esac
             shift 2 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
@@ -79,6 +85,14 @@ if [[ -z "$PARTITION" ]]; then
     if [[ "$RESOURCE" == cpu ]]; then PARTITION=CPU; else PARTITION=GPU; fi
 fi
 REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+[[ "$PRODUCT_VERSION" == v1 || "$PRODUCT_VERSION" == v2 ]] || { echo 'Product version must be v1 or v2' >&2; exit 2; }
+if [[ "$PRODUCT_VERSION" == v2 ]]; then
+    [[ "$ANALYSIS_KIND" == noise && -f "$CALIBRATION" ]] || {
+        echo 'v2 requires --analysis noise and --calibration FILE' >&2; exit 2;
+    }
+elif [[ -n "$CALIBRATION" ]]; then
+    echo '--calibration requires --product-version v2' >&2; exit 2
+fi
 JOB_SCRIPT="$REPO_ROOT/examples/hpc/job.sh"
 case "$ANALYSIS_KIND" in
     fft) ;;
@@ -89,6 +103,22 @@ case "$ANALYSIS_KIND" in
             echo 'Noise requires noise_job.sh and --reference FILE' >&2; exit 2;
         }
         export HFGW_NOISE_REFERENCE="$(readlink -f -- "$REFERENCE")"
+        export HFGW_NOISE_PRODUCT_VERSION="$PRODUCT_VERSION"
+        unset HFGW_NOISE_CALIBRATION
+        if [[ "$PRODUCT_VERSION" == v2 ]]; then
+            # A queued job must not observe later edits to normalization or sources.
+            SNAPSHOT_ROOT="${HFGW_RUNTIME_ROOT:-$HOME/HFGW/analysis-runtime/autoreco/Run2}/noise_submission_sources"
+            mkdir -p "$SNAPSHOT_ROOT"
+            SNAPSHOT=$(mktemp -d "$SNAPSHOT_ROOT/v2-run${RUN}.XXXXXX")
+            for module in analyze_midas_iq_noise.py iq_noise_statistics.py iq_noise_io.py analyze_iq_filtered_bands.py iq_noise_v2.py; do
+                cp -- "${HFGW_NOISE_SOURCE_DIR:-$REPO_ROOT/examples}/$module" "$SNAPSHOT/"
+            done
+            cp -- "$CALIBRATION" "$SNAPSHOT/noise_calibration.json"
+            cp -- "$HFGW_NOISE_REFERENCE" "$SNAPSHOT/noise_reference.json"
+            export HFGW_NOISE_SOURCE_DIR="$SNAPSHOT"
+            export HFGW_NOISE_CALIBRATION="$SNAPSHOT/noise_calibration.json"
+            export HFGW_NOISE_REFERENCE="$SNAPSHOT/noise_reference.json"
+        fi
         [[ -n "$WALLTIME" ]] || WALLTIME=03:00:00
         ;;
     *) echo 'Analysis must be fft or noise' >&2; exit 2 ;;

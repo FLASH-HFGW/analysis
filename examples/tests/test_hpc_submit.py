@@ -31,6 +31,9 @@ from pathlib import Path
 Path(os.environ['SUBMIT_CAPTURE']).write_text(json.dumps({'args':sys.argv[1:],
     'token':os.environ['BEARER_TOKEN'],'run':os.environ['HFGW_RUN'],
     'events':os.environ['HFGW_MAX_EVENTS'],'repo':os.environ['HFGW_REPO_ROOT'],
+    'product_version':os.environ.get('HFGW_NOISE_PRODUCT_VERSION'),
+    'calibration':os.environ.get('HFGW_NOISE_CALIBRATION'),
+    'source_dir':os.environ.get('HFGW_NOISE_SOURCE_DIR'),
     'sbatch_gres':os.environ.get('SBATCH_GRES'),'sbatch_gpus':os.environ.get('SBATCH_GPUS')}))
 print('4321;hpc-cluster')
 ''')
@@ -121,6 +124,34 @@ print('4321;hpc-cluster')
                 env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 2)
             self.assertFalse((root / 'token-call.json').exists())
+
+    def test_v2_normalization_is_explicit_and_frozen_before_submission(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);env=self.setup_commands(root,lifetime=4000)
+            env.pop('HFGW_NOISE_SOURCE_DIR',None)
+            reference=root/'reference.json';reference.write_text('{"iq_sign": -1}')
+            calibration=root/'custom-gain.json'
+            calibration.write_text('{"stages_db":{"custom":20},"total_db":20}')
+            original=calibration.read_bytes()
+            result=subprocess.run(['bash',str(SCRIPT),'680','--analysis','noise',
+                '--reference',str(reference),'--product-version','v2',
+                '--calibration',str(calibration),'--token-time','3600'],env=env,capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            capture=json.loads((root/'submission.json').read_text())
+            self.assertEqual(capture['product_version'],'v2')
+            frozen=Path(capture['calibration'])
+            self.assertNotEqual(frozen,calibration)
+            calibration.write_text('{"total_db":999}')
+            self.assertEqual(frozen.read_bytes(),original)
+            self.assertTrue((Path(capture['source_dir'])/'iq_noise_v2.py').is_file())
+
+    def test_v2_missing_normalization_never_requests_credentials(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);env=self.setup_commands(root)
+            result=subprocess.run(['bash',str(SCRIPT),'680','--analysis','noise','--product-version','v2'],
+                env=env,capture_output=True,text=True)
+            self.assertEqual(result.returncode,2)
+            self.assertFalse((root/'token-call.json').exists())
 
     def test_token_failure_never_submits(self):
         with tempfile.TemporaryDirectory() as directory:

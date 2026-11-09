@@ -104,6 +104,24 @@ Congela anche modulo v2 e calibrazione, valida e pubblica i file `_v2.h5` e
 produce `noise_temperature_comparison_v2.h5`. Come per il pilot originale,
 preparare una campagna senza `--authorize-submissions` la lascia sospesa.
 
+Anche il launcher HPC richiede il parametro esplicito, senza scegliere un
+guadagno nel payload:
+
+```bash
+bash examples/hpc/submit_one_run.sh 680 --analysis noise \
+  --product-version v2 --calibration config/noise_calibration_v2.json \
+  --reference /percorso/noise_reference.json --token-time 3600
+```
+
+Si può scegliere qualsiasi altro JSON di calibrazione compatibile. Per cambiare
+il valore nominale si aggiornano `stages_db` e `total_db` nel file scelto, non il
+codice dell'analisi. Il launcher HPC copia file, riferimento e sorgenti v2 in
+una directory univoca sotto `HFGW_RUNTIME_ROOT/noise_submission_sources` prima
+della sottomissione. Modifiche successive al file originale non cambiano un job
+già accodato. HTC congela il medesimo parametro alla creazione della campagna;
+per cambiare normalizzazione si prepara una nuova campagna. Il worker controlla
+la calibrazione prima del download e l'HDF5 ne conserva valori e SHA-256.
+
 Verifica iniziale: 10 SPEC del run 680, librerie FLASH CVMFS Python 3.9.
 I 102 dataset ordinari di confronto sono identici alla v1; la somma DC²+AC²
 coincide con la potenza quadratica raw. L'RMS centrale TM011 passa da circa
