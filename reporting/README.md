@@ -29,3 +29,19 @@ degli input sono salvati in `analysis-work/Run2/reports/iq_noise_summary_v6/`.
 Il report preliminare non viene pubblicato con il nome del confronto finale
 della campagna HPC. La correlazione termica è descrittiva e resta distinta
 dall'effetto del tempo, degli offset DC e della risposta strumentale.
+
+`iq_noise_summary_v9/build_slides.py` riorganizza la narrazione: obiettivo e
+dataset in una slide, diagramma del flusso, definizioni, output e contenuto HDF5;
+poi singolo run, aggregazione dei run e temperature, ciascuno con conclusioni
+e prossimi passi. Riusa le figure v8 con provenienza e ambito espliciti e
+aggiunge il confronto DC v1/v2 del run 680 completo. Non mescola il dataset
+storico a banda intera (260 run), il pilot filtrato v1 (12 run) e la prova v2.
+
+```bash
+python3 reporting/iq_noise_summary_v9/build_slides.py
+```
+
+Il generatore richiede PPTX/modello v8 e i due HDF5 del run 680; i percorsi
+sono parametrizzabili con `--baseline`, `--v1`, `--v2` e `--out`. Salva anche
+checksum degli input, tabella numerica DC e corrispondenza con le vecchie slide.
+Il diagramma a blocchi e il testo sono elementi nativi modificabili nel PPTX.
