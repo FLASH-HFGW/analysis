@@ -45,7 +45,7 @@ def execute(args, cwd=None):
 
 
 def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_submissions=False,
-            product_version='v1', calibration=None):
+            product_version='v1', calibration=None, reuse_directory=None, reuse_runs=None, priority=0):
     path = campaign / 'manifest.json'
     if path.exists():
         return json.loads(path.read_text())
@@ -59,6 +59,9 @@ def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_
         if gpfs_url.rstrip('/') == json.loads((ROOT/'config/noise_temperature_pilot.json').read_text())['output_url'].rstrip('/'):
             raise ValueError('v2 output must be separate from the v1 pilot')
     runs = sorted(set(RUNS if runs is None else runs))
+    reuse_runs = sorted(set(reuse_runs or []))
+    if reuse_runs and (product_version != 'v2' or reuse_directory is None or not set(reuse_runs).issubset(runs)):
+        raise ValueError('External reuse needs v2, a directory and runs belonging to this campaign')
     if not runs or any(run < 0 for run in runs):
         raise ValueError('Need nonnegative run numbers')
     for run in runs:
@@ -115,6 +118,8 @@ echo "Complete $RUN_NAME $(date -u +%FT%TZ)"
     manifest = dict(runs=runs, iq_sign=-1, tag=tag, output=str(output.resolve()), created_utc=now(),
                     product_version=product_version, gpfs_url=gpfs_url or preset['output_url'],
                     submissions_paused=not authorize_submissions,
+                    priority=priority, external_runs=reuse_runs,
+                    external_directory=str(reuse_directory.resolve()) if reuse_directory else None,
                     temperatures=str(sources / 'temperatures.csv'),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                    for p in sources.iterdir() if p.is_file()},
@@ -134,6 +139,7 @@ log = output-$(ClusterId).$(ProcID).log
 request_cpus = 1
 request_memory = 4GB
 request_disk = 60GB
+priority = {priority}
 transfer_executable = Yes
 transfer_input_files = {transfer}
 transfer_output_files = results
@@ -148,7 +154,7 @@ on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 +NoiseProductVersion = "{product_version}"
 queue
 ''')
-        save(directory / 'state.json', dict(run=run, status='prepared'))
+        save(directory / 'state.json', dict(run=run, status='external_pending' if run in reuse_runs else 'prepared'))
     save(path, manifest)
     return manifest
 
@@ -209,6 +215,9 @@ def cycle(campaign, manifest, max_active, submit):
                 state.update(cluster=job['ClusterId'], status='submitted')
             suffix = '_v2' if manifest.get('product_version') == 'v2' else ''
             result = directory / 'results' / f'run{run:05d}_noise{suffix}.h5'
+            external = run in manifest.get('external_runs',[])
+            if external:
+                result=Path(manifest['external_directory'])/f'run{run:05d}_noise_v2.h5'
             if state.get('cluster') and not result.exists():
                 if job and job['JobStatus'] == 5:
                     state.update(status='failed', error=job.get('HoldReason', 'Job held'))
@@ -224,6 +233,20 @@ def cycle(campaign, manifest, max_active, submit):
             if result.exists():
                 try:
                     summary = validate(result, run, product_version=manifest.get('product_version'))
+                    if external:
+                        import h5py
+                        reference=json.loads((campaign/'sources/noise_reference.json').read_text())
+                        if summary['global_statistics']['config']['reference'] != reference:
+                            raise ValueError('External v2 run uses a different amplitude reference')
+                        with h5py.File(result,'r') as source:
+                            expected=hashlib.sha256((campaign/'sources/noise_calibration.json').read_bytes()).hexdigest()
+                            if source['dc_removed/calibration/sha256'].asstr()[()] != expected:
+                                raise ValueError('External v2 run uses a different calibration')
+                            cfg=source['filtered_bands/config']
+                            if any(cfg[k][()]!=v for k,v in [('fs_hz',5e6),('width_hz',5e4),('taps',2001),('decimation',20)]):
+                                raise ValueError('External v2 filters differ from production defaults')
+                            if list(cfg['centers_hz'][:]) != [0.,0.,0.]:
+                                raise ValueError('External v2 band centers differ')
                     destination = Path(manifest['output']) / result.name
                     digest = hashlib.sha256(result.read_bytes()).hexdigest()
                     if destination.exists():
@@ -234,6 +257,8 @@ def cycle(campaign, manifest, max_active, submit):
                         shutil.copy2(result, temporary)
                         temporary.replace(destination)
                     state.update(status='complete', sha256=digest, samples=int(summary['samples']), completed_utc=now())
+                    if external:
+                        state['reused_from']=str(result)
                 except Exception as exc:
                     state.update(status='failed', error=str(exc))
                 if state['status'] == 'complete' and manifest.get('gpfs_url'):
@@ -296,6 +321,11 @@ def main():
                         help='Enable submissions when preparing a new explicitly authorized campaign')
     parser.add_argument('--product-version', choices=['v1','v2'],default='v1')
     parser.add_argument('--calibration',type=Path)
+    parser.add_argument('--reuse-directory',type=Path,help='Published v2 pilot directory; external runs are never submitted here')
+    parser.add_argument('--reuse-runs',type=int,nargs='+')
+    parser.add_argument('--priority',type=int,default=0,help='HTCondor priority within this user; lower waits behind higher priority')
+    parser.add_argument('--keep-recovering',action='store_true',
+                        help='After failures stop new submissions, but continue recovery/publication of other queued jobs')
     args = parser.parse_args()
     if args.max_active < 1:
         parser.error('--max-active must be positive')
@@ -305,7 +335,7 @@ def main():
         runs = range(args.run_range[0], args.run_range[1]+1) if args.run_range else None
         print(json.dumps(prepare(args.campaign, args.output, args.temperatures, runs,
                                  args.gpfs_url, args.authorize_submissions,
-                                 args.product_version,args.calibration), indent=2))
+                                 args.product_version,args.calibration,args.reuse_directory,args.reuse_runs,args.priority), indent=2))
         return
     manifest = json.loads((args.campaign / 'manifest.json').read_text())
     if args.command == 'status':
@@ -319,7 +349,11 @@ def main():
         while True:
             status = cycle(args.campaign, manifest, args.max_active, args.submit)
             if status['failed_runs']:
-                raise RuntimeError(f'Failed runs: {status["failed_runs"]}; no further submissions')
+                if not args.keep_recovering:
+                    raise RuntimeError(f'Failed runs: {status["failed_runs"]}; no further submissions')
+                if not any(status['counts'].get(s,0) for s in ('submitted','publication_pending','external_pending')):
+                    print('Recovery finished; failed runs retained, no complete-campaign report generated.',flush=True)
+                    return
             if status['counts'].get('complete') == len(manifest['runs']):
                 break
             if args.once:

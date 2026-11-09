@@ -94,6 +94,42 @@ class PilotTests(unittest.TestCase):
             self.assertEqual(status['active'],1)
             self.assertEqual(status['counts'],dict(complete=1,submitted=1))
 
+    def test_external_v2_run_is_reused_and_never_submitted_twice(self):
+        import h5py
+        import hashlib
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);campaign=root/'campaign';external=root/'external';output=root/'output'
+            (campaign/'sources').mkdir(parents=True);(campaign/'00680').mkdir()
+            external.mkdir();output.mkdir()
+            reference={'iq_sign':-1}
+            (campaign/'sources/noise_reference.json').write_text(json.dumps(reference))
+            (campaign/'sources/noise_calibration.json').write_text('{"total_db":143}')
+            state=campaign/'00680/state.json'
+            state.write_text(json.dumps(dict(run=680,status='external_pending')))
+            manifest=dict(tag='test-v2',runs=[680],product_version='v2',external_runs=[680],
+                          external_directory=str(external),output=str(output),gpfs_url='davs://example/v2')
+            with mock.patch.object(pilot,'execute',return_value='[]') as execute:
+                status=cycle(campaign,manifest,10,True)
+            self.assertEqual(status['counts'],{'external_pending':1})
+            self.assertEqual(execute.call_count,1)
+            p=external/'run00680_noise_v2.h5'
+            product(p)
+            with h5py.File(p,'a') as f:
+                digest=hashlib.sha256((campaign/'sources/noise_calibration.json').read_bytes()).hexdigest()
+                f.create_dataset('dc_removed/calibration/sha256',data=digest)
+                cfg=f['filtered_bands/config']
+                for key,value in dict(fs_hz=5e6,width_hz=5e4,taps=2001,decimation=20,centers_hz=[0.,0.,0.]).items():
+                    cfg.create_dataset(key,data=value)
+            summary=dict(samples=4,global_statistics=dict(config=dict(reference=reference)))
+            with mock.patch.object(pilot,'execute',return_value='[]') as execute, \
+                 mock.patch.object(pilot,'validate',return_value=summary), \
+                 mock.patch('iq_noise_publish.publish',return_value={'url':'davs://example/v2/run00680_noise_v2.h5'}):
+                status=cycle(campaign,manifest,10,True)
+            self.assertEqual(status['counts'],{'complete':1})
+            self.assertEqual(execute.call_count,1)
+            self.assertTrue((output/p.name).is_file())
+            self.assertEqual(json.loads(state.read_text())['reused_from'],str(p))
+
     def test_statistics_use_sample_weights_and_observed_time_window(self):
         with tempfile.TemporaryDirectory() as directory:
             p = Path(directory) / 'run00680_noise.h5'

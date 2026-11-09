@@ -1,11 +1,14 @@
 {
   "schema": "noise-production-readiness-v1",
   "product_version": "v2",
-  "run_range_inclusive": [680, 939],
+  "run_range_inclusive": [
+    680,
+    939
+  ],
   "calibration_file": "config/noise_calibration_v2.json",
-  "bulk_submission_started": false,
-  "status": "awaiting_cpu_allocation_validation",
-  "bulk_max_active": null,
+  "bulk_submission_started": true,
+  "status": "queued_by_user_request_cpu_affinity_fix_pending",
+  "bulk_max_active": 248,
   "required_checks": [
     "Validate the complete 12-run v2 scientific pilot and its calibration provenance.",
     "Coordinate CPU allocation between outer offload containers and inner HTCondor; use the allocated physical CPU set.",
@@ -14,11 +17,38 @@
   ],
   "diagnostic_evidence": {
     "date": "2026-11-09",
-    "jobs": [3192, 3193, 3194, 3195, 3196, 3197],
+    "jobs": [
+      3192,
+      3193,
+      3194,
+      3195,
+      3196,
+      3197
+    ],
     "tier2_wn006_runnable_analyses_pinned_to_cpu0": 7,
     "tier2_wn009_runnable_analyses_pinned_to_cpu0": 3,
-    "scheduler_assigned_cpu1_probe_cpu_wall_pct": [98.6464, 98.2875],
+    "scheduler_assigned_cpu1_probe_cpu_wall_pct": [
+      98.6464,
+      98.2875
+    ],
     "scope": "Two physical hosts sampled; 95 offload names do not establish 95 independent physical nodes."
   },
-  "note": "Operational readiness record, not a submission command or scheduler override. The ongoing v1 campaign and the HPC v2 pilot are separate. Do not copy the v1 90-job cap into bulk v2 without validating physical CPU allocation."
+  "note": "User explicitly requested queueing v2 before CPU-affinity repair. The cap 248 counts running plus pending HTC jobs, not independent physical CPUs. Twelve HPC pilot runs are reserved for validated reuse, never submitted twice. Priority -10 leaves v1 ahead. CPU allocation issue remains open; no affinity was overridden.",
+  "queue_priority": -10,
+  "hpc_reserved_runs": [
+    680,
+    704,
+    727,
+    751,
+    774,
+    798,
+    821,
+    845,
+    868,
+    892,
+    915,
+    939
+  ],
+  "campaign": "/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v2_20261109",
+  "gpfs_url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v2_20261109"
 }
