@@ -79,6 +79,21 @@ class PilotTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'paused'):
             cycle(Path('/unused'), {'submissions_paused': True}, 4, True)
 
+    def test_recovered_completed_spooled_job_frees_place_for_next_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for run,state in [(680,dict(run=680,status='complete',cluster=100)),
+                              (681,dict(run=681,status='prepared'))]:
+                (root/f'{run:05d}').mkdir()
+                (root/f'{run:05d}/state.json').write_text(json.dumps(state))
+            jobs=[dict(ClusterId=100,JobStatus=4,NoisePilotRun=680)]
+            with mock.patch.object(pilot,'execute',side_effect=[json.dumps(jobs),'101.0 - 101.0\n']) as execute:
+                status=cycle(root,dict(tag='test',runs=[680,681]),1,True)
+            self.assertEqual(execute.call_count,2)
+            self.assertEqual(execute.call_args.args[0][0],'condor_submit')
+            self.assertEqual(status['active'],1)
+            self.assertEqual(status['counts'],dict(complete=1,submitted=1))
+
     def test_statistics_use_sample_weights_and_observed_time_window(self):
         with tempfile.TemporaryDirectory() as directory:
             p = Path(directory) / 'run00680_noise.h5'

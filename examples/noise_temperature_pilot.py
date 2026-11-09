@@ -250,7 +250,11 @@ def cycle(campaign, manifest, max_active, submit):
         states[run] = state
     failures = [run for run, state in states.items() if state['status'] == 'failed']
     visible = {int(j['ClusterId']) for j in jobs}
-    active = sum(j['JobStatus'] in (1, 2, 4, 5, 6, 7) for j in jobs)
+    # Spooled completed jobs remain in condor_q after successful recovery.
+    # They reserve a controller place only until recovery/publication completes.
+    recovered = {s.get('cluster') for s in states.values() if s['status'] == 'complete'}
+    active = sum(j['JobStatus'] in (1, 2, 5, 6, 7)
+                 or (j['JobStatus'] == 4 and j['ClusterId'] not in recovered) for j in jobs)
     active += sum(s['status'] == 'submitted' and s.get('cluster') not in visible for s in states.values())
     pending = [r for r, s in states.items() if s['status'] == 'publication_pending']
     if submit and not failures and not pending:
@@ -270,7 +274,8 @@ def cycle(campaign, manifest, max_active, submit):
             active += 1
             print(f'Run {run}: submitted cluster {state["cluster"]}', flush=True)
     status = dict(updated_utc=now(), counts=dict(Counter(s['status'] for s in states.values())),
-                  failed_runs=failures, queue_counts=dict(Counter(str(j['JobStatus']) for j in jobs)))
+                  failed_runs=failures, active=active, max_active=max_active,
+                  queue_counts=dict(Counter(str(j['JobStatus']) for j in jobs)))
     save(campaign / 'status.json', status)
     print(json.dumps(status), flush=True)
     return status
