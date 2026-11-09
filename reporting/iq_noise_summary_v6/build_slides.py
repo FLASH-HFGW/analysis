@@ -152,7 +152,7 @@ def figure_paths(rows, temperatures, snapshot, points, out):
     runs = snapshot['runs']
     base = points['TM010'][0]['time']
     hours = np.array([(r['time']-base)/3600 for r in points['TM010']])
-    scope = f"Preliminary: {len(runs)}/{len(snapshot['expected_runs'])} planned runs; {runs[0]}–{runs[-1]}"
+    scope = f"Pilot: {len(runs)}/{len(snapshot['expected_runs'])} planned runs; {runs[0]}–{runs[-1]}"
     fig, axes = plt.subplots(2, 1, figsize=(12, 5.1), gridspec_kw={'height_ratios': [2, 1]}, sharex=True)
     for sensor, label, color in [(15, 'Cavity', COLORS[0]), (16, 'CMN143 mixing chamber', COLORS[1]), (17, 'CMN130 mixing chamber', COLORS[2])]:
         raw = sorted(p for run in temperatures.values() for p in run[sensor])
@@ -258,7 +258,7 @@ def historical_deck(baseline, out, version='v6'):
 
 
 def append_pilot(deck, paths, snapshot, points, stats, version='v6', prepared='9 November 2026'):
-    n=len(snapshot['runs']); expected=len(snapshot['expected_runs']); label=f'PRELIMINARY v1 PILOT · {n}/{expected} RUNS'
+    n=len(snapshot['runs']); expected=len(snapshot['expected_runs']); label=f'v1 PILOT · {n}/{expected} RUNS'
     source='Source: published runNNNNN_noise_v1.h5; pinned AVS metadata; snapshot.json and numeric tables.'
     def page(title, subtitle, notes):
         s=deck.new(title,subtitle,source,notes);s['footer']=label;return s
@@ -273,7 +273,7 @@ def append_pilot(deck, paths, snapshot, points, stats, version='v6', prepared='9
            'RMS is sqrt(sum(n*rms_event^2)/sum(n)). The central band includes DC offsets; I/Q means are not subtracted. '
            'Dashed and solid lines distinguish negative and positive offsets under I−iQ.')
     deck.image(s,.5,1.8,12.3,4.8,paths['filtered_band_rms_absolute'])
-    s=page('Centre and sidebands do not share one scale drift',f'End-to-end comparison: run {snapshot["runs"][0]} → {snapshot["runs"][-1]} · preliminary subset',
+    s=page('Centre and sidebands do not share one scale drift',f'End-to-end comparison: run {snapshot["runs"][0]} → {snapshot["runs"][-1]} · {n}/{expected} pilot runs',
            'Sideband RMS equivalent = sqrt(mean(P_band)) over eight equal filters; this is per-band power, not summed power over their total bandwidth. '
            'The sidebands rise together while the central TM011 band decreases. This contradicts a pure frequency-independent scaling of all measured bands. It does not isolate a physical resonance or distinguish gain, DC and spectral-shape changes.')
     deck.image(s,.55,1.9,12.15,4.45,paths['filtered_band_relative_drift'])
@@ -291,7 +291,7 @@ def append_pilot(deck, paths, snapshot, points, stats, version='v6', prepared='9
            'All changes in this table compare the first and last available pilot run only. '
            'The central TM011 decrease accompanies decreasing phase concentration, motivating separation of DC/low-frequency contributions. '
            'Sideband growth while cavity temperature decreases is inconsistent with a model in which fixed gain and that temperature alone set all measured noise power. '
-           'Complete the pending runs, distinguish mean complex offsets from fluctuating power, and control time/gain before interpreting thermal correlations.')
+           'Distinguish mean complex offsets from fluctuating power, and control time/gain before interpreting thermal correlations.')
     headings=[(.7,1.4,'Mode'),(2.15,2.0,'Side RMS Δ'),(4.25,2.0,'Central RMS Δ'),(6.6,2.0,'r(side power,T)'),(9.0,3.6,'Central phase R')]
     for x,w,text in headings:deck.text(s,x,2.05,w,.45,text,14,True)
     for i,(mode,color) in enumerate(zip(MODES,COLORS)):
@@ -301,7 +301,8 @@ def append_pilot(deck, paths, snapshot, points, stats, version='v6', prepared='9
         for (x,w,_),text in zip(headings,values):deck.text(s,x,y,w,.45,text,18,color=color)
     first,last=points['TM010'][0],points['TM010'][-1]
     deck.text(s,.75,4.85,11.9,.55,f'Cavity temperature: {first["cavity_mk"]:.2f} → {last["cavity_mk"]:.2f} mK. Time is a strong confounder.',18,True)
-    deck.text(s,.75,5.65,11.85,.85,'Next: complete the remaining runs; separate DC from fluctuations; compare temperature and gain with the common time trend.',18)
+    next_step = 'complete the remaining runs; ' if snapshot['missing_runs'] else 'extend to all 260 runs; '
+    deck.text(s,.75,5.65,11.85,.85,'Next: '+next_step+'separate DC from fluctuations; compare temperature and gain with the common time trend.',18)
     title=deck.slides[0]
     for item in title['items']:
         if item['kind']=='text' and 'Version v5' in item['text']:
@@ -330,7 +331,7 @@ def main():
         +'Historical 260-run context from v5 is retained; six new pilot slides replace the old closing slide. '
         +'New figures are generated only from validated complete I−iQ v1 HDF5 products and pinned same-run AVS observations. '
         +'No causal or detection claim is made. Full data provenance, hashes and coverage are in data/snapshot.json.\n\n'
-        +f'Rebuild from the repository: `python3 reporting/iq_noise_summary_v6/build_slides.py --version {args.version} --out {args.out}`.\n')
+        +f'Rebuild from the repository: `python3 reporting/iq_noise_summary_v6/build_slides.py --version {args.version} --published {args.published} --out {args.out}`.\n')
     print(json.dumps(stats,indent=2))
 
 
