@@ -205,11 +205,25 @@ class FilteredBandChecks:
         self.rows = {key: [] for key in self.filters}
         self.scale = 2 * args.input_range / 65535
         self.iq_sign = args.iq_sign
+        self.dc_offsets = None
+
+    def remove_run_dc(self, moments, calibration):
+        from iq_noise_v2 import ComplexMoments
+        self.dc_offsets = {mode: moments[mode].mean for mode in MODES}
+        self.calibration = calibration
+        self.band_moments = {key: ComplexMoments() for key in self.filters}
+        self.config.update(dc_removal='one complex mean per entire selected run, before mixing and FIR; no per-SPEC subtraction',
+                           phase_reference='demodulation oscillator after input run-DC removal',
+                           calibration=calibration,
+                           input_mean_i_v={mode: z.real for mode,z in self.dc_offsets.items()},
+                           input_mean_q_v={mode: z.imag for mode,z in self.dc_offsets.items()})
 
     def update(self, frames, event_index, serial, timestamp):
         from analyze_iq_filtered_bands import statistics
         signals = {mode: (frames[:, ci].astype(float) + 1j * self.iq_sign * frames[:, cq]) * self.scale
                    for mode, (ci, cq) in MODES.items()}
+        if self.dc_offsets is not None:
+            signals = {mode: z-self.dc_offsets[mode] for mode,z in signals.items()}
         for index in range(len(self.config['offsets_hz'])):
             for mode, z in signals.items():
                 key = (mode, index)
@@ -217,6 +231,8 @@ class FilteredBandChecks:
                 t, filtered = band.process(z)
                 if not len(filtered):
                     continue
+                if self.dc_offsets is not None:
+                    self.band_moments[key].update(filtered)
                 row = dict(event_index=event_index, serial=serial, event_timestamp_unix=timestamp,
                            acquired_start_s=float(t[0]), acquired_stop_s=float(t[-1]),
                            **statistics(filtered, self.previous[key]))
@@ -230,6 +246,15 @@ class FilteredBandChecks:
                 "offset_hz": self.config["offsets_hz"][index],
                 "center_hz": self.filters[mode, index].center,
                 "events": {name: np.asarray([row[name] for row in rows]) for name in rows[0]} if rows else {}}
+            if self.dc_offsets is not None and rows:
+                band = modes[mode]["band_%02d" % index]
+                band['complex_moments'] = self.band_moments[mode,index].export(self.calibration['voltage_gain'])
+                h = self.filters[mode,index].h
+                band['fir_enbw_two_sided_hz'] = float(self.config['fs_hz']*np.sum(h*h)/np.sum(h)**2)
+                # This is the filtered RMS after input-DC removal. The demodulated
+                # output mean is retained, so a coherent band-centre tone survives.
+                band['events']['rms_input_v'] = band['events']['rms_v']/self.calibration['voltage_gain']
+                band['events']['mean_amplitude_input_v'] = band['events']['mean_amplitude_v']/self.calibration['voltage_gain']
         return {"config": self.config, "modes": modes}
 
 
@@ -261,7 +286,8 @@ def main():
     parser.add_argument("--phase-lags", type=positive_int, nargs="+", default=[1, 10, 100],
                         help="Ritardi per delta fase, in campioni (default: 1 10 100)")
     parser.add_argument("--h5-only", action="store_true", help="Unico output HDF5 con dati, metadati e figure incorporate")
-    parser.add_argument("--product-version", choices=["v1"], help="Versione scientifica registrata nell'HDF5")
+    parser.add_argument("--product-version", choices=["v1", "v2"], help="Versione scientifica registrata nell'HDF5")
+    parser.add_argument("--calibration", type=Path, help="JSON del guadagno nominale; richiesto per v2")
     parser.add_argument("--h5", action="store_true", help="Salva anche il dizionario completo in HDF5 (richiede h5py)")
     parser.add_argument("--filtered-bands", action="store_true", help="Verifiche IQ in bande simmetriche; abilita HDF5 e richiede scipy")
     parser.add_argument("--band-offsets-hz", type=float, nargs="+", default=[100e3, 250e3, 500e3, 1e6])
@@ -270,6 +296,18 @@ def main():
     parser.add_argument("--band-taps", type=positive_int, default=2001)
     parser.add_argument("--band-decimation", type=positive_int, default=20)
     args = parser.parse_args()
+    calibration = raw_complex_moments = None
+    if args.product_version == 'v2':
+        if not args.filtered_bands or not args.h5_only or args.calibration is None:
+            parser.error('v2 requires --filtered-bands --h5-only --calibration FILE')
+        from iq_noise_v2 import ComplexMoments, load_calibration
+        try:
+            calibration = load_calibration(args.calibration)
+        except (ValueError, KeyError, OSError) as exc:
+            parser.error(str(exc))
+        raw_complex_moments = {mode: ComplexMoments() for mode in MODES}
+    elif args.calibration is not None:
+        parser.error('--calibration requires --product-version v2')
     if not np.isfinite(args.fs) or args.fs <= 0:
         parser.error("--fs deve essere finita e positiva")
     if not np.isfinite(args.input_range) or args.input_range <= 0:
@@ -354,6 +392,8 @@ def main():
                     frames[:, ch_q].astype(float) * (2 * args.input_range / 65535), args.iq_sign, st["phase_state_pass1"])
                 i = frames[:, ch_i].astype(float) * (2 * args.input_range / 65535)
                 q = args.iq_sign * frames[:, ch_q].astype(float) * (2 * args.input_range / 65535)
+                if raw_complex_moments is not None:
+                    raw_complex_moments[mode].update(i+1j*q)
                 st["iq_low"] = min(st["iq_low"], float(i.min()), float(q.min()))
                 st["iq_high"] = max(st["iq_high"], float(i.max()), float(q.max()))
                 st["i"] = np.r_[st["i"][keep], i[local]]
@@ -429,6 +469,8 @@ def main():
         st["above"] = 0
         st["events_above"] = []
     global_stats = RunStatistics(config, states)
+    if raw_complex_moments is not None:
+        band_checks.remove_run_dc(raw_complex_moments, calibration)
     print("Seconda lettura: conteggio campioni sopra le soglie +3, +5 e +7 sigma", flush=True)
     reader = midas.file_reader.MidasFile(str(args.file), use_numpy=True)
     pass_started = (time.perf_counter(), time.process_time())
@@ -484,6 +526,8 @@ def main():
         raise RuntimeError("Conteggio campioni diverso tra le due letture")
 
     stem = args.file.name.split(".mid")[0] + "_noise"
+    if args.product_version == 'v2':
+        stem += '_v2'
     saved = {"sample_indices": trace_indices, "time_s": trace_indices / args.fs,
              "event_index": trace_events,
              "envelope_start_sample": envelope_start, "envelope_stop_sample": envelope_stop,
@@ -649,10 +693,23 @@ def main():
                                "scope": "local Python analysis; excludes input download and remote upload",
                                "timings": timings}
     results = build_results(summary, saved, band_checks.export() if band_checks is not None else None)
+    if raw_complex_moments is not None:
+        results['dc_removed'] = dict(
+            definition='z_ac = I + iq_sign*i*Q - mean_run(I + iq_sign*i*Q); population variance, no per-SPEC centering',
+            calibration=calibration,
+            modes={mode: moments.export(calibration['voltage_gain']) for mode,moments in raw_complex_moments.items()})
+        summary['v2_scope'] = ('dc_removed contains full-band DC/AC decomposition; filtered_bands uses run-DC-removed input. '
+                               'Historical summary/modes, arrays, modes and their two figures retain raw v1 definitions for comparison. '
+                               'Input-referred values are nominal equivalent complex volts, not calibrated RF watts or noise temperature.')
     if args.product_version:
         summary["product_version"] = args.product_version
         results["product_version"] = args.product_version
     figures = [args.out_dir / (stem + suffix) for suffix in (".png", "_iq.png")]
+    if raw_complex_moments is not None:
+        from iq_noise_v2 import plot_decomposition
+        dc_figure = args.out_dir / (stem + '_dc_ac.png')
+        plot_decomposition(results['dc_removed']['modes'], dc_figure)
+        figures.append(dc_figure)
     if args.h5 or args.h5_only or args.filtered_bands:
         results["figures"] = {path.stem: {"format": "png", "data": np.frombuffer(path.read_bytes(), dtype=np.uint8)}
                               for path in figures}

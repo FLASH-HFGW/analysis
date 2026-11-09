@@ -60,6 +60,14 @@ class PilotTests(unittest.TestCase):
                 reused = prepare(root/'paused', root/'output2', temperatures, [680,681],
                                  'davs://example/changed', True)
                 self.assertEqual(reused, paused)
+                v2 = prepare(root/'v2',root/'output-v2',temperatures,[680],
+                             'davs://example/v2',False,'v2',pilot.ROOT/'config/noise_calibration_v2.json')
+                self.assertEqual(v2['product_version'],'v2')
+                self.assertTrue(v2['submissions_paused'])
+                worker=(root/'v2/00680/script.sh').read_text()
+                self.assertIn('--product-version v2 --calibration noise_calibration.json',worker)
+                self.assertTrue((root/'v2/sources/iq_noise_v2.py').is_file())
+                self.assertIn('noise_calibration.json',v2['source_sha256'])
 
     def test_paused_campaign_cannot_submit(self):
         with self.assertRaisesRegex(ValueError, 'paused'):

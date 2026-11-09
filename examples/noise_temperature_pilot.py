@@ -44,10 +44,20 @@ def execute(args, cwd=None):
     return result.stdout
 
 
-def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_submissions=False):
+def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_submissions=False,
+            product_version='v1', calibration=None):
     path = campaign / 'manifest.json'
     if path.exists():
         return json.loads(path.read_text())
+    if product_version not in ('v1','v2'):
+        raise ValueError('Unsupported product version')
+    if product_version == 'v2':
+        from iq_noise_v2 import load_calibration
+        if calibration is None or gpfs_url is None:
+            raise ValueError('v2 needs an explicit calibration and separate GPFS output directory')
+        load_calibration(calibration)
+        if gpfs_url.rstrip('/') == json.loads((ROOT/'config/noise_temperature_pilot.json').read_text())['output_url'].rstrip('/'):
+            raise ValueError('v2 output must be separate from the v1 pilot')
     runs = sorted(set(RUNS if runs is None else runs))
     if not runs or any(run < 0 for run in runs):
         raise ValueError('Need nonnegative run numbers')
@@ -61,6 +71,11 @@ def prepare(campaign, output, temperatures, runs=None, gpfs_url=None, authorize_
         raise ValueError('Reference must use I-iQ')
     for name in SOURCE_NAMES:
         shutil.copy2(ROOT / 'examples' / name, sources / name)
+    extra_sources = []
+    if product_version == 'v2':
+        shutil.copy2(ROOT/'examples/iq_noise_v2.py',sources/'iq_noise_v2.py')
+        shutil.copy2(calibration,sources/'noise_calibration.json')
+        extra_sources = ['iq_noise_v2.py','noise_calibration.json']
     shutil.copy2(ROOT / 'examples/hpc/check_noise_environment.py', sources / 'check_noise_environment.py')
     shutil.copy2(reference, sources / 'noise_reference.json')
     shutil.copy2(temperatures, sources / 'temperatures.csv')
@@ -92,11 +107,13 @@ echo "Analysis $RUN_NAME $(date -u +%FT%TZ)"
     --iq-sign -1 --mode-workers 1 --phase-lags 1 10 100 --h5-only --filtered-bands --product-version v1
 echo "Complete $RUN_NAME $(date -u +%FT%TZ)"
 '''
+    if product_version == 'v2':
+        script = script.replace('--product-version v1','--product-version v2 --calibration noise_calibration.json')
     tag = campaign.name
     output.mkdir(parents=True, exist_ok=True)
     preset = json.loads((ROOT / 'config/noise_temperature_pilot.json').read_text())
     manifest = dict(runs=runs, iq_sign=-1, tag=tag, output=str(output.resolve()), created_utc=now(),
-                    product_version='v1', gpfs_url=gpfs_url or preset['output_url'],
+                    product_version=product_version, gpfs_url=gpfs_url or preset['output_url'],
                     submissions_paused=not authorize_submissions,
                     temperatures=str(sources / 'temperatures.csv'),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
@@ -108,7 +125,7 @@ echo "Complete $RUN_NAME $(date -u +%FT%TZ)"
         directory.mkdir(exist_ok=True)
         (directory / 'script.sh').write_text(script)
         (directory / 'script.sh').chmod(0o755)
-        transfer = ','.join('../sources/' + name for name in (*SOURCE_NAMES, 'noise_reference.json', 'check_noise_environment.py'))
+        transfer = ','.join('../sources/' + name for name in (*SOURCE_NAMES, 'noise_reference.json', 'check_noise_environment.py', *extra_sources))
         (directory / 'submit.sub').write_text(f'''executable = script.sh
 arguments = {run}
 output = stdout-$(ClusterId).$(ProcID).txt
@@ -128,7 +145,7 @@ t1_oauth_permissions = profile,email,openid,offline_access
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 +JobBatchName = "{tag}"
 +NoisePilotRun = {run}
-+NoiseProductVersion = "v1"
++NoiseProductVersion = "{product_version}"
 queue
 ''')
         save(directory / 'state.json', dict(run=run, status='prepared'))
@@ -150,6 +167,12 @@ def validate(path, run, product_version=None):
     with h5py.File(path, 'r') as source:
         if product_version and ('product_version' not in source or source['product_version'].asstr()[()] != product_version):
             raise ValueError('Wrong scientific product version in HDF5 root')
+        if product_version == 'v2':
+            for mode in ('TM010','TM011','TM012'):
+                if source[f'dc_removed/modes/{mode}/n'][()] != summary['samples']:
+                    raise ValueError('Wrong full-band v2 DC/AC sample count')
+            if 'dc_removal' not in source['filtered_bands/config']:
+                raise ValueError('Missing v2 DC-removal provenance')
         if source['filtered_bands/config/iq_sign'][()] != -1:
             raise ValueError('Wrong filtered IQ sign')
         expected = np.array([-1e6, -5e5, -25e4, -1e5, 0, 1e5, 25e4, 5e5, 1e6])
@@ -184,7 +207,8 @@ def cycle(campaign, manifest, max_active, submit):
         if state['status'] != 'complete':
             if job:
                 state.update(cluster=job['ClusterId'], status='submitted')
-            result = directory / 'results' / f'run{run:05d}_noise.h5'
+            suffix = '_v2' if manifest.get('product_version') == 'v2' else ''
+            result = directory / 'results' / f'run{run:05d}_noise{suffix}.h5'
             if state.get('cluster') and not result.exists():
                 if job and job['JobStatus'] == 5:
                     state.update(status='failed', error=job.get('HoldReason', 'Job held'))
@@ -265,6 +289,8 @@ def main():
     parser.add_argument('--gpfs-url', help='New campaign scientific output directory')
     parser.add_argument('--authorize-submissions', action='store_true',
                         help='Enable submissions when preparing a new explicitly authorized campaign')
+    parser.add_argument('--product-version', choices=['v1','v2'],default='v1')
+    parser.add_argument('--calibration',type=Path)
     args = parser.parse_args()
     if args.max_active < 1:
         parser.error('--max-active must be positive')
@@ -273,7 +299,8 @@ def main():
             parser.error('Invalid run range')
         runs = range(args.run_range[0], args.run_range[1]+1) if args.run_range else None
         print(json.dumps(prepare(args.campaign, args.output, args.temperatures, runs,
-                                 args.gpfs_url, args.authorize_submissions), indent=2))
+                                 args.gpfs_url, args.authorize_submissions,
+                                 args.product_version,args.calibration), indent=2))
         return
     manifest = json.loads((args.campaign / 'manifest.json').read_text())
     if args.command == 'status':
@@ -295,11 +322,18 @@ def main():
             time.sleep(60)
     from report_noise_temperature import report
     output = Path(manifest['output'])
-    report(output, Path(manifest['temperatures']), manifest['runs'], product_version=manifest.get('product_version'))
+    if manifest.get('product_version') == 'v2':
+        from report_noise_v2 import report as report_v2
+        report_v2([output/f'run{run:05d}_noise_v2.h5' for run in manifest['runs']],
+                  Path(manifest['temperatures']),output)
+        comparison = output/'noise_temperature_comparison_v2.h5'
+    else:
+        report(output, Path(manifest['temperatures']), manifest['runs'], product_version=manifest.get('product_version'))
+        comparison = output/'noise_temperature_comparison.h5'
     if manifest.get('gpfs_url'):
         from iq_noise_publish import publish
-        remote = publish(output / 'noise_temperature_comparison.h5',
-                         manifest['gpfs_url'].rstrip('/') + '/noise_temperature_comparison_v1.h5',
+        remote = publish(comparison,
+                         manifest['gpfs_url'].rstrip('/') + '/noise_temperature_comparison_'+manifest.get('product_version','v1')+'.h5',
                          args.campaign / 'remote_checks')
         save(args.campaign / 'gpfs_comparison.json', remote)
 

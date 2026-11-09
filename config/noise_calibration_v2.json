@@ -1,0 +1,18 @@
+{
+  "schema": "iq-nominal-gain-v1",
+  "status": "nominal_scalar_user_confirmed_2026-11-09",
+  "stages_db": {"cryostat_line": 67.0, "additional_fet": 36.0, "net_downconversion": 40.0},
+  "total_db": 143.0,
+  "frequency_response_applied": false,
+  "time_dependent_gain_available": false,
+  "absolute_uncertainty_db": null,
+  "interpretation": "Equivalent complex voltage referred to the nominal chain input; not an RF power or noise-temperature calibration.",
+  "source": {
+    "communication": "Valeria: 67 dB cryostat + external 36 dB FET + approximately 40 dB net downconversion; cascade confirmed by user on 2026-11-09.",
+    "thesis_file": "Tesi_Valeria_Spasiano.pdf",
+    "thesis_sha256": "a541d0ebefaae496a06d7be53c05f723c991f770372f9e7ce97e1ab07de4acc9",
+    "thesis_sections": "5.2.2-5.2.3 and 6.1; PDF pages 102-104, 117; printed pages 97-99, 112",
+    "thesis_rf_gain_db": 103.4,
+    "note": "Thesis uses a mode/frequency-dependent kz for downconversion separately from the 103.4 dB RF chain. The nominal 143 dB model uses rounded communicated stages and must not also divide by kz. No numerical kz curves are provided here."
+  }
+}
