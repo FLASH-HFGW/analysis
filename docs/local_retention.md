@@ -6,7 +6,7 @@ non rimuove lo spool del servizio e non scrive o elimina nulla su GPFS.
 
 ## Cosa viene conservato
 
-* Manifest, sorgenti congelati e loro checksum, riferimento, calibrazione,
+* Manifest, `watch.log`, sorgenti congelati e loro checksum, riferimento, calibrazione,
   temperature e schema, stati dei run, tentativi, `job_status.json`, ricevute GPFS.
 * Tutti i file dei run incompleti, falliti, in hold o in attesa di pubblicazione.
 * MIDAS originali, directory montate GPFS/rclone, sorgenti Git, archivi storici,

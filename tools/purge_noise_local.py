@@ -139,7 +139,6 @@ def plan(campaign,roots,retire=False):
         elif result['finished']:
             comparison=output/('noise_temperature_comparison_v2.h5' if version=='v2' else 'noise_temperature_comparison.h5')
             add(comparison,'comparison',url,sha)
-            add(campaign/'watch.log','log',url,sha)
     result['counts']=dict(Counter(c['kind'] for c in result['candidates']))
     result['candidate_bytes']=sum(c['bytes'] for c in result['candidates'])
     return result
