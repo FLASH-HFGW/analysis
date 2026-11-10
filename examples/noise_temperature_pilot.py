@@ -31,6 +31,14 @@ def now():
     return datetime.now(timezone.utc).isoformat()
 
 
+def require_local_products(campaign):
+    marker=campaign/'local_retention.json'
+    if marker.exists() and json.loads(marker.read_text()).get('retired'):
+        raise RuntimeError('Local scientific caches were retired after verified GPFS publication. '
+                           'Restore before watch/report: python3 tools/purge_noise_local.py '
+                           '--campaign '+str(campaign)+' --restore')
+
+
 def save(path, data):
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(data, indent=2) + '\n')
@@ -342,6 +350,7 @@ def main():
         print((args.campaign / 'status.json').read_text() if (args.campaign / 'status.json').exists()
               else 'Prepared; no watch cycle yet')
         return
+    require_local_products(args.campaign)
     if args.command == 'watch':
         import fcntl
         lock = (args.campaign / 'watch.lock').open('w')

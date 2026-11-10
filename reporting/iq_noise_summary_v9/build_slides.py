@@ -8,6 +8,7 @@ import argparse
 import copy
 from datetime import datetime
 import hashlib
+import gzip
 import json
 from pathlib import Path
 import re
@@ -43,12 +44,15 @@ def timing_snapshot(output,campaign):
         run=int(path.name[3:8]);t=s['performance']['timings']['total']
         state=json.loads((campaign/f'{run:05d}/state.json').read_text())
         log=campaign/f'{run:05d}/stdout-{state["cluster"]}.0.txt'
+        if log.exists():log_bytes=log.read_bytes()
+        else:
+            with gzip.open(log.with_name(log.name+'.gz'),'rb') as stream:log_bytes=stream.read()
         marks={k:datetime.fromisoformat(v.replace('Z','+00:00')) for k,v in
-               re.findall(r'^(Download|Analysis|Complete) run\d+ (\S+)',log.read_text(),re.M)}
+               re.findall(r'^(Download|Analysis|Complete) run\d+ (\S+)',log_bytes.decode(),re.M)}
         rows.append(dict(run=run,cluster=state['cluster'],analysis_min=t['wall_s']/60,
                          cpu_wall_pct=100*t['cpu_s']/t['wall_s'],
                          download_min=(marks['Analysis']-marks['Download']).total_seconds()/60,
-                         product_sha256=sha(path),log_sha256=sha(log)))
+                         product_sha256=sha(path),log_sha256=hashlib.sha256(log_bytes).hexdigest()))
     if not rows:raise ValueError('No complete current HTC timing evidence')
     return dict(built_rome=datetime.now(ZoneInfo('Europe/Rome')).isoformat(),htc_runs=rows,
         hpc_source='User-provided sacct and worker logs for jobs 4297 and 4311; v2 HDF5 performance for run 680.',

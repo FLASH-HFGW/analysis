@@ -1,5 +1,10 @@
 # Pilot IQ filtrato e temperature, run 680–939
 
+Per la pulizia delle copie locali pubblicate, senza perdere sorgenti,
+calibrazione o provenienza, usare `tools/purge_noise_local.py`: anteprima
+predefinita, verifica remota prima di cancellare, ritiro/ripristino delle cache
+solo a campagna conclusa. Vedi [conservazione locale](../docs/local_retention.md).
+
 ## Produzione completa HTC, 9 novembre 2026
 
 Il controller supporta anche l'intero intervallo inclusivo 680–939 (260 run).

@@ -18,7 +18,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'examples'))
-from noise_temperature_pilot import RUNS, SOURCE_NAMES, save, now
+from noise_temperature_pilot import RUNS, SOURCE_NAMES, save, now, require_local_products
 from iq_noise_publish import publish, fetch, sha256
 
 
@@ -259,6 +259,7 @@ def main():
         states = [json.loads((args.campaign / f'run{r:05d}.json').read_text()) for r in manifest['runs']]
         print(json.dumps(dict(Counter(s['status'] for s in states)), indent=2))
         return
+    require_local_products(args.campaign)
     if not manifest.get('gpfs_url'):
         if manifest.get('product_version') == 'v2':
             raise ValueError('v2 manifest is missing its separate GPFS output directory')

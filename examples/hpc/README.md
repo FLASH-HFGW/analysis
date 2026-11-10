@@ -1,5 +1,10 @@
 # SLURM LNF — accesso diretto CVMFS/GFAL
 
+La pubblicazione non elimina le copie locali. La pulizia controllata è in
+[docs/local_retention.md](../../docs/local_retention.md), con lo stesso script
+`tools/purge_noise_local.py` per HPC e HTC. Non tocca lo scratch di altri job
+né i log globali Slurm, e conserva manifest, stati e sorgenti congelati.
+
 ## Pilot IQ filtrato e temperature
 
 ### Pilot v2: prova del run 680, poi gli altri undici
