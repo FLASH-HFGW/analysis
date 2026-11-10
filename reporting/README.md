@@ -115,3 +115,23 @@ dalle fluttuazioni che restano nella banda centrale. È uno schema in unità
 arbitrarie, non un dato o una curva di risonanza misurata; lo zero di banda
 base non viene identificato con la risonanza. Il disegno è esportato anche
 come PDF in `assets/sidebands_and_dc_schematic.pdf`.
+
+La v17 usa la campagna v2 completa: 260 run inclusivi 680–939, di cui 12
+riusati dal pilot HPC e 248 ricostruiti su HTC. Verifica la copertura dichiarata,
+genera 780 riepiloghi run–modo e 7.020 punti modo–banda, e conserva un confronto
+v1 centrale sui soli 12 run del pilot (esplicitamente etichettato). Le figure
+v2, le tabelle e l'HDF5 rigenerato sono in `data/v2_campaign/`; ricevute e hash
+di pubblicazione verificati sono in `data/verified_publication.json`.
+Le baseline raw storiche restano distinte dalla nuova produzione completa.
+
+```bash
+python3 reporting/iq_noise_summary_v9/build_slides.py --include-timings \
+  --htc-product-version v2 \
+  --htc-output /home/mazzitel/HFGW/analysis-work/Run2/reports/noise_fullrange_v2_20261109 \
+  --htc-campaign /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v2_20261109 \
+  --affinity-diagnostics /home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_cpu_diagnostic_20261109 \
+  --v2-pilot-directory /home/mazzitel/HFGW/analysis-work/Run2/reports/noise_fullrange_v2_20261109 \
+  --v2-run-range 680 939 \
+  --periodicity-directory /home/mazzitel/HFGW/analysis-work/Run2/staging/legacy-repository/autoreco/noise_continuous/periodicity_run680 \
+  --version v17 --out /home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v17
+```

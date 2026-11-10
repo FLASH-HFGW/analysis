@@ -77,17 +77,27 @@ def explain_bands(deck,page,assets):
     deck.text(s,.8,6.48,11.7,.3,'Zero frequency is an electronic reference; the cavity resonance is not assumed to sit at zero.',13,True)
 
 
-def figures(directory,baseline,out,sha):
+def figures(directory,baseline,out,sha,expected_runs=None):
     paths=sorted(directory.glob('run*_noise_v2.h5'))
     runs=[int(p.name[3:8]) for p in paths]
-    expected=[680,704,727,751,774,798,821,845,868,892,915,939]
-    if runs!=expected:raise ValueError('Need exactly the twelve complete v2 pilot runs')
-    metadata={}
+    pilot_runs=[680,704,727,751,774,798,821,845,868,892,915,939]
+    expected=list(expected_runs) if expected_runs is not None else pilot_runs
+    if runs!=expected:raise ValueError('Published v2 runs differ from the declared report range')
+    n=len(runs);scope='campaign' if n>12 else 'pilot'
+    metadata={};band_levels={m:[] for m in MODES}
     for run,path in zip(runs,paths):
         summary=validate(path,run,'v2')
-        metadata[str(run)]=dict(sha256=sha(path),samples=summary['samples'],events=len(summary['events']))
+        metadata[str(run)]=dict(sha256=sha(path),samples=summary['samples'],events=len(summary['events']),
+            raw_mean_amplitude_v={m:summary['modes'][m]['mean_amplitude_v'] for m in MODES})
+        with h5py.File(path) as source:
+            for mode in MODES:
+                bands=[]
+                for i in range(9):
+                    e=source[f'filtered_bands/modes/{mode}/band_{i:02d}/events']
+                    bands.append(float(np.sqrt(np.average(e['rms_input_v'][:]**2,weights=e['n'][:]))))
+                band_levels[mode].append(bands)
     temperature=baseline/'data/temperatures.csv'
-    report_dir=out/'data/v2_pilot'
+    report_dir=out/('data/v2_campaign' if n>12 else 'data/v2_pilot')
     report(paths,temperature,report_dir)
     with (report_dir/'dc_ac_temperature_by_run.csv').open() as stream:
         rows=[{k:v if k=='mode' else float(v) for k,v in r.items()} for r in csv.DictReader(stream)]
@@ -104,7 +114,8 @@ def figures(directory,baseline,out,sha):
         plt.close(fig);pictures[name]=path
     for mode in MODES:
         old=sorted([r for r in v1 if r['mode']==mode and float(r['offset_hz'])==0],key=lambda r:int(r['run']))
-        if [int(r['run']) for r in old]!=expected:raise ValueError('v1 pilot coverage differs')
+        if [int(r['run']) for r in old]!=pilot_runs or not set(pilot_runs).issubset(runs):
+            raise ValueError('Need the complete paired v1 pilot as comparison')
         a,b=grouped[mode][0],grouped[mode][-1]
         diagnostics=next(r for r in trends if r['mode']==mode and r['metric']=='central_squared_v2' and r['sensor']=='15')
         findings[mode]=dict(central_v1_change_pct=100*(float(old[-1]['rms_v'])/float(old[0]['rms_v'])-1),
@@ -112,6 +123,7 @@ def figures(directory,baseline,out,sha):
             side_v2_change_pct=100*(b['side_rms_input_v']/a['side_rms_input_v']-1),
             fullband_ac_change_pct=100*(b['ac_rms_input_v']/a['ac_rms_input_v']-1),
             dc_squared_change_pct=100*(b['dc_squared_v2']/a['dc_squared_v2']-1),
+            fullband_ac_span_pct=100*(max(r['ac_rms_input_v'] for r in grouped[mode])/min(r['ac_rms_input_v'] for r in grouped[mode])-1),
             central_after_common_pct=100*(b['central_relative_after_common']-1),
             r_central_temperature=float(diagnostics['r_temperature']),
             r_central_temperature_after_time=float(diagnostics['r_temperature_after_linear_time']))
@@ -139,6 +151,7 @@ def figures(directory,baseline,out,sha):
                          label='Min–max across modes',zorder=0)
     axes[1].axhline(0,color='#66768A',lw=.6)
     for run,r in zip(runs,grouped['TM010']):
+        if n>12 and run not in pilot_runs:continue
         change=100*(r['ac_rms_input_v']/grouped['TM010'][0]['ac_rms_input_v']-1)
         axes[1].annotate(str(run),(datetime.fromtimestamp(r['spec_midpoint_unix'],TZ),change),
                          xytext=(0,7),textcoords='offset points',ha='center',fontsize=8)
@@ -153,12 +166,7 @@ def figures(directory,baseline,out,sha):
     band_relative_rows=[]
     for ax,mode in zip(axes,MODES):
         for index,offset in enumerate((-1e6,-5e5,-2.5e5,-1e5,0,1e5,2.5e5,5e5,1e6)):
-            values=[]
-            for path in paths:
-                with h5py.File(path) as source:
-                    events=source[f'filtered_bands/modes/{mode}/band_{index:02d}/events']
-                    values.append(float(np.sqrt(np.average(events['rms_input_v'][:]**2,weights=events['n'][:])))*1e9)
-            values=np.asarray(values)
+            values=np.asarray(band_levels[mode])[:,index]
             changes=100*(values/values[0]-1)
             for run,date,value in zip(runs,times,changes):
                 band_relative_rows.append(dict(run=run,mode=mode,offset_hz=offset,
@@ -180,10 +188,11 @@ def figures(directory,baseline,out,sha):
         raw=np.array([float(r['rms_v']) for r in old])
         central=np.array([r['central_rms_input_v'] for r in grouped[mode]])
         side=np.array([r['side_rms_input_v'] for r in grouped[mode]])
-        for values,label,style,c in [(raw,'v1 centre: DC retained','--','#7657A6'),
+        old_hours=np.array([(float(r['spec_midpoint_unix'])-first)/3600 for r in old])
+        for values,label,style,c in [(raw,'v1 centre: 12-run pilot','--','#7657A6'),
                                     (central,'v2 centre: run DC removed','o-','#24364B'),
                                     (side,'v2 mean sideband RMS','s-','#007F86')]:
-            ax.plot(hours,100*(values/values[0]-1),style,color=c,label=label,ms=3)
+            ax.plot(old_hours if values is raw else hours,100*(values/values[0]-1),style,color=c,label=label,ms=3 if n<=12 else 1.5)
         ax.set(title=mode,xlabel='Acquisition clock time [h]');ax.axhline(0,color='#999999',lw=.5)
     axes[0].set_ylabel('RMS change from run 680 [%]')
     axes[1].legend(fontsize=8,loc='lower center',bbox_to_anchor=(.5,1.08))
@@ -195,8 +204,8 @@ def figures(directory,baseline,out,sha):
         for j,(key,label) in enumerate([('central_squared_v2','DC-removed centre'),('side_squared_v2','Mean sideband')]):
             power=np.array([r[key] for r in g]);change=100*(power/power[0]-1)
             d=next(r for r in trends if r['mode']==mode and r['metric']==key and r['sensor']=='15')
-            ax=axes[i,j];ax.plot(temp,change,lw=.6,color='#AAB3BD')
-            ax.scatter(temp,change,c=hours,norm=norm,cmap='viridis',s=30)
+            ax=axes[i,j];ax.plot(temp,change,lw=.4 if n>12 else .6,color='#AAB3BD',alpha=.5 if n>12 else 1.)
+            ax.scatter(temp,change,c=hours,norm=norm,cmap='viridis',s=8 if n>12 else 30)
             ax.set(title=f"{mode} {label}: r={float(d['r_temperature']):+.2f}; r|time={float(d['r_temperature_after_linear_time']):+.2f}",
                    ylabel='Mean-square change [%]')
             ax.title.set_fontsize(9)
@@ -216,15 +225,30 @@ def figures(directory,baseline,out,sha):
     fig.suptitle('Common trend estimated from these same three modes; not an independent gain measurement',fontsize=11)
     fig.tight_layout();save(fig,'v2_common_trend_residuals')
 
-    snapshot=dict(runs=runs,metadata=metadata,findings=findings,
-        limitations='Nominal constant gain; twelve selected runs; time and temperature covary; linear-time conditioning and common-trend division are descriptive, not causal gain corrections.')
+    if n>12:
+        fig,axes=plt.subplots(1,3,figsize=(12,4.1),sharex=True,sharey=True)
+        for ax,mode,color in zip(axes,MODES,COLORS):
+            raw=np.array([metadata[str(r)]['raw_mean_amplitude_v'][mode] for r in runs])
+            ac=np.array([r['ac_rms_input_v'] for r in grouped[mode]])
+            ax.plot(times,100*(raw/raw[0]-1),'--',color='#7657A6',lw=1.2,label='Raw mean amplitude')
+            ax.plot(times,100*(ac/ac[0]-1),color=color,lw=1.2,label='Complex AC RMS')
+            ax.set(title=mode,xlabel='Acquisition date/time');ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b\n%H:%M',tz=TZ))
+            ax.tick_params(axis='x',labelsize=8);ax.grid(alpha=.2)
+        axes[0].set_ylabel('Relative change from run 680 [%]');axes[1].legend(fontsize=9)
+        fig.suptitle(f'{n}/{n} complete v2 runs · raw mean magnitude and complex AC RMS are different statistics',fontsize=11)
+        fig.tight_layout();save(fig,'v2_campaign_raw_and_ac')
+    snapshot=dict(runs=runs,metadata=metadata,findings=findings,scope=scope,
+        limitations=f'Nominal constant gain; {n} complete runs; time and temperature covary; linear-time conditioning and common-trend division are descriptive, not causal gain corrections.')
     (report_dir/'pilot_findings.json').write_text(json.dumps(snapshot,indent=2)+'\n')
     return pictures,findings,snapshot
 
 
-def append(deck,page,pictures,findings):
+def append(deck,page,pictures,findings,dataset=None):
+    n=len(dataset['runs']) if dataset else 12
+    scope='CAMPAIGN' if n>12 else 'PILOT'
+    data_dir='data/v2_campaign/' if n>12 else 'data/v2_pilot/'
     captions=[
-        ('Selected runs: common origin and relative drift','12/12 complete v2 runs · every mode starts at 0% in run 680 · actual acquisition dates','v2_temperature_and_ac',
+        ('Complete runs: common origin and relative drift',f'{n}/{n} complete v2 runs · every mode starts at 0% in run 680 · actual acquisition dates','v2_temperature_and_ac',
          'One complex mean per run is removed. Lower curves show 100*(AC_RMS_mode(run)/AC_RMS_mode(680)-1), not absolute voltage. '
          'Only the first selected run is the baseline; subsequent runs retain measured differences. Grey fill is the minimum-to-maximum range across three modes, not an uncertainty or stochastic diffusion estimate. '
          'Constant gain cancels in these ratios. Temperatures are actual AVS readings; no interpolated observations.'),
@@ -232,29 +256,29 @@ def append(deck,page,pictures,findings):
          'Input run mean removed before mixing and FIR. Filter-output coherent means are retained in the principal RMS. '
          'Each curve is 100*(RMS_mode,band(run)/RMS_mode,band(680)-1), with an independent fixed baseline for that mode and band. '
          'All panels share the same percentage scale; absolute band levels are not compared in this plot. Constant normalization gain cancels.'),
-        ('Removing DC changes the central-band drift','Same twelve runs and filters · v1/v2 central RMS compared with the sidebands','v1_v2_central_drift',
+        ('Removing DC changes the central-band drift',f'{n} complete v2 runs; v1 comparison uses the 12-run pilot · same filter settings','v1_v2_central_drift',
          'The v1 central TM011 decline reverses after run-mean subtraction. A changing constant complex component accounted for much of the earlier difference; this does not identify its hardware or physical origin.'),
-        ('Temperature associations after removing run DC','12 run summaries · r|time removes an intercept and a linear time trend','v2_temperature_associations',
+        ('Temperature associations after removing run DC',f'{n} run summaries · r|time removes an intercept and a linear time trend','v2_temperature_associations',
          'Shown mean-square filtered IQ amplitude is not a fluctuation variance after demodulated-output mean subtraction. Residual Pearson correlations after linear time conditioning are descriptive; no p-values or causal temperature sensitivity.'),
         ('Compare with the common trend, without calling it gain','Common = median log sideband-amplitude ratio across the three measured modes','v2_common_trend_residuals',
          'The target mode contributes to this same common statistic. Division is not independent gain calibration and can suppress shared physical behaviour; measured gain telemetry and numerical kz(f) remain needed.')]
     for title,subtitle,name,notes in captions:
-        s=page(title,subtitle,'TEMPERATURE | COMPLETE 12-RUN v2 PILOT',notes,
-               'Source: 12 validated published v2 HDF5s; observed AVS data; paired v1 pilot where shown; data/v2_pilot/.')
+        s=page(title,subtitle,f'TEMPERATURE | COMPLETE {n}-RUN v2 {scope}',notes,
+               f'Source: {n} validated published v2 HDF5s; observed AVS data; paired v1 pilot where shown; {data_dir}.')
         deck.image(s,.5,1.8,12.3,4.9,pictures[name])
-    s=page('DC removal changes the thermal comparison','End-to-end changes: run 680 → 939 · all twelve pilot runs complete',
+    s=page('DC removal changes the thermal comparison',f'End-to-end changes: run 680 → 939 · all {n} v2 runs complete',
            'TEMPERATURE | v2 CONCLUSIONS',
            'DC-removed central RMS and sideband RMS rise similarly. The temperature/time/common-trend comparisons do not identify amplifier gain or causation. '
-           'All table changes use the first and last run only; r|time uses all twelve run summaries.',
-           'Source: data/v2_pilot/pilot_findings.json and trend_diagnostics.csv; no mixed-version thermal regression.')
+           f'All table changes use the first and last run only; r|time uses all {n} run summaries.',
+           f'Source: {data_dir}pilot_findings.json and trend_diagnostics.csv; no mixed-version thermal regression.')
     headings=[(.7,1.3,'Mode'),(2.1,2.2,'Centre v1 Δ'),(4.6,2.2,'Centre v2 Δ'),(7.1,2.2,'Side v2 Δ'),(9.6,2.6,'r(centre²,T | time)')]
     for x,w,label in headings:deck.text(s,x,2.,w,.5,label,14,True)
     for i,(mode,color) in enumerate(zip(MODES,COLORS)):
         f=findings[mode]
         values=[mode,f"{f['central_v1_change_pct']:+.2f}%",f"{f['central_v2_change_pct']:+.2f}%",f"{f['side_v2_change_pct']:+.2f}%",f"{f['r_central_temperature_after_time']:+.3f}"]
         for (x,w,_),value in zip(headings,values):deck.text(s,x,2.7+i*.62,w,.45,value,19,color=color)
-    deck.text(s,.8,4.95,11.7,.75,'The TM011 decline largely followed its changing complex mean.\nAfter DC removal, central and sideband RMS rise by about 1%.',19,True)
-    deck.text(s,.8,5.9,11.7,.75,'Next: validate bulk v2; compare time and independently measured gain; apply numerical frequency-response calibration before physical interpretation.',17)
+    deck.text(s,.8,4.95,11.7,.75,'The TM011 decline largely followed its changing complex mean.\nRun 680 → 939: central and sideband RMS rise by about 1%.',19,True)
+    deck.text(s,.8,5.9,11.7,.75,'Next: measure time-dependent gain; apply numerical frequency-response calibration; test residual associations in independent time windows.',17)
 
 
 def periodicity(directory,assets,sha):

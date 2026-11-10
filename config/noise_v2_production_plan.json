@@ -7,7 +7,7 @@
   ],
   "calibration_file": "config/noise_calibration_v2.json",
   "bulk_submission_started": true,
-  "status": "queued_by_user_request_cpu_affinity_fix_pending",
+  "status": "complete_cpu_allocation_issue_documented",
   "bulk_max_active": 248,
   "required_checks": [
     "Validate the complete 12-run v2 scientific pilot and its calibration provenance.",
@@ -33,7 +33,7 @@
     ],
     "scope": "Two physical hosts sampled; 95 offload names do not establish 95 independent physical nodes."
   },
-  "note": "User explicitly requested queueing v2 before CPU-affinity repair. The cap 248 counts running plus pending HTC jobs, not independent physical CPUs. Twelve HPC pilot runs are reserved for validated reuse, never submitted twice. Priority -10 leaves v1 ahead. CPU allocation issue remains open; no affinity was overridden.",
+  "note": "All 260 v2 runs completed, validated and published: 12 HPC reused, 248 HTC. CPU affinity contention remains documented; no infrastructure fix is claimed. The final report uses full-campaign v2 statistics and labels the twelve-run v1 comparison separately.",
   "queue_priority": -10,
   "hpc_reserved_runs": [
     680,
@@ -69,5 +69,14 @@
     ],
     "evidence": "12 complete published HPC v2 HDF5s validated and imported into the bulk campaign; comparison in presentation v12 data/v2_pilot.",
     "cpu_allocation_fix_still_pending": true
-  }
+  },
+  "completed_runs": 260,
+  "missing_runs": [],
+  "completion_utc": "2026-11-10T12:34:31.033107+00:00",
+  "comparison_publication": {
+    "url": "davs://xfer-archive.cr.cnaf.infn.it:8443/flash/analysis/autoreco/Run2/noise_fullrange_v2_20261109/noise_temperature_comparison_v2.h5",
+    "sha256": "098cc350ab3ff6283c1a477df8c323669cba2f43d5640edf2621bf3479579d33",
+    "bytes": 1096888
+  },
+  "final_report": "iq_noise_summary_v17"
 }

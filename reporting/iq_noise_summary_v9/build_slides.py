@@ -35,14 +35,16 @@ def sha(path):
     return h.hexdigest()
 
 
-def timing_snapshot(output,campaign):
+def timing_snapshot(output,campaign,product_version='v1'):
     rows=[]
-    for path in sorted(output.glob('run*_noise.h5')):
+    pattern='run*_noise_v2.h5' if product_version=='v2' else 'run*_noise.h5'
+    for path in sorted(output.glob(pattern)):
         s=read_summary(path)
-        if s.get('status')!='success' or not s.get('reached_eof') or s.get('product_version')!='v1':
+        if s.get('status')!='success' or not s.get('reached_eof') or s.get('product_version')!=product_version:
             continue
         run=int(path.name[3:8]);t=s['performance']['timings']['total']
         state=json.loads((campaign/f'{run:05d}/state.json').read_text())
+        if 'reused_from' in state:continue
         log=campaign/f'{run:05d}/stdout-{state["cluster"]}.0.txt'
         if log.exists():log_bytes=log.read_bytes()
         else:
@@ -54,7 +56,7 @@ def timing_snapshot(output,campaign):
                          download_min=(marks['Analysis']-marks['Download']).total_seconds()/60,
                          product_sha256=sha(path),log_sha256=hashlib.sha256(log_bytes).hexdigest()))
     if not rows:raise ValueError('No complete current HTC timing evidence')
-    return dict(built_rome=datetime.now(ZoneInfo('Europe/Rome')).isoformat(),htc_runs=rows,
+    return dict(built_rome=datetime.now(ZoneInfo('Europe/Rome')).isoformat(),htc_runs=rows,htc_product_version=product_version,
         hpc_source='User-provided sacct and worker logs for jobs 4297 and 4311; v2 HDF5 performance for run 680.',
         hpc=[dict(label='HPC v1 before optimization',job=4297,analysis_min=(106*60+58)/60,download_min=215/60,cpu_wall_pct=100*6361/6418),
              dict(label='HPC v1 optimized',job=4311,analysis_min=(71*60+56)/60,download_min=119/60,cpu_wall_pct=100*4278/4316)],
@@ -80,7 +82,7 @@ def affinity_snapshot(root):
         scope='Two sampled physical hosts; does not map all 95 offload environments or establish a controlled throughput benchmark.')
 
 
-def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=None,periodicity_directory=None):
+def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=None,periodicity_directory=None,expected_v2_runs=None):
     out.mkdir(parents=True,exist_ok=True)
     assets=out/'assets';assets.mkdir(exist_ok=True)
     data=out/'data';data.mkdir(exist_ok=True)
@@ -92,7 +94,8 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
     pilot_data=periodicity_data=None
     if v2_pilot is not None:
         from iq_noise_summary_v12 import pilot
-        pilot_pictures,pilot_findings,pilot_data=pilot.figures(v2_pilot,baseline,out,sha)
+        pilot_pictures,pilot_findings,pilot_data=pilot.figures(v2_pilot,baseline,out,sha,expected_v2_runs)
+    full_campaign=pilot_data is not None and len(pilot_data['runs'])>12
     deck=slides.Deck();mapping=[]
     def page(title,subtitle,section,notes='',source='Source: current analysis code and versioned HDF5 products; rebuild provenance in data/snapshot.json.'):
         s=deck.new(title,subtitle,source,notes)
@@ -125,14 +128,15 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
            'Run 2 · 24–25 July 2026 · TM010 / TM011 / TM012 · I − iQ','SCOPE',
            'Merged former opening and dataset slides. Historical full-band results cover 260 runs; the complete v1 filtered pilot covers 12 selected runs. '
            'The current v1 production and v2 pilot must not be confused with those historical datasets.')
-    deck.card(s,.7,1.95,3.8,'260 runs','680–939 · historical full-band sample')
+    deck.card(s,.7,1.95,3.8,'260 runs','680–939 · complete v2 campaign' if full_campaign else '680–939 · historical full-band sample')
     deck.card(s,4.75,1.95,3.8,'5 MHz','Three IQ streams · 16-bit ADC',slides.COLORS[1])
     deck.card(s,8.8,1.95,3.8,'209.715 s','Per run · clock-time gaps retained',slides.COLORS[2])
     deck.bullets(s,.8,3.6,11.8,[
         'Measure amplitude, phase, IQ structure, threshold exceedances and filtered-band levels.',
         'Separate within-run fluctuations, between-run drift and temperature associations.',
         '1,000 SPEC per run; 1,048,576 complex samples per SPEC and mode.',
-        ('Evidence sets: 260 historical full-band runs; 12 complete filtered v1 and v2 pilot runs.' if pilot_data is not None
+        ('Complete v2: 260 runs, with 12 HPC results reused and 248 HTC reconstructions.' if full_campaign else
+         'Evidence sets: 260 historical full-band runs; 12 complete filtered v1 and v2 pilot runs.' if pilot_data is not None
          else 'Evidence sets: 260 historical full-band runs; 12 complete filtered v1 runs; one full-run v2 example here.')
     ],19,.2)
 
@@ -250,7 +254,7 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
             wall=float(source['summary/performance/timings/total/wall_s'][()])
             cpu=float(source['summary/performance/timings/total/cpu_s'][()])
         s=page('HTC and HPC: per-run time versus pool throughput',
-            f'One CPU per job · HTC: first {len(rows)} completed v1 runs · HPC: run 680 · not a matched hardware benchmark',
+            f'One CPU per job · HTC {timings.get("htc_product_version","v1")}: {len(rows)} complete runs · HPC: run 680 · different hardware',
             'EXECUTION | MEASURED SNAPSHOT',timings['limitations']+' '
             'HPC timing uses the srun step; HTC and v2 use Python analysis timers, including plots. '
             'Queue waiting and final controller publication are excluded. A low CPU/wall ratio identifies time outside process CPU; it does not diagnose whether scheduling, throttling or I/O caused it.',
@@ -263,7 +267,7 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
         for x,w,label in headings:deck.text(s,x,1.95,w,.4,label,15,True)
         values=[(r['label'],f"{r['analysis_min']:.1f}",f"{r['download_min']:.1f}",f"{r['cpu_wall_pct']:.1f}%") for r in timings['hpc']]
         values += [('HPC v2: full run',f'{wall/60:.1f}','—',f'{100*cpu/wall:.1f}%'),
-                   (f'HTC v1: median of {len(rows)}',f"{median('analysis_min'):.1f}",f"{median('download_min'):.1f}",f"{median('cpu_wall_pct'):.1f}%")]
+                   (f'HTC {timings.get("htc_product_version","v1")}: median of {len(rows)}',f"{median('analysis_min'):.1f}",f"{median('download_min'):.1f}",f"{median('cpu_wall_pct'):.1f}%")]
         for i,row in enumerate(values):
             for (x,w,_),value in zip(headings,row):deck.text(s,x,2.55+i*.51,w,.4,value,17)
         fast=[r for r in rows if r['cpu_wall_pct']>=90]
@@ -278,7 +282,8 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
             findings=[
                 f'Measured contention on two physical hosts: {counts[0]} and {counts[-1]} analyses pinned to CPU 0; scheduler-assigned CPU 1 probes reached ~98% CPU.',
                 '95 offload environments are not 95 physical nodes. HPC reserves an unused GPU; cygno access to the CPU partition was rejected.',
-                'Before mass v2: coordinate outer/inner CPU affinity, benchmark allocated cores, then scale. Tokens do not impose a four-job cap.'
+                ('The v2 campaign completed despite CPU contention. Coordinate outer/inner affinity before future scaling; tokens do not impose a four-job cap.' if full_campaign else
+                 'Before mass v2: coordinate outer/inner CPU affinity, benchmark allocated cores, then scale. Tokens do not impose a four-job cap.')
             ]
         deck.bullets(s,.8,4.9,11.8,findings,15,.12)
 
@@ -331,7 +336,8 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
         'Phase winding alone does not identify a coherent periodic signal.',
         f"Run-DC removal changes central TM011 RMS by {next(r['change_pct'] for r in metrics if r['mode']=='TM011'):+.2f}% in run 680."
     ],[
-        ('Use the complete v2 pilot to separate complex offsets from fluctuations.' if pilot_data is not None else 'Complete the v2 pilot and retain DC/AC separately for every mode.'),
+        ('Use all 260 v2 runs to compare complex offsets and fluctuations.' if full_campaign else
+         'Use the complete v2 pilot to separate complex offsets from fluctuations.' if pilot_data is not None else 'Complete the v2 pilot and retain DC/AC separately for every mode.'),
         'Validate the magnitude-noise model and low-amplitude phase artefacts.',
         'Obtain numerical kz(f) curves before a full RF calibration.'
     ],'Source: run 680 raw diagnostics, five-SPEC spectral check, and complete run 680 v2.',
@@ -349,19 +355,35 @@ def build(baseline,v1,v2,out,version='v9',timings=None,affinity=None,v2_pilot=No
         'Never mix raw v1 and DC-removed v2 filtered statistics in the same aggregate.',
         'Preserve per-run time and temperature summaries; do not treat all samples as independent observations.'
     ],20,.28)
-    for number in (11,12,14,17,18):reuse(number,'ENSEMBLE | HISTORICAL 260-RUN CONTEXT')
+    if full_campaign:
+        s=page('Complete v2 campaign: raw level and AC fluctuations',
+               '260/260 validated runs · 12 HPC results reused + 248 HTC reconstructions',
+               'ENSEMBLE | COMPLETE v2 CAMPAIGN',
+               'All raw mean amplitudes are read from the new v2 products, where raw diagnostics retain the v1 definitions. '
+               'AC RMS is the complex fluctuation RMS after one run mean is removed. '
+               'All curves are relative to run 680 and plotted against acquisition dates; source hashes cover every run.',
+               'Source: all 260 validated v2 HDF5s; data/v2_campaign/pilot_findings.json and comparison tables.')
+        deck.text(s,.8,1.85,11.7,.6,'260,000 SPEC · 272.63 billion complex samples per mode · 15.15 h acquired.',18,True)
+        deck.image(s,.5,2.65,12.3,3.9,pilot_pictures['v2_campaign_raw_and_ac'])
+    for number in ((12,14,17,18) if full_campaign else (11,12,14,17,18)):
+        reuse(number,'ENSEMBLE | HISTORICAL RAW BASELINE')
     conclusions('Ensemble conclusions and next steps','ENSEMBLE | CONCLUSIONS',[
-        'The three mean amplitudes share a strong drift across 260 runs.',
+        (f"Full-band AC RMS spans {pilot_findings['TM010']['fullband_ac_span_pct']:.2f}%, {pilot_findings['TM011']['fullband_ac_span_pct']:.2f}% and {pilot_findings['TM012']['fullband_ac_span_pct']:.2f}% across 260 runs." if full_campaign else
+         'The three mean amplitudes share a strong drift across 260 runs.'),
         'Stable normalized shape does not imply constant level or full stationarity.',
         'Threshold exceedances are descriptive counts, not detection significance.'
     ],[
-        'Compare current filtered reconstruction with the historical full-band baseline.',
-        'Separate mean complex offsets, AC variance and coherent-band contributions.',
-        'Test a common trend without labelling it as independently measured gain.'
-    ],'Source: historical 260-run summaries retained from v5/v8; current v1 production is a separate campaign.')
+        ('Compare against independent gain measurements and numerical kz(f) calibration.' if full_campaign else
+         'Compare current filtered reconstruction with the historical full-band baseline.'),
+        ('Examine time-local DC/AC behaviour beyond one mean per run.' if full_campaign else
+         'Separate mean complex offsets, AC variance and coherent-band contributions.'),
+        ('Check whether common-trend residuals persist in independent acquisition windows.' if full_campaign else
+         'Test a common trend without labelling it as independently measured gain.')
+    ],'Source: complete 260-run v2 campaign and explicitly labelled historical raw baseline.' if full_campaign else
+      'Source: historical 260-run summaries retained from v5/v8; current v1 production is a separate campaign.')
 
     if pilot_data is not None:
-        pilot.append(deck,page,pilot_pictures,pilot_findings)
+        pilot.append(deck,page,pilot_pictures,pilot_findings,pilot_data)
     else:
         for number in (20,21,22,23,24):reuse(number,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
         reuse(25,'TEMPERATURE | COMPLETE 12-RUN v1 PILOT')
@@ -401,11 +423,17 @@ if __name__=='__main__':
     parser.add_argument('--include-timings',action='store_true')
     parser.add_argument('--affinity-diagnostics',type=Path)
     parser.add_argument('--v2-pilot-directory',type=Path)
+    parser.add_argument('--v2-run-range',nargs=2,type=int,metavar=('FIRST','LAST'))
     parser.add_argument('--periodicity-directory',type=Path)
     parser.add_argument('--htc-output',type=Path,default=WORK/'noise_fullrange_v1_20261109')
     parser.add_argument('--htc-campaign',type=Path,default=Path('/home/mazzitel/HFGW/analysis-runtime/autoreco/Run2/noise_fullrange_v1_20261109'))
+    parser.add_argument('--htc-product-version',choices=['v1','v2'],default='v1')
     args=parser.parse_args()
-    timings=timing_snapshot(args.htc_output,args.htc_campaign) if args.include_timings else None
+    timings=timing_snapshot(args.htc_output,args.htc_campaign,args.htc_product_version) if args.include_timings else None
     affinity=affinity_snapshot(args.affinity_diagnostics) if args.affinity_diagnostics else None
     if affinity is not None and timings is None:parser.error('--affinity-diagnostics requires --include-timings')
-    build(args.baseline,args.v1,args.v2,args.out,args.version,timings,affinity,args.v2_pilot_directory,args.periodicity_directory)
+    expected=None
+    if args.v2_run_range:
+        if args.v2_run_range[0]>args.v2_run_range[1] or args.v2_pilot_directory is None:parser.error('Need a valid v2 range and directory')
+        expected=range(args.v2_run_range[0],args.v2_run_range[1]+1)
+    build(args.baseline,args.v1,args.v2,args.out,args.version,timings,affinity,args.v2_pilot_directory,args.periodicity_directory,expected)
