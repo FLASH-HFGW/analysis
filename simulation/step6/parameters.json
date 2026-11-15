@@ -1,0 +1,37 @@
+{
+  "schema": "flash-step06-thesis-anchored-v1",
+  "thesis": "/home/mazzitel/HFGW/analysis-work/Run2/reports/Tesi_Valeria_Spasiano.pdf",
+  "step5": "/home/mazzitel/HFGW/analysis/simulation/step5/FLASH_step05_receiver_noise",
+  "calibration": "/home/mazzitel/HFGW/analysis/config/noise_calibration_v2.json",
+  "temperature_table": "/home/mazzitel/HFGW/analysis-work/Run2/reports/iq_noise_summary_v17/data/v2_campaign/dc_ac_temperature_by_run.csv",
+  "run680_h5": "/home/mazzitel/HFGW/analysis-work/Run2/reports/noise_v2_development_20261109/run680_full_published/run00680_noise_v2.h5",
+  "default_output": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step6",
+  "modes": {
+    "TM010": {"f0_hz": 8737119000.0, "q0": 52490.0, "kappa1": 0.001122, "kappa2": 0.79},
+    "TM011": {"f0_hz": 8780840000.0, "q0": 53800.0, "kappa1": 0.071, "kappa2": 0.73},
+    "TM012": {"f0_hz": 8841182000.0, "q0": 38730.0, "kappa1": 0.0566, "kappa2": 0.50}
+  },
+  "receiver_tn_k": 3.955,
+  "receiver_tn_uncertainty_k": 0.468,
+  "receiver_tn_status": "Measured no-TWPA configuration; conditional application to all three modes, not measured per mode/run.",
+  "rf_gain_db": 103.4,
+  "rf_gain_status": "Thesis Eq. 5.33: RF chain including additional FET, before downconversion. Do not cascade again with the nominal 143 dB chain.",
+  "adc_fs_hz": 5000000.0,
+  "adc_bits": 16,
+  "if_hz": 1000000.0,
+  "lpf_cutoff_hz": 1900000.0,
+  "lpf_order_assumed": 4,
+  "analog_fs_hz": 50000000.0,
+  "duration_s": 0.02,
+  "source_bandwidth_hz_assumed": 10000000.0,
+  "resistance_ohm": 50.0,
+  "seed_cavity": 20261112,
+  "seed_receiver": 20261113,
+  "source_notes": {
+    "cavity": "Thesis Table 6.1; QL=Q0/(1+kappa1+kappa2); intrinsic wall bath couples to measured output port 2.",
+    "temperature": "Run 680 observed AVS T15 median (11 observations); not a fitted noise temperature. Thesis ~30 mK is a separate scenario.",
+    "sampling_and_filter_cutoff": "Thesis sections 5.1 and 5.4.3. LPF cutoff documented; Butterworth order/shape is assumed.",
+    "adc_range": "Use the scientific product's configured input_range_v; operational scaling, not independent hardware calibration.",
+    "absolute_calibration": "Mode-dependent numerical kz(f), calibration covariance and run-matched receiver noise are missing. Absolute ADC prediction remains nominal."
+  }
+}
