@@ -17,6 +17,7 @@ Usage: submit_one_run.sh RUN [options]
   --time LIMIT         SLURM walltime override (otherwise job.sh's 01:00:00)
   --log-dir DIR        SLURM stdout/stderr directory (default: $HOME/slurm_logs)
   --analysis KIND      fft (default) or noise (I-iQ, filtered bands, HDF5)
+  --mode-workers N     noise mode workers and requested CPUs: 1, 2 or 3 (default: 1)
   --reference FILE     Common amplitude reference required for noise
   --resource KIND      noise allocation: cpu (no GPU) or gpu (legacy default)
   --product-version V  noise scientific version: v1 (default) or v2
@@ -45,11 +46,12 @@ ANALYSIS_KIND=fft
 RESOURCE=gpu
 PRODUCT_VERSION=v1
 CALIBRATION=''
+MODE_WORKERS=1
 REFERENCE="${HFGW_NOISE_REFERENCE:-}"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage; exit 0 ;;
-        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference|--resource|--product-version|--calibration)
+        --account|--partition|--qos|--token-time|--oidc-account|--max-events|--time|--log-dir|--analysis|--reference|--resource|--product-version|--calibration|--mode-workers)
             [[ $# -ge 2 && -n $2 ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
                 --account) ACCOUNT=$2 ;;
@@ -65,6 +67,7 @@ while [[ $# -gt 0 ]]; do
                 --resource) RESOURCE=$2 ;;
                 --product-version) PRODUCT_VERSION=$2 ;;
                 --calibration) CALIBRATION=$2 ;;
+                --mode-workers) MODE_WORKERS=$2 ;;
             esac
             shift 2 ;;
         --*) echo "Unknown option: $1" >&2; exit 2 ;;
@@ -73,6 +76,11 @@ while [[ $# -gt 0 ]]; do
 done
 [[ $RUN =~ ^[0-9]+$ ]] || { usage >&2; exit 2; }
 [[ $TOKEN_TIME =~ ^[0-9]+$ && $MAX_EVENTS =~ ^[0-9]+$ ]] || { echo 'Token time and event limit must be positive integers' >&2; exit 2; }
+[[ "$MODE_WORKERS" =~ ^[123]$ ]] || { echo 'Mode workers must be 1, 2 or 3' >&2; exit 2; }
+if [[ "$ANALYSIS_KIND" != noise && "$MODE_WORKERS" != 1 ]]; then
+    echo '--mode-workers requires --analysis noise' >&2; exit 2
+fi
+export HFGW_NOISE_MODE_WORKERS="$MODE_WORKERS"
 RUN=$((10#$RUN))
 TOKEN_TIME=$((10#$TOKEN_TIME))
 MAX_EVENTS=$((10#$MAX_EVENTS))
@@ -154,6 +162,7 @@ SBATCH_ARGS=(--parsable --account="$ACCOUNT" --partition="$PARTITION" --qos="$QO
     --export=ALL,BEARER_TOKEN --output="$LOG_DIR/JOB_%j.out" --error="$LOG_DIR/JOB_%j.err")
 if [[ -n "$WALLTIME" ]]; then SBATCH_ARGS+=(--time="$WALLTIME"); fi
 if [[ "$ANALYSIS_KIND" == noise ]]; then
+    SBATCH_ARGS+=(--cpus-per-task="$MODE_WORKERS")
     if [[ "$RESOURCE" == gpu ]]; then
         SBATCH_ARGS+=(--gres=gpu:1)
     else

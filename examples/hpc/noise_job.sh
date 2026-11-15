@@ -19,6 +19,9 @@ source "$HFGW_REPO_ROOT/examples/hpc/noise_python.sh"
 RUN=$((10#$HFGW_RUN))
 NAME=$(printf 'run%05d' "$RUN")
 PYTHON="$HFGW_PYTHON"
+MODE_WORKERS="${HFGW_NOISE_MODE_WORKERS:-1}"
+[[ "$MODE_WORKERS" =~ ^[123]$ ]] || exit 2
+(( ${SLURM_CPUS_PER_TASK:-1} >= MODE_WORKERS )) || { echo 'Insufficient allocated CPUs for mode workers' >&2; exit 2; }
 PRODUCT_VERSION="${HFGW_NOISE_PRODUCT_VERSION:-v1}"
 [[ "$PRODUCT_VERSION" == v1 || "$PRODUCT_VERSION" == v2 ]] || exit 2
 SOURCE_DIR="${HFGW_NOISE_SOURCE_DIR:-$HFGW_REPO_ROOT/examples}"
@@ -70,11 +73,13 @@ mv -- "$WORKDIR/${NAME}.mid.gz.part" "$WORKDIR/${NAME}.mid.gz"
 echo "Analyze I-iQ $NAME $(date -u +%FT%TZ)"
 ARGS=("$WORKDIR/${NAME}.mid.gz" --out-dir "$WORKDIR" \
     --global-reference "$WORKDIR/noise_reference.json" --iq-sign -1 \
-    --mode-workers 1 --h5-only --filtered-bands --product-version "$PRODUCT_VERSION")
+    --mode-workers "$MODE_WORKERS" --h5-only --filtered-bands --product-version "$PRODUCT_VERSION")
 if [[ "$PRODUCT_VERSION" == v2 ]]; then
     ARGS+=(--calibration "$WORKDIR/noise_calibration.json")
 fi
 if [[ ${HFGW_MAX_EVENTS:-99999999} != 99999999 ]]; then
     ARGS+=(--max-events "$HFGW_MAX_EVENTS")
 fi
-srun "$PYTHON" -u "$WORKDIR/analyze_midas_iq_noise.py" "${ARGS[@]}" > "$WORKDIR/analysis.log" 2>&1
+{ hostname; lscpu; } > "$OUTDIR/cpu_environment.txt"
+srun --cpu-bind=cores "$PYTHON" -c 'import os,json,platform; print(json.dumps(dict(host=platform.node(),affinity=sorted(os.sched_getaffinity(0)))))' > "$OUTDIR/step_affinity.json"
+srun --cpu-bind=cores "$PYTHON" -u "$WORKDIR/analyze_midas_iq_noise.py" "${ARGS[@]}" > "$WORKDIR/analysis.log" 2>&1

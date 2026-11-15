@@ -340,3 +340,24 @@ un altro nome. Non riapplicare lo stesso stash al payload integrato, perché
 reintrodurrebbe il conflitto. Mantenerlo come archivio finché i test sulla
 facility non sono conclusi. Questa correzione è verificata con simulazioni
 locali; la prova effettiva sui worker LAN va eseguita sulla facility.
+
+## Run 680: confronto HPC con tre CPU
+
+Il launcher noise accetta `--mode-workers 1|2|3` e richiede lo stesso numero
+CPU a Slurm. Mantiene un thread BLAS/OMP; registra hardware e affinità dello
+step nei risultati. Per il confronto con il riferimento HPC a un worker:
+
+```bash
+git pull --ff-only origin main
+HFGW_NOISE_OUTPUT_ROOT="$HOME/HFGW/analysis-work/Run2/reports/noise_hpc_3workers" \
+ bash examples/hpc/submit_one_run.sh 680 --analysis noise \
+ --mode-workers 3 --product-version v2 \
+ --reference "$HOME/HFGW/analysis-work/Run2/references/noise_reference.json" \
+ --calibration config/noise_calibration_v2.json \
+ --resource gpu --partition GPU --time 03:00:00 --token-time 14400
+```
+
+Usa il profilo GPU già funzionante per l'account cygno; l'analisi usa le CPU.
+La sorgente viene congelata alla sottomissione. I risultati sono diagnostici,
+non pubblicati automaticamente su GPFS. Confrontare sia CPU sia wall time;
+per isolare lo scaling ripetere anche `--mode-workers 1` sullo stesso hardware.

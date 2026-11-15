@@ -18,7 +18,7 @@ class HpcNoiseTests(unittest.TestCase):
             'gfal-copy': '#!/bin/bash\necho transfer >> "$TEST_CALLS"\n'
                          'if [[ $DOWNLOAD_RC != 0 ]]; then exit "$DOWNLOAD_RC"; fi\n'
                          'printf raw > "$2"\n',
-            'srun': '#!/bin/bash\necho srun >> "$TEST_CALLS"\nexec "$@"\n',
+            'srun': '#!/bin/bash\necho srun >> "$TEST_CALLS"\n[[ ${1:-} == --cpu-bind=cores ]] && shift\nexec "$@"\n',
             'python3.9': '''#!/usr/bin/python3
 import json, os, sys
 from pathlib import Path
