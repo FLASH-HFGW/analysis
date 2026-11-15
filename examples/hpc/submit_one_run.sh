@@ -107,9 +107,9 @@ case "$ANALYSIS_KIND" in
     noise)
         export HFGW_NOISE_RESOURCE="$RESOURCE"
         JOB_SCRIPT="$REPO_ROOT/examples/hpc/noise_job.sh"
-        [[ -f "$JOB_SCRIPT" && -n "$REFERENCE" && -f "$REFERENCE" ]] || {
-            echo 'Noise requires noise_job.sh and --reference FILE' >&2; exit 2;
-        }
+        [[ -f "$JOB_SCRIPT" ]] || { echo "Noise job script not found: $JOB_SCRIPT" >&2; exit 2; }
+        [[ -n "$REFERENCE" ]] || { echo 'Noise requires --reference FILE' >&2; exit 2; }
+        [[ -f "$REFERENCE" ]] || { echo "Noise reference file not found: $REFERENCE" >&2; exit 2; }
         export HFGW_NOISE_REFERENCE="$(readlink -f -- "$REFERENCE")"
         export HFGW_NOISE_PRODUCT_VERSION="$PRODUCT_VERSION"
         unset HFGW_NOISE_CALIBRATION
