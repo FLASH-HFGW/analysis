@@ -104,3 +104,11 @@ il termine incrociato non spiega la grande depressione. Questo orienta verso
 una risposta comune in forma alle due quadrature (non necessariamente un unico
 componente fisico) e/o alla collocazione del rumore. Non identifica uno stadio
 hardware specifico e non elimina gli effetti I/Q osservati nei toni.
+
+## DC long-term e controlli della depressione
+
+La diagnostica separata [dc_longterm_diagnostic/README.md](dc_longterm_diagnostic/README.md)
+riusa i 260 prodotti v2 dei run 680–939 e limita le verifiche raw a 16 SPEC di
+quattro run. Comprende trend DC/AC, controlli delle derive nelle correlazioni,
+PSD con tre centraggi e quattro durate FFT, medie a blocchi e Rice/Rayleigh
+a parametri misurati. I risultati numerici e le figure restano fuori da Git.
