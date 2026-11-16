@@ -17,6 +17,7 @@ con una misura indipendente della catena.
 | `toy_calibrated_20261116/` | Scenario alternativo calibrazione fisica ±2 V e dati ±2 V; conservato, non adottato. |
 | **`toy_ODB_cal5_data2_LF_20261116/`** | **Riferimento attuale:** calibrazione ±5 V, dati ±2 V da ODB, RF 103.4 dB, LF 60→20 dB. |
 | `step7/` | Test analitico della dipendenza della forma LF dall'impostazione: contrae la risposta centrale, senza fit o variazioni dei guadagni. |
+| `step8/` | Ipotesi LF fisica iniziale fc=12.5kHz, epsilon=0.02; IF primaria, calibrazione separata, confronto congiunto PSD/correlazione/medie. Nessun fit LF o guadagno. |
 | `run620_comparison/`, `thesis_comparison/` | Confronti esplorativi e scenari storici, non sostituiscono il riferimento attuale. |
 
 I README dei singoli step documentano lo stato storico del relativo codice;

@@ -1,0 +1,22 @@
+{
+  "schema": "flash-step08-initial-LF-hypothesis-v1",
+  "fc_hz": 12500.0,
+  "epsilon": 0.02,
+  "fit_performed": false,
+  "fs_hz": 5000000.0,
+  "RF_gain_db": 103.4,
+  "receiver_Tn_K": 3.955,
+  "LF_data_over_cal_amplitude": 0.01,
+  "ADC_peak_V": 2.0,
+  "ADC_counts_denominator": 65535,
+  "calibration_bridge_halfwidth_hz": 300000.0,
+  "bridge_sensitivity_halfwidths_hz": [200000.0, 300000.0, 500000.0],
+  "LF_primary_offset_hz": {"TM010": 0.0, "TM011": 43723000.0, "TM012": 104057000.0},
+  "primary_LO_hz": 8735869000.0,
+  "reference_run": 680,
+  "calibration_reconstruction": "/home/mazzitel/HFGW/analysis-work/Run2/diagnostics/normalization_audit_20261114/calibration_reconstruction.json",
+  "cavity_parameters": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step6/metrics.json",
+  "DC_diagnostic": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step7/dc_longterm_diagnostic",
+  "reference_toy": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/toy_ODB_cal5_data2_LF_20261116",
+  "output": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step8_LF_initial_20261116"
+}
