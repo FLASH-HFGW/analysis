@@ -16,6 +16,7 @@ con una misura indipendente della catena.
 | `toy_measured_response/` | Evoluzione con curve specifiche per modo e full-run; ipotesi storica di guadagno 67.4 dB, superata per il confronto principale. |
 | `toy_calibrated_20261116/` | Scenario alternativo calibrazione fisica ±2 V e dati ±2 V; conservato, non adottato. |
 | **`toy_ODB_cal5_data2_LF_20261116/`** | **Riferimento attuale:** calibrazione ±5 V, dati ±2 V da ODB, RF 103.4 dB, LF 60→20 dB. |
+| `presentation_steps1_6_v41/` | Short common-input presentation examples through step6; current physical/ADC normalization, shared sources, explicit ADC markers. Historical steps unchanged. |
 | `step7/` | Test analitico della dipendenza della forma LF dall'impostazione: contrae la risposta centrale, senza fit o variazioni dei guadagni. |
 | `step8/` | Ipotesi LF fisica iniziale fc=12.5kHz, epsilon=0.02; IF primaria, calibrazione separata, confronto congiunto PSD/correlazione/medie. Nessun fit LF o guadagno. |
 | `run620_comparison/`, `thesis_comparison/` | Confronti esplorativi e scenari storici, non sostituiscono il riferimento attuale. |

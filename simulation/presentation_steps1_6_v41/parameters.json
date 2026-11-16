@@ -1,0 +1,22 @@
+{
+  "schema": "flash-common-steps1-6-presentation-v41",
+  "samples_per_example": 262144,
+  "fs_hz": 5000000.0,
+  "RF_gain_db": 103.4,
+  "LF_data_over_cal_amplitude": 0.01,
+  "ADC_peak_V": 2.0,
+  "ADC_counts_denominator": 65535,
+  "receiver_Tn_K": 3.955,
+  "validation_probe_dBm": -115.0,
+  "validation_injected_noise_equivalent_K": 3.955,
+  "seed_cavity_and_probe": 20261112,
+  "seed_receiver": 20261113,
+  "resistance_ohm": 50.0,
+  "primary_LO_hz": 8735869000.0,
+  "secondary_LO_hz": {"TM010": 0.0, "TM011": 43723000.0, "TM012": 104057000.0},
+  "calibration_reconstruction": "/home/mazzitel/HFGW/analysis-work/Run2/diagnostics/normalization_audit_20261114/calibration_reconstruction.json",
+  "physical_parameters": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step6/metrics.json",
+  "output": "/home/mazzitel/HFGW/analysis-work/Run2/simulation/presentation_steps1_6_v41",
+  "readout": "Measured per-mode integrated-tone kz includes mixer/LPF; use once with RF103.4dB and LF ratio0.01. No extra LPF, no step7/8 LF modification.",
+  "scope": "52.4288ms examples only; not a new full-run simulation or science reconstruction"
+}
