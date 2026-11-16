@@ -81,3 +81,26 @@ dall'interpolazione nel gap. La contrazione dello step 7 modifica anche la rispo
 alle frequenze campionate, quindi richiede una risposta diversa nelle condizioni
 scientifiche, non una semplice interpolazione alternativa degli stessi dati.
 Il rumore può inoltre avere sorgenti e risposta I/Q differenti dal tono.
+
+## Matrice spettrale I/Q della depressione centrale
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 simulation/step7/inspect_central_iq_spectra.py
+```
+
+Legge i primi 5 SPEC raw del run 680, una media globale per quadratura, Hann
+simmetrica e PSD bilatera. Ricostruisce e verifica contro l'archivio originale
+entrambi i lati dello spettro: con C=FFT(I) conj(FFT(Qhardware)),
+`S_z(+f)=S_I+S_Q-2 Im(C)` e `S_z(-f)=S_I+S_Q+2 Im(C)`.
+Le matrici vengono mediate su 256 bin prima di calcolare il coefficiente
+incrociato normalizzato; la coerenza di un singolo periodogramma non sarebbe
+una misura informativa. DC e Nyquist sono esclusi da questo raggruppamento.
+
+Prodotti esterni in `analysis-work/Run2/simulation/step7/central_iq_spectra/`:
+`central_iq_spectra.png`, `spectral_matrix.npz`, `summary.json`.
+Il minimo del TM010 è già presente nelle due PSD separate, con larghezze
+simili; non è prodotto dalla combinazione complessa I-iQ. Nelle bande esaminate
+il termine incrociato non spiega la grande depressione. Questo orienta verso
+una risposta comune in forma alle due quadrature (non necessariamente un unico
+componente fisico) e/o alla collocazione del rumore. Non identifica uno stadio
+hardware specifico e non elimina gli effetti I/Q osservati nei toni.
