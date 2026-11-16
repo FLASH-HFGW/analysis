@@ -37,3 +37,32 @@ Un miglioramento verifica la plausibilità dell'ipotesi di forma, non dimostra
 che il cambio 60→20 dB sia la causa. Per attribuirla occorre una misura della
 risposta LF nelle due impostazioni. Profondità e forma I/Q restano verifiche
 separate; non introdurre altri termini per mascherare questo limite.
+
+## Tempi con lo stesso stimatore dei dati
+
+Dopo il test della risposta eseguire:
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 simulation/step7/compare_decay_times.py
+python3 simulation/step7/summarize_decay_times.py
+```
+
+Il primo script importa il fit storico da `examples/fit_iq_correlation_decay.py`,
+verifica la riproduzione esatta dei tempi archiviati del run 680, applica lo stesso
+fit ai valori attesi e a 5 SPEC simulati per ogni variante. Finestra principale
+0.3–4 us, sensibilità 0.3–3, 0.3–5, 0.7–4 us. Il grafico conserva l'asse 0–10 us.
+Il MC usa FIR e overlap-save della simulazione completa, ADC ±2 V e semi uguali
+fra le varianti per un confronto appaiato. Alpha=1 deve riprodurre la correlazione
+della realizzazione di riferimento. Si verifica inoltre la covarianza FFT con
+somme dirette a lag selezionati e l'assenza di clipping.
+
+I prodotti restano in `analysis-work/Run2/simulation/step7/decay_times/`:
+`fit_results.json`, `decay_times.csv`, `short_MC_comparison.npz`,
+`matched_decay_fits.png`, `fit_window_sensitivity.png`, `decay_times_summary.md`.
+
+Il fit del TM010 originale è scarsamente descrittivo: il suo parametro tau non
+va interpretato fisicamente. La contrazione migliora la struttura temporale,
+ma non risolve simultaneamente larghezza spettrale e tempo estratto. Anche gli
+altri modi mostrano dipendenza dalla finestra nella previsione analitica:
+il singolo esponenziale approssima la risposta totale. Questa scansione non
+fornisce un intervallo di confidenza; un solo MC non è un ensemble di incertezze.
