@@ -66,3 +66,18 @@ ma non risolve simultaneamente larghezza spettrale e tempo estratto. Anche gli
 altri modi mostrano dipendenza dalla finestra nella previsione analitica:
 il singolo esponenziale approssima la risposta totale. Questa scansione non
 fornisce un intervallo di confidenza; un solo MC non è un ensemble di incertezze.
+
+## Punti realmente misurati dello sweep
+
+`python3 simulation/step7/inspect_sweep_constraints.py` produce confronti separati
+fra PSD originale dei dati e risposta al tono, mostrando i punti di calibrazione
+e l'intervallo centrale non campionato. Le potenze sono normalizzate ciascuna al
+proprio plateau |IF|=0.5–1.5 MHz: è un confronto di forma, non di guadagno assoluto.
+Prodotti esterni in `analysis-work/Run2/simulation/step7/sweep_constraints/`.
+
+Il gap centrale non permette di ricostruire un minimo stretto. Tuttavia la
+attenuazione TM010 esiste già ai punti misurati vicini: non può dipendere soltanto
+dall'interpolazione nel gap. La contrazione dello step 7 modifica anche la risposta
+alle frequenze campionate, quindi richiede una risposta diversa nelle condizioni
+scientifiche, non una semplice interpolazione alternativa degli stessi dati.
+Il rumore può inoltre avere sorgenti e risposta I/Q differenti dal tono.
