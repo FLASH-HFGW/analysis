@@ -1,0 +1,8 @@
+# Generated simulation products; parameters.json is an intentional source input.
+*.svg
+results.json
+metrics.json
+comparison.json
+*reference_metrics.json
+*stdout.txt
+test_log.txt

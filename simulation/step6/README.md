@@ -1,5 +1,9 @@
 # Step 6 — parametri misurati, ricevitore condizionale, ADC nominale
 
+> Stato storico dello step 6: le convenzioni nominali qui descritte sono conservate
+> per riprodurre questo passaggio. Il confronto attuale usa curve kz distinte per
+> modo, calibrazione ±5 V, dati ±2 V e LF 60→20 dB: vedi [README generale](../README.md).
+
 Evoluzione dello step 5. Nessun tono coerente. Sorgenti, configurazione e istruzioni
 restano in questa cartella; risultati scientifici e figure sono separati:
 
