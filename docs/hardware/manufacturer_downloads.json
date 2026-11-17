@@ -1,0 +1,42 @@
+[
+  {
+    "model": "ZSC-4-1+",
+    "url": "https://www.minicircuits.com/pdfs/ZSC-4-1+.pdf",
+    "filename": "ZSC-4-1+.pdf",
+    "bytes": 205002,
+    "sha256": "a8773c9530cd838578244ccb8807b7061cd4f2ead5eb08a1043166893b920d02",
+    "retrieved": "2026-11-17"
+  },
+  {
+    "model": "SIF-40+",
+    "url": "https://www.minicircuits.com/pdfs/SIF-40+.pdf",
+    "filename": "SIF-40+.pdf",
+    "bytes": 163142,
+    "sha256": "9e8adc4cd1816739744f09de81d6aa52ac29f44ab497969a1201cc7f706986ef",
+    "retrieved": "2026-11-17"
+  },
+  {
+    "model": "SBP-101+",
+    "url": "https://www.minicircuits.com/pdfs/SBP-101+.pdf",
+    "filename": "SBP-101+.pdf",
+    "bytes": 535441,
+    "sha256": "519e38f34e16479a10d6f5188783cac700a8029e06627eaa6b4e9b77104cef8f",
+    "retrieved": "2026-11-17"
+  },
+  {
+    "model": "ZAD-1-1+",
+    "url": "https://www.minicircuits.com/pdfs/ZAD-1-1+.pdf",
+    "filename": "ZAD-1-1+.pdf",
+    "bytes": 232059,
+    "sha256": "874ccd919ec16e356f20df50565b4b3ad6065a71a905d10d658cc074eadfa5c2",
+    "retrieved": "2026-11-17"
+  },
+  {
+    "model": "BLP-1.9+",
+    "url": "https://www.minicircuits.com/pdfs/BLP-1.9+.pdf",
+    "filename": "BLP-1.9+.pdf",
+    "bytes": 237752,
+    "sha256": "5a35b2a6500cf8fb3b9c9cee8a2fc4f94a2f5b141e45d02cf39b5581a974a3c6",
+    "retrieved": "2026-11-17"
+  }
+]
