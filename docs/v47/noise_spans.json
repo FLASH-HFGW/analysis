@@ -1,0 +1,50 @@
+{
+  "TM010": {
+    "fullband_RMS_span_percent": 2.6376880226778976,
+    "full_band_RMS_max_over_min_percent": 2.6376880226778976,
+    "resonance_mean_side_RMS_max_over_min_percent": 2.628571024348436,
+    "electronic_mean_side_RMS_max_over_min_percent": 2.5840495732732727,
+    "resonance_central_over_side_relative_span_percent": 0.3274993374905333,
+    "resonance_each_band_RMS_span_percent": [
+      2.6617221654850365,
+      2.67053068074381,
+      2.610506335475571,
+      2.6674332556547053,
+      2.687239712232792,
+      2.700541290944458,
+      2.702408532672318
+    ]
+  },
+  "TM011": {
+    "fullband_RMS_span_percent": 2.749122385837044,
+    "full_band_RMS_max_over_min_percent": 2.749122385837044,
+    "resonance_mean_side_RMS_max_over_min_percent": 2.7471437692708323,
+    "electronic_mean_side_RMS_max_over_min_percent": 2.71778119578987,
+    "resonance_central_over_side_relative_span_percent": 0.2355224888482832,
+    "resonance_each_band_RMS_span_percent": [
+      2.764522843898898,
+      2.765456052214743,
+      2.772138121446832,
+      2.773948378587976,
+      2.816326272805103,
+      2.7913725225202413,
+      2.8111033428257937
+    ]
+  },
+  "TM012": {
+    "fullband_RMS_span_percent": 3.2584451926114255,
+    "full_band_RMS_max_over_min_percent": 3.2584451926114255,
+    "resonance_mean_side_RMS_max_over_min_percent": 3.244032790785134,
+    "electronic_mean_side_RMS_max_over_min_percent": 3.2299189666751937,
+    "resonance_central_over_side_relative_span_percent": 0.24411109997046765,
+    "resonance_each_band_RMS_span_percent": [
+      3.2964011213136635,
+      3.251192199206976,
+      3.2443498105175994,
+      3.3086767311419685,
+      3.3196241832576634,
+      3.3205568609730562,
+      3.3359114250394173
+    ]
+  }
+}
