@@ -130,4 +130,5 @@ changes='''# Changes from v46
 for name in ['observable_provenance.csv','absolute_fullband_resonance_comparison.csv','noise_spans.json','consolidation_validation.json']:
  shutil.copy2(D/name,docs/name)
 shutil.copy2(O/'validation_complete.json',docs/'validation_complete.json');shutil.copy2(O/'slide_observable_provenance.csv',docs/'slide_observable_provenance.csv')
+for path in docs.glob('*.csv'):path.write_bytes(path.read_bytes().replace(b'\r\n',b'\n'))
 print('Documentation complete:',O,docs)
