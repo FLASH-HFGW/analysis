@@ -1,0 +1,30 @@
+{
+  "base_commit": "1b2cb10",
+  "approved_steps_commit": "a418b23",
+  "baseline_hashes": {
+    "pdf": "483c810d3c369e8b23a993603655d837eea148ce8fd68c08d4160a860af79e5f",
+    "pptx": "211588d16518075ace6a8c626ed773e16f11f2fe6b4dbaffc114c6b8bf00d192"
+  },
+  "pdf_pages": 65,
+  "pptx_slides": 65,
+  "preserved_pages": 53,
+  "appendix_pages": 12,
+  "original_pdf_exact_prefix": true,
+  "pdf_content_streams_exact": 53,
+  "pdf_pixel_identity_at_63_dpi": 53,
+  "original_pptx_native_slides_and_order_exact": 53,
+  "pptx_original_members_unchanged": 296,
+  "allowed_pptx_differences": [
+    "[Content_Types].xml",
+    "ppt/presentation.xml",
+    "ppt/_rels/presentation.xml.rels"
+  ],
+  "explicit_observables": 39,
+  "raw_reads": 0,
+  "fits": 0,
+  "simulations": 0,
+  "output_hashes": {
+    "iq_noise_summary_v48.pdf": "f06133c4937c85ee38ce25501922828dfef792a19e4c44289f9acaf461a1aaa9",
+    "iq_noise_summary_v48.pptx": "b86e79be215bc3e276c1d7bc955e031c39517fe3e699e076248773da677c7adb"
+  }
+}
