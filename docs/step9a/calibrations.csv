@@ -1,0 +1,4 @@
+mode,rf_Hz,rf_first_Nyquist_low_Hz,rf_first_Nyquist_high_Hz,baseline_Tn_K,mode_Tn_K,mode_Tn_uncertainty_K,mode_noise_source_G_dB,mode_noise_source_G_uncertainty_dB,mode_VNA_L5_dB,mode_VNA_uncertainty_dB,mode_FET_dB,mode_FET_uncertainty_dB,mode_total_RF_dB,mode_total_RF_uncertainty_dB,baseline_FET_nominal_dB,baseline_total_RF_dB,thesis_global_Tn_K,thesis_global_Tn_reported_plusminus_K,thesis_global_G_dB,thesis_global_G_reported_plusminus_dB
+TM010,8737119000,8733369000,8738369000,3.955,,,,,,,,,,,36,103.4,3.955,0.468,67.81,0.39
+TM011,8780840000,8777092000,8782092000,3.955,,,,,,,,,,,36,103.4,3.955,0.468,67.81,0.39
+TM012,8841182000,8837426000,8842426000,3.955,,,,,,,,,,,36,103.4,3.955,0.468,67.81,0.39
