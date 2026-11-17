@@ -1,0 +1,353 @@
+{
+  "numeric_checks": {
+    "slide46": [
+      {
+        "mode": "TM010",
+        "observable": "mean_I_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM010",
+        "observable": "mean_Qeff_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM010",
+        "observable": "DC_abs_ADC_V",
+        "max_abs_error": 1.0842021724855044e-19
+      },
+      {
+        "mode": "TM010",
+        "observable": "DC_phase_rad",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM010",
+        "observable": "DC2_ADC_V2",
+        "max_abs_error": 1.0587911840678754e-22
+      },
+      {
+        "mode": "TM010",
+        "observable": "AC2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM010",
+        "observable": "total2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM010",
+        "observable": "DC2_over_AC2",
+        "max_abs_error": 1.0842021724855044e-19
+      },
+      {
+        "mode": "TM011",
+        "observable": "mean_I_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM011",
+        "observable": "mean_Qeff_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM011",
+        "observable": "DC_abs_ADC_V",
+        "max_abs_error": 4.336808689942018e-19
+      },
+      {
+        "mode": "TM011",
+        "observable": "DC_phase_rad",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM011",
+        "observable": "DC2_ADC_V2",
+        "max_abs_error": 8.470329472543003e-22
+      },
+      {
+        "mode": "TM011",
+        "observable": "AC2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM011",
+        "observable": "total2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM011",
+        "observable": "DC2_over_AC2",
+        "max_abs_error": 2.168404344971009e-18
+      },
+      {
+        "mode": "TM012",
+        "observable": "mean_I_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM012",
+        "observable": "mean_Qeff_ADC_V",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM012",
+        "observable": "DC_abs_ADC_V",
+        "max_abs_error": 2.710505431213761e-20
+      },
+      {
+        "mode": "TM012",
+        "observable": "DC_phase_rad",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM012",
+        "observable": "DC2_ADC_V2",
+        "max_abs_error": 4.963083675318166e-24
+      },
+      {
+        "mode": "TM012",
+        "observable": "AC2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM012",
+        "observable": "total2_ADC_V2",
+        "max_abs_error": 0.0
+      },
+      {
+        "mode": "TM012",
+        "observable": "DC2_over_AC2",
+        "max_abs_error": 2.710505431213761e-20
+      }
+    ],
+    "slide48": [
+      {
+        "mode": "TM010",
+        "k": 3,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.474514954580286e-17
+      },
+      {
+        "mode": "TM010",
+        "k": 3,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.9081958235744878e-17
+      },
+      {
+        "mode": "TM011",
+        "k": 3,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.5612511283791264e-17
+      },
+      {
+        "mode": "TM011",
+        "k": 3,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.3010426069826053e-17
+      },
+      {
+        "mode": "TM012",
+        "k": 3,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.5612511283791264e-17
+      },
+      {
+        "mode": "TM012",
+        "k": 3,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.6479873021779667e-17
+      },
+      {
+        "mode": "TM010",
+        "k": 5,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.8973538018496328e-19
+      },
+      {
+        "mode": "TM010",
+        "k": 5,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 2.1006417091906648e-19
+      },
+      {
+        "mode": "TM011",
+        "k": 5,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.2874900798265365e-19
+      },
+      {
+        "mode": "TM011",
+        "k": 5,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 2.1006417091906648e-19
+      },
+      {
+        "mode": "TM012",
+        "k": 5,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 1.8973538018496328e-19
+      },
+      {
+        "mode": "TM012",
+        "k": 5,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 2.303929616531697e-19
+      },
+      {
+        "mode": "TM010",
+        "k": 7,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 4.235164736271502e-22
+      },
+      {
+        "mode": "TM010",
+        "k": 7,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 6.485096002415737e-22
+      },
+      {
+        "mode": "TM011",
+        "k": 7,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 2.9116757561866574e-22
+      },
+      {
+        "mode": "TM011",
+        "k": 7,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 6.088049308390284e-22
+      },
+      {
+        "mode": "TM012",
+        "k": 7,
+        "population": "local",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 2.845501307182415e-22
+      },
+      {
+        "mode": "TM012",
+        "k": 7,
+        "population": "reference",
+        "max_fraction_difference": 0.0,
+        "max_threshold_ADC_V_difference": 0.0,
+        "max_Rayleigh_probability_difference": 3.970466940254533e-22
+      }
+    ]
+  },
+  "modified_slides": [
+    26,
+    28,
+    31,
+    34,
+    42,
+    43,
+    46,
+    48,
+    49,
+    50,
+    53
+  ],
+  "slides": 53,
+  "no_raw_reads": true,
+  "no_simulations": true,
+  "no_new_fits": true,
+  "model_parameters_changed": false,
+  "unchanged_PPTX_slide_XML_exact": true,
+  "version": "v47.1",
+  "PDF_pages": 53,
+  "PPTX_pages": 53,
+  "unchanged_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    27,
+    29,
+    30,
+    32,
+    33,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    44,
+    45,
+    47,
+    51,
+    52
+  ],
+  "unchanged_PDF_content_exact": true,
+  "unchanged_preview_hashes": true,
+  "approved_model_metrics_hash_unchanged": true,
+  "primary_input_hashes_unchanged": true,
+  "explicit_provenance_rows": 152,
+  "explicit_dependency_definitions": 32,
+  "provenance_inference": "Explicit slide-number/observable registry; no title keyword classification",
+  "slide46_compared_numeric_values": 6240,
+  "slide48_compared_fraction_values": 4680,
+  "slide48_compared_threshold_values": 4680,
+  "slide48_compared_Rayleigh_predictions": 4680,
+  "slide46_max_absolute_reproduction_error": 2.168404344971009e-18,
+  "slide48_max_fraction_difference": 0.0,
+  "slide48_max_threshold_difference_ADC_V": 0.0,
+  "slide48_max_Rayleigh_probability_difference": 1.9081958235744878e-17
+}

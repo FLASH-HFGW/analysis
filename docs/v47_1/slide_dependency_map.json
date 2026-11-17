@@ -1,0 +1,456 @@
+{
+  "1": {
+    "model_parameters": [
+      "MODEL",
+      "KZ"
+    ],
+    "short_realizations": [
+      "SHORT"
+    ]
+  },
+  "2": {
+    "hardware_inventory": [
+      "HW"
+    ]
+  },
+  "3": {
+    "physical_parameters_and_normalization": [
+      "MODEL",
+      "KZ"
+    ]
+  },
+  "4": {
+    "physical_source_and_response": [
+      "MODEL",
+      "KZ",
+      "SHORT"
+    ]
+  },
+  "5": {
+    "tone_example": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "6": {
+    "filtered_tone_example": [
+      "MODEL",
+      "KZ",
+      "SHORT"
+    ]
+  },
+  "7": {
+    "electronic_noise_example": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "8": {
+    "thermal_noise_example": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "9": {
+    "combined_source_example": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "10": {
+    "source_covariances_and_residual": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "11": {
+    "TM010_complete_short_model": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "12": {
+    "TM011_complete_short_model": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "13": {
+    "TM012_complete_short_model": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "14": {
+    "expected_reference_moments": [
+      "MODEL",
+      "SHORT"
+    ]
+  },
+  "15": {
+    "run680_samples_and_ADC": [
+      "V2_RUN680"
+    ],
+    "run680_temperature": [
+      "TEMP",
+      "SENSORS"
+    ],
+    "cavity_and_LO_parameters": [
+      "MODEL"
+    ]
+  },
+  "16": {
+    "data_raw_and_AC_RMS": [
+      "V2_RUN680"
+    ],
+    "data_Rayleigh_scale": [
+      "RAYLEIGHFIT"
+    ],
+    "toy_expected_RMS": [
+      "MODEL"
+    ],
+    "toy_fullrun_moments": [
+      "TOYMETRICS"
+    ]
+  },
+  "17": {
+    "data_IQ_and_quadrature_marginals": [
+      "FINE_TM010",
+      "FINE_TM011",
+      "FINE_TM012"
+    ],
+    "toy_IQ_and_marginals": [
+      "TOYFULL"
+    ]
+  },
+  "18": {
+    "paired_raw_amplitude_histograms": [
+      "AMP_TM010",
+      "AMP_TM011",
+      "AMP_TM012"
+    ],
+    "saved_Rayleigh_scales": [
+      "RAYLEIGHFIT",
+      "TOYMETRICS"
+    ],
+    "toy_fullrun_amplitudes": [
+      "TOYFULL"
+    ]
+  },
+  "19": {
+    "absolute_data_phase_and_increments": [
+      "V2_PHASE"
+    ],
+    "toy_absolute_phase": [
+      "TOYFULL"
+    ]
+  },
+  "20": {
+    "data_empirical_fittedthreshold_counts": [
+      "FITTEDCOUNTS",
+      "RAYLEIGHFIT"
+    ],
+    "toy_empirical_counts": [
+      "TOYMETRICS"
+    ],
+    "Rayleigh_expectation": [
+      "MODEL"
+    ]
+  },
+  "21": {
+    "selected_PSD_data_and_toy": [
+      "WINDOW_TM010",
+      "WINDOW_TM011",
+      "WINDOW_TM012"
+    ]
+  },
+  "22": {
+    "selected_g1_data_and_toy": [
+      "WINDOW_TM010",
+      "WINDOW_TM011",
+      "WINDOW_TM012"
+    ]
+  },
+  "23": {
+    "retained_selectedwindow_characteristic_times": [
+      "TIMES"
+    ],
+    "intrinsic_cavity_time": [
+      "MODEL"
+    ]
+  },
+  "24": {
+    "data_RMS_and_DC": [
+      "V2_RUN680"
+    ],
+    "amplitude_fit": [
+      "RAYLEIGHFIT"
+    ],
+    "toy_expected_and_fullrun": [
+      "MODEL",
+      "TOYMETRICS"
+    ],
+    "selected_PSD_g1_discrepancies": [
+      "WINDOW_TM010",
+      "WINDOW_TM011",
+      "WINDOW_TM012",
+      "TIMES"
+    ]
+  },
+  "25": {
+    "data_seven_band_moments": [
+      "PILOT",
+      "RESONANCE_METRICS"
+    ],
+    "toy_thermal_electronic_total": [
+      "ANALYTIC",
+      "MODEL",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "26": {
+    "data_fullband_AC_RMS": [
+      "V2_RUN680"
+    ],
+    "toy_fullband_RMS": [
+      "MODEL"
+    ],
+    "data_central_resonance_RMS": [
+      "PILOT",
+      "RESONANCE_METRICS"
+    ],
+    "toy_resonance_total_and_thermal": [
+      "ANALYTIC",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "27": {
+    "empirical_fullrun_band_amplitudes": [
+      "PILOT"
+    ],
+    "analytical_band_Rayleigh_CDF": [
+      "ANALYTIC",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "28": {
+    "empirical_fullrun_filtered_PSD": [
+      "PILOT"
+    ],
+    "empirical_initial_window_g1": [
+      "PILOT"
+    ],
+    "expected_PSD_and_g1": [
+      "ANALYTIC",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "29": {
+    "empirical_fullrun_band_ratios": [
+      "PILOT",
+      "RESONANCE_METRICS"
+    ],
+    "analytical_band_ratios": [
+      "ANALYTIC",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "30": {
+    "data_total_and_AC_RMS": [
+      "FULL"
+    ],
+    "measured_cryogenic_temperatures": [
+      "TEMP",
+      "SENSORS"
+    ]
+  },
+  "31": {
+    "fullband_AC_power": [
+      "FULL"
+    ],
+    "measured_cryogenic_temperatures": [
+      "TEMP",
+      "SENSORS"
+    ]
+  },
+  "32": {
+    "fullband_AC_power": [
+      "FULL"
+    ],
+    "additional_stage_temperatures": [
+      "TEMP",
+      "SENSORS"
+    ]
+  },
+  "33": {
+    "fullband_AC_power": [
+      "FULL"
+    ],
+    "sensor_values_and_identity": [
+      "TEMP",
+      "SENSORS"
+    ],
+    "direct_firstdifference_correlation_coefficients": [
+      "RESONANCE_METRICS"
+    ]
+  },
+  "34": {
+    "intermode_runlevel_power_correlations": [
+      "FULL"
+    ]
+  },
+  "35": {
+    "nominal_resonance_coordinates": [
+      "RESONANCE",
+      "FFT_VERIFY"
+    ],
+    "electronic_coordinates_and_FIR": [
+      "ELECTRONIC"
+    ],
+    "illustrative_cavity_Lorentzians": [
+      "MODEL"
+    ]
+  },
+  "36": {
+    "run680_electronic_absolute_baseline": [
+      "ELECTRONIC"
+    ]
+  },
+  "37": {
+    "electronic_relative_RMS": [
+      "ELECTRONIC"
+    ]
+  },
+  "38": {
+    "electronic_central_side_symmetric_ratios": [
+      "ELECTRONIC"
+    ]
+  },
+  "39": {
+    "archived_PSD_electronic_power_comparison": [
+      "RESONANCE",
+      "ELECTRONIC",
+      "FFT_VERIFY",
+      "RESONANCE_METRICS"
+    ]
+  },
+  "40": {
+    "resonance_absolute_RMS": [
+      "RESONANCE"
+    ]
+  },
+  "41": {
+    "resonance_relative_RMS": [
+      "RESONANCE"
+    ]
+  },
+  "42": {
+    "resonance_band_power": [
+      "RESONANCE"
+    ],
+    "measured_temperatures": [
+      "TEMP",
+      "SENSORS"
+    ]
+  },
+  "43": {
+    "intermode_runlevel_resonance_power": [
+      "RESONANCE"
+    ]
+  },
+  "44": {
+    "resonance_central_side_symmetric_ratios": [
+      "RESONANCE"
+    ]
+  },
+  "45": {
+    "electronic_band_stability": [
+      "ELECTRONIC"
+    ],
+    "resonance_band_stability": [
+      "RESONANCE"
+    ],
+    "fullband_AC_level": [
+      "FULL"
+    ]
+  },
+  "46": {
+    "complex_mean_magnitude_phase": [
+      "FULL"
+    ],
+    "DC_AC_total_decomposition": [
+      "FULL"
+    ],
+    "primary_reproduction_check": [
+      "FIGCHECK"
+    ]
+  },
+  "47": {
+    "raw_amplitude_CV": [
+      "RAW",
+      "V2_SHAPES"
+    ]
+  },
+  "48": {
+    "empirical_local_fixed_probabilities": [
+      "RAW"
+    ],
+    "unchanged_stored_local_fixed_thresholds": [
+      "RAW"
+    ],
+    "momentbased_Rayleigh_expectations": [
+      "RAW"
+    ],
+    "primary_reproduction_check": [
+      "FIGCHECK"
+    ]
+  },
+  "49": {
+    "fullband_RMS_drift_and_mode_associations": [
+      "FULL"
+    ],
+    "electronic_shape_and_level": [
+      "ELECTRONIC"
+    ],
+    "resonance_shape_and_level": [
+      "RESONANCE"
+    ],
+    "temperature_associations": [
+      "TEMP",
+      "SENSORS"
+    ],
+    "normalized_moments_and_threshold_sensitivity": [
+      "RAW",
+      "V2_SHAPES"
+    ],
+    "residual_PSD_FIR_discrepancy": [
+      "RESONANCE_METRICS",
+      "FFT_VERIFY"
+    ]
+  },
+  "50": {
+    "fullband_power_clock_residuals": [
+      "FULL"
+    ],
+    "temperature_clock_residuals": [
+      "TEMP",
+      "SENSORS"
+    ]
+  },
+  "51": {
+    "intermode_runlevel_clock_residuals": [
+      "FULL"
+    ]
+  },
+  "52": {
+    "descriptive_electronic_commontrend_and_residualshape": [
+      "ELECTRONIC"
+    ]
+  },
+  "53": {
+    "physical_sensor_identity_and_observation_coverage": [
+      "SENSORS",
+      "TEMP"
+    ]
+  }
+}
