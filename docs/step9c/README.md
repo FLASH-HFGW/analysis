@@ -12,6 +12,21 @@ Il budget hardware parte dal connettore RF del Marki e termina su carico adattat
 
 La convenzione è (P_{in}=V_{in,RMS}^2/50), (V_{z,RMS}^2=E|z|^2=V_{I,RMS}^2+V_{Q,RMS}^2). Nello scenario I/Q ideale l'ampiezza del tono complesso è (sqrt 2) volte la singola quadratura. Si usa perciò la colonna `summed_IQ_dB` di Step 9B. Si conservano l'assegnazione funzionale condizionale dei BPF e la curva FEMTO a 100 MHz. L5 e FET non figurano nelle curve di trasferimento coerente. La potenza del tono già convertito incorpora la conversion loss alla porta, senza un ulteriore fattore mixer.
 
+### Verifica dei cavi e sensibilità del piano del tono
+
+Il campo ODB `power Pump` è il **setpoint del generatore** (potenza nominale alla sua uscita su 50 Ω). La tesi usa quel valore come riferimento numerico; manca una misura che lo riporti all'ingresso del Marki. Nel codice della riduzione la tensione di riferimento è calcolata direttamente da `power Pump`, senza un fattore di de-embedding per attenuatori o cavi. Una perdita sul percorso effettivamente attraversato dal tono è quindi già incorporata **nel valore misurato** di kz riferito al generatore, come attenuazione, senza essere compensata. Restano ignoti il cablaggio esatto, l'eventuale compensazione a monte del setpoint e il disadattamento. Il ledger chiarisce che il tono esclude il FET aggiuntivo, senza fornire un bilancio di questi elementi.
+
+[cable_sensitivity.csv](cable_sensitivity.csv) riporta i cinque scenari diagnostici di perdita netta non compensata **0, 0.5, 1, 1.5 e 2 dB** fra generatore e Marki, a 50 Ω. Per una perdita (L), la potenza incidente del tono sarebbe `−60−L dBm`. A parità di volt ADC misurati, riferire kz al Marki lo moltiplicherebbe per `10^(L/20)` e sposterebbe il confronto `HW/kz` di `−L dB`. Se si usasse quel kz riferito al Marki con lo stesso livello science incidente, l'RMS previsto scalerebbe dello stesso fattore in ampiezza e la potenza di `10^(L/10)`. Per 2 dB risultano 177.617 µV RMS incidenti e fattori 1.259 in ampiezza e 1.585 in potenza. Gli scenari sono semplici conversioni di piano a perdita piatta. Nessuno è applicato alle curve o alle previsioni pubblicate. Una perdita piatta comune si cancella nei rapporti di forma; la perdita differenziale con frequenza o fra percorsi resta indeterminata.
+
+| Tratto | Contabilità di calibrazione |
+| --- | --- |
+| Cavità → uscita di riferimento VNA lungo L5 | Il L5 dedotto dagli sweep include le perdite di cavo e connettori attraversati **entro quei piani**, insieme agli stadi attivi. Nella topologia adottata i percorsi L1/L3 si cancellano algebricamente. |
+| Uscita L5 → FET aggiuntivo → ingresso Marki, percorso science | Il ledger aggiunge 36 dB nominali. Eventuali cavi o attenuatori dopo il piano VNA possono restare fuori dal bilancio se non già compresi nel nominale o in un tratto comune misurato; posizione e perdite non sono documentate. |
+| Generatore → nodo di iniezione → Marki durante il tono | Le perdite di questo tratto riducono kz riferito al setpoint. L'eventuale differenza rispetto al percorso science è il motivo per distinguere i piani. |
+| Marki → ADC | Le perdite dei cavi I/Q presenti durante il tono entrano nella misura end-to-end di kz per il prodotto coerente osservato. Il calibro scalare non separa i due rami e non determina fase, squilibrio o la risposta delle immagini in science. |
+
+Una differenza di ritardo fra i cavi I/Q aggiunge una rotazione relativa `−2πνΔτ`, valutata alla frequenza del tratto interessato (IF primaria o finale). Può quindi alterare la separazione tra z e il suo coniugato in modo dipendente dalla frequenza. Un ritardo differenziale dei cavi che distribuiscono LO2 aggiunge fase relativa a `LO2`, con segni opposti per i due prodotti di conversione. Se i LO secondari hanno una fase comune, questa cambia i fasori delle immagini senza cambiare la somma delle potenze di bande incoerenti. Con ritardi o perdite differenziali, la ripartizione fra bin firmati e coniugati richiede invece il modello I/Q matriciale e i coefficienti delle due vie. Una perdita di distribuzione LO potrebbe anche modificare la conversion loss se cambia il livello consegnato al mixer. Nei registri consultati mancano misure per quantificare questi effetti; il folding nominale resta quello del caso comune e in fase.
+
 ## Confronti coerenti
 
 - **Pari IF.** Si confrontano (|H_c(f)|) con (k_z(f)), (|H_s(f)|) con (0.01k_z(f)) e (|H_s(f)/H_c(f)|). Le RF sono diverse perché i LO differiscono. Il BLP è comune alla stessa IF, quindi si cancella nel rapporto anche dove il suo modulo assoluto è sconosciuto. In TM010 coincidono anche IF primaria e frequenza sullo splitter. Marki viene rappresentato dalla stessa conversion loss nominale nella banda. Resta il rapporto FEMTO, valutabile dal grafico a partire da circa 1 kHz.
@@ -31,11 +46,15 @@ RF_image = LO1 + f − LO2
 
 Il termine (f-LO_2) è alla IF primaria negativa e proviene dal lato basso di LO1 anche con Marki ideale. La reiezione immagine del Marki, invece, descrive una fuga tra le coordinate coniugate dovuta alla non idealità I/Q. Le alias ADC, infine, sommano frequenze **finali analogiche** distanti multipli di 5 MHz. Le tre operazioni agiscono su coordinate distinte. Modelli con LO secondari sfasati, squilibri o correlazione fra bande richiedono una matrice I/Q e i termini incrociati della PSD. Per rumore stazionario con componenti spettrali disgiunte e incorrelate, i due addendi sommano in potenza.
 
-Nel caso bianco con PSD RF uguale all'ingresso Marki, (r(f)=|H_{image,s}(f)/H_{main,s}(f)|^2) e la moltiplicazione della sola PSD elettronica è (1+ho r(f)), con (ho=P_{RF,image}/P_{RF,main}). Il comune BLP si cancella. I valori nominali a LO reali sono in [folding.csv](folding.csv) e [folding.png](folding.png). (ho=1) è l'ipotesi di partenza, non un valore ricavato dai dati. Per il bypass TM010 non c'è un secondo mixer e (r=0). La densità dell'immagine include implicitamente qualunque differenza RF a monte del Marki, che non è determinata dai guadagni L5 misurati alle risonanze. Il termine termico della singola cavità resta sul ramo principale.
+Nel caso bianco con PSD RF uguale all'ingresso Marki, (r(f)=|H_{image,s}(f)/H_{main,s}(f)|^2) e la moltiplicazione della sola PSD elettronica è (1+
+ho r(f)), con (
+ho=P_{RF,image}/P_{RF,main}). Il comune BLP si cancella. I valori nominali a LO reali sono in [folding.csv](folding.csv) e [folding.png](folding.png). (
+ho=1) è l'ipotesi di partenza, non un valore ricavato dai dati. Per il bypass TM010 non c'è un secondo mixer e (r=0). La densità dell'immagine include implicitamente qualunque differenza RF a monte del Marki, che non è determinata dai guadagni L5 misurati alle risonanze. Il termine termico della singola cavità resta sul ramo principale.
 
 ## Scenari analitici
 
-A ogni frequenza analogica si usa (mathrm{PSD}_{e}=50,k_B(3.955,mathrm K),10^{G_{RF}/10}|K(f)|^2[1+ho r(f)]). La cavità usa il proprio spettro fisico al posto di (k_B T_n) e il solo ramo principale. Per riprodurre esattamente la toy full-run, in tutti gli scenari si mantiene il suo polo termico storico a 1 MHz, distinto dalla versione analitica a IF fisica documentata in Step 9A. È una scelta di confronto congelato e il contributo è tabulato a parte.
+A ogni frequenza analogica si usa (mathrm{PSD}_{e}=50,k_B(3.955,mathrm K),10^{G_{RF}/10}|K(f)|^2[1+
+ho r(f)]). La cavità usa il proprio spettro fisico al posto di (k_B T_n) e il solo ramo principale. Per riprodurre esattamente la toy full-run, in tutti gli scenari si mantiene il suo polo termico storico a 1 MHz, distinto dalla versione analitica a IF fisica documentata in Step 9A. È una scelta di confronto congelato e il contributo è tabulato a parte.
 
 | Scenario | Guadagno RF | Fattore coerente (K) | Elettronica immagine |
 | --- | --- | --- | --- |
@@ -46,7 +65,8 @@ A ogni frequenza analogica si usa (mathrm{PSD}_{e}=50,k_B(3.955,mathrm K),10^{G_
 | D | come B | come B | moltiplicatore (1+r(f)) |
 | E_IF / E_RF | come B | rispettivo C | moltiplicatore (1+r(f)) |
 
-Per il VNA si usano i fit simultanei `free_eq69` approvati. I rapporti nominali C/E contengono già il cambio 60→20 dB. D/E moltiplicano la PSD coerente principale del proprio scenario per il rapporto immagine; l'intero hardware non viene concatenato a kz. D è valutato anche per (ho=0.5,2). Queste alternative lasciano invariata la PSD main e quantificano l'effetto di PSD RF differenti.
+Per il VNA si usano i fit simultanei `free_eq69` approvati. I rapporti nominali C/E contengono già il cambio 60→20 dB. D/E moltiplicano la PSD coerente principale del proprio scenario per il rapporto immagine; l'intero hardware non viene concatenato a kz. D è valutato anche per (
+ho=0.5,2). Queste alternative lasciano invariata la PSD main e quantificano l'effetto di PSD RF differenti.
 
 ### Supporto e integrali
 
@@ -64,7 +84,9 @@ La baseline somma i tre contributi (f+mF_s), (m=-1,0,1) e (F_s=5) MHz. A/B conse
 
 La banda centrale restituisce indipendentemente i tre scarti diagnostici attesi prima del trasferimento. Il folding full-band è +3.010/+3.016 dB per TM011/012. A pari IF, E_IF porta gli scarti centrali a +1.313/+1.680 dB nei due modi. A pari RF, E_RF eleva la previsione sulla maschera centrale di +1.493/+3.342/+3.330 dB rispetto a B, inclusa l'immagine. La differenza di TM010 è solo trasferibilità nominale; è sensibile agli offset dei LO e alla perdita BLP vicino al bordo, quindi non identifica una correzione misurata.
 
-Con (ho=0.5) o 2, il folding centrale vale rispettivamente **1.819 o 4.886 dB** per TM011 e **1.854 o 4.956 dB** per TM012. Gli scarti run/modello corrispondenti variano da **+2.655 a −0.413 dB** e da **+3.011 a −0.090 dB**. Il modello non seleziona (ho) in funzione dei dati scientifici.
+Con (
+ho=0.5) o 2, il folding centrale vale rispettivamente **1.819 o 4.886 dB** per TM011 e **1.854 o 4.956 dB** per TM012. Gli scarti run/modello corrispondenti variano da **+2.655 a −0.413 dB** e da **+3.011 a −0.090 dB**. Il modello non seleziona (
+ho) in funzione dei dati scientifici.
 
 ## Riproduzione
 

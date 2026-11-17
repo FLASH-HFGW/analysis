@@ -1,0 +1,6 @@
+assumed_calibration_path_loss_dB,incident_Marki_tone_dBm,incident_Marki_tone_RMS_uV_50ohm,kz_Marki_over_kz_archived,ADC_power_factor_if_referenced_to_Marki,HW_over_kz_shift_dB
+0,-60,223.606798,1.000000,1.000000,0
+0.5,-60.5,211.098429,1.059254,1.122018,-0.5
+1,-61,199.289768,1.122018,1.258925,-1
+1.5,-61.5,188.141673,1.188502,1.412538,-1.5
+2,-62,177.617193,1.258925,1.584893,-2
