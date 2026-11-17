@@ -67,7 +67,7 @@ class Deck:
 def rgb(color):return RGBColor.from_string(color.lstrip('#'))
 
 
-def export(deck,out,version="v6",prepared="8 November 2026"):
+def export(deck,out,version="v6",prepared="8 November 2026",page_offset=0,total_pages=None):
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
     stem="iq_noise_summary_"+version
     prs=Presentation();prs.slide_width=Inches(W);prs.slide_height=Inches(H)
@@ -95,7 +95,7 @@ def export(deck,out,version="v6",prepared="8 November 2026"):
                     p.font.name='Arial';p.font.size=Pt(item['size']);p.font.bold=item['bold'];p.font.color.rgb=rgb(item['color'])
                 fig.text(x/W,1-y/H,item['text'],ha='left',va='top',fontsize=item['size'],fontweight='bold' if item['bold'] else 'normal',color=item['color'],linespacing=1.15)
         footer=s.get('footer',f'IQ NOISE STUDY  |  PRELIMINARY · {version}')
-        for x,text,width in ((.58,footer,5.3),(12.0,f'{idx:02d} / {len(deck.slides):02d}',.8)):
+        for x,text,width in ((.58,footer,5.3),(12.0,f'{idx+page_offset:02d} / {total_pages if total_pages is not None else len(deck.slides):02d}',.8)):
             sh=slide.shapes.add_textbox(Inches(x),Inches(7.12),Inches(width),Inches(.2));sh.text_frame.margin_top=0;sh.text_frame.margin_left=0;p=sh.text_frame.paragraphs[0];p.text=text;p.font.size=Pt(8);p.font.name='Arial';p.font.color.rgb=rgb(MUTED)
             fig.text(x/W,1-7.12/H,text,fontsize=8,va='top',color=MUTED)
         source=wrap(s['source'],11.8,7.5)
