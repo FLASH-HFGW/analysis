@@ -1,0 +1,13 @@
+{
+  "spec_count": 16,
+  "block_samples": 262144,
+  "spec_samples": 1048576,
+  "seed": 591680,
+  "fir_edge_guard_input_samples": 2000,
+  "fir_decimation": 20,
+  "acf_lags": 128,
+  "phase_increment_lags": [1, 10, 100],
+  "threshold_multiples_RMS": [2, 3, 4],
+  "min_tail_count": 20,
+  "min_tail_spec_groups": 4
+}
