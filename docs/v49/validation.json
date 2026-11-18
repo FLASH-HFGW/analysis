@@ -1,0 +1,47 @@
+{
+  "slides": 85,
+  "reused_v48": 65,
+  "new_slides": 20,
+  "base_sha256": {
+    "pdf": "f06133c4937c85ee38ce25501922828dfef792a19e4c44289f9acaf461a1aaa9",
+    "pptx": "b86e79be215bc3e276c1d7bc955e031c39517fe3e699e076248773da677c7adb"
+  },
+  "pdf_content_streams_preserved": 65,
+  "pixel_matched_pages": 65,
+  "original_PPTX_members_identical": 351,
+  "figure_index_entries": 64,
+  "provenance_rows": 239,
+  "physics": {
+    "TM010_H_matched_grid_relative": 8.757504255108017e-08,
+    "TM010_N_matched_grid_relative": 3.5250124064134525e-07,
+    "slow_time_integral_over_Lorentz_energy": 0.9968169276632566,
+    "slow_center_dynamic_over_static_amplitude": 0.9999999999978276,
+    "intermediate_time_integral_over_Lorentz_energy": 0.9968169276712125,
+    "intermediate_direct_complex_convolution_error": 7.93712785607648e-11,
+    "fast_time_integral_over_Lorentz_energy": 0.999873204650308,
+    "fast_ring_vs_impulse_amplitude_at_0p32tau": 1.002700385161895,
+    "TM011_H_matched_grid_relative": 2.297626096048333e-07,
+    "TM011_N_matched_grid_relative": 3.3953868783243024e-07,
+    "TM012_H_matched_grid_relative": 2.528212976748989e-07,
+    "TM012_N_matched_grid_relative": 4.0528396416661394e-07,
+    "eq5_SI_individual_1e_minus9_GHz_per_s": 460.0165247519056,
+    "eq5_SI_total_1e_minus9_GHz_per_s": 144.89612570860297,
+    "eq8_SI_individual_1e_minus12_at_kpc": 9.434146319198154e-34,
+    "benchmark_checks": "adiabatic, impulse, direct intermediate convolution, Lorentz area and ADC Parseval",
+    "input_sha256": {
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step6/metrics.json": "0557313002f64998759d812d9420d079b8b88e380c29971b8c77cc491a8cace0",
+      "/home/mazzitel/HFGW/analysis-work/Run2/diagnostics/normalization_audit_20261114/calibration_reconstruction.json": "f6e053b9dc4223980dc7a95e5ce72e4951e328c23b5dcef36d964dc05d214934",
+      "/tmp/hfgw-v49/docs/step9a/vna/fits.csv": "235d70bda84912178664a8ab96f6a34add491de83f8992e7b43d2a66a3387bb4",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10c/statistics.h5": "5ba29c3737165dfea451f21c85e3d4e1eef28b8bbce56067e24d2497e89f9518",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10a/series.h5": "db8d466040c0098eb6688ae08ca7355f987c62314eb9a86424dd225a4ae8b6ee",
+      "/tmp/hfgw-v49/simulation/v49_hfgw/config.json": "d9dac2eac1ea640875245d16b1adeaba67e8ff9799a82919fc4ca5d50083d023"
+    }
+  },
+  "visual_plot_data": "all old plots retained; new plots from approved aggregations or physical benchmarks",
+  "table_validation": {
+    "monochromatic_scaling_max_relative": 2.220446049250313e-16,
+    "long_rectangular_vs_center_limit_max_relative": 8.030602066688708e-05,
+    "short_rectangular_impulse_scaling_max_relative": 1.8513702797373632e-05,
+    "distance_reach_mass_scaling_max_relative": 6.661338147750939e-16
+  }
+}

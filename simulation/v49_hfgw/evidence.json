@@ -1,0 +1,20 @@
+{
+  "thesis": "/home/mazzitel/HFGW/analysis/docs/Tesi_Valeria_Spasiano.pdf",
+  "thesis_sha256": "a541d0ebefaae496a06d7be53c05f723c991f770372f9e7ce97e1ab07de4acc9",
+  "thesis_sections": {
+    "volume": "3.3.3; 0.139 L with tuning rod",
+    "field": "3.3.2; 8.5 T central, 6.73 T RMS",
+    "overlaps": "7.10 and Fig. 7.1; numeric data unavailable",
+    "mode_parameters": "Table 6.1"
+  },
+  "run680_BOR": {
+    "method": "MIDAS get_bor_odb_dump only; no SPEC read",
+    "run_specific_field_verified": false,
+    "matching_scalar_paths": [
+      "/Logger/Channels/0/Settings/Current filename",
+      "/Sequencer/State/Current line number",
+      "/Sequencer/State/SCurrent line number"
+    ]
+  },
+  "gravnet": "https://arxiv.org/html/2603.24645v1#S2.SS3"
+}

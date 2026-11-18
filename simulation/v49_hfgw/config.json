@@ -1,0 +1,13 @@
+{
+  "volume_m3": 0.000139,
+  "field_reference_T": 6.73,
+  "central_field_thesis_T": 8.5,
+  "conditional_CGW": 0.01,
+  "distance_AU": 1.0,
+  "monochromatic_seconds": [0.001, 0.01, 0.1, 1, 10, 209.7152],
+  "transient_seconds": [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 0.0001, 0.001, 0.01],
+  "pbh_individual_mass_min_Msun": 1e-15,
+  "pbh_individual_mass_max_Msun": 1e-7,
+  "fast_benchmark_individual_Msun": 1e-10,
+  "matched_filter_reference_SNR": 5
+}
