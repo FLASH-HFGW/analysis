@@ -1,0 +1,7 @@
+mode,population,tau_us,amplitude,offset,r2_selected_maxima,status,scope
+TM010,data,0.9259999630949832,0.04198591822746539,-0.00667993306205548,0.9924376843549945,resolved descriptive fit,v49 slide 23 original five-SPEC unmasked comparison
+TM010,v0,0.03486778829112874,427.7086949442613,-0.006771766439040134,0.3603999081090353,below sample spacing,v49 slide 23 original five-SPEC unmasked comparison
+TM011,data,1.4185155552882969,0.03625207211293895,-0.0036207704805139144,0.9357925707181174,resolved descriptive fit,v49 slide 23 original five-SPEC unmasked comparison
+TM011,v0,1.3216644144002319,0.03626553636584092,-0.0037243296491700183,0.8843301720950726,resolved descriptive fit,v49 slide 23 original five-SPEC unmasked comparison
+TM012,data,1.3851852885307727,0.03620562389266694,-0.004013140508615332,0.9133732463148798,resolved descriptive fit,v49 slide 23 original five-SPEC unmasked comparison
+TM012,v0,1.2782696041372823,0.03507852735508991,-0.0029935337746463822,0.8984318344556509,resolved descriptive fit,v49 slide 23 original five-SPEC unmasked comparison

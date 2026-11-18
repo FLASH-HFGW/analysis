@@ -1,0 +1,58 @@
+{
+  "slides": 114,
+  "preserved_v49_slides": 85,
+  "appendix_slides": 29,
+  "preserved_PDF_pixels": 85,
+  "preserved_PPTX_members": 445,
+  "added_quantitative_figure_variants": 96,
+  "figure_index_rows": 161,
+  "new_provenance_rows": 77,
+  "source_models_unchanged": true,
+  "comparison": {
+    "SPECs": 1000,
+    "blocks_per_mode_population": 4000,
+    "samples_per_mode_population": 1048576000,
+    "post_ADC_common_bins": 251659,
+    "matched_PSD_RMS_passed": true,
+    "historical_v0_full_RMS_reproduced": true,
+    "v0_first_five_SPEC_exact": {
+      "TM010": {
+        "historical_expected_V2": 0.0007383872846873602,
+        "first_five_SPEC_ADC_count_max_error": 0,
+        "blocks": 4000
+      },
+      "TM011": {
+        "historical_expected_V2": 0.00018772634956847018,
+        "first_five_SPEC_ADC_count_max_error": 0,
+        "blocks": 4000
+      },
+      "TM012": {
+        "historical_expected_V2": 7.065859145362439e-05,
+        "first_five_SPEC_ADC_count_max_error": 0,
+        "blocks": 4000
+      }
+    },
+    "snapshot_SPEC": {
+      "spec": 0,
+      "serial": 0,
+      "timestamp": 1784909100,
+      "samples": 1048576,
+      "sha256": "360eb9008fcdbe3b368d90713272666139b3106e470965b56b5b952746b5a2c4"
+    },
+    "figure_count": 96,
+    "reused_approved_full_populations": [
+      "data",
+      "H",
+      "N"
+    ],
+    "input_sha256": {
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10c/statistics.h5": "5ba29c3737165dfea451f21c85e3d4e1eef28b8bbce56067e24d2497e89f9518",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10c/all_observables.csv": "bb04b16aef091a27fb8d3bcd8232b47fd03e24dcf13cf0e30eabc59aa4afbe6b",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10c/tail_counts.csv": "31360cc89b3b5b336be8bef4dc4a344885e96028c20e711dd5a177869696b810",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/step10c/population.json": "7beabf720ce7244beac143d746e6987c8b0be2c8fa94ea929dd494c929d4e964",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/toy_ODB_cal5_data2_LF_20261116/metrics.json": "3aaf4bf2c56d49521a24e382e3ab7d1ac15da24af9e08ed392a101baa0f76a3e",
+      "/home/mazzitel/HFGW/analysis-work/Run2/simulation/toy_ODB_cal5_data2_LF_20261116/comparison/comparison.json": "92469170188d3e903a5b1676e0ddaa01e218d33e6e2e1c5430d5cb55e0680289",
+      "/tmp/hfgw-v50-products/v0_statistics.h5": "85833d640504b56563e93d93f38538f7fbf2a3b45eb0ba72df33b0945fd379e8"
+    }
+  }
+}
