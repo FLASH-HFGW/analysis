@@ -1,0 +1,9 @@
+{
+  "samples": 262144,
+  "fs_Hz": 5000000,
+  "ADC_peak_V": 2,
+  "ADC_bits": 16,
+  "seed": 104803,
+  "alias_orders": [-1, 0, 1],
+  "stochastic_limit_sigma": 7
+}
