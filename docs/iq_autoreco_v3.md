@@ -37,7 +37,7 @@ La soglia è `|z − mean(z)| > k × sqrt(mean(|z − mean(z)|²))` per finestra
 
 ## Timing dei pilot
 
-- 1145 contiene SPE0–SPE6 e SPGP. Il confronto su sette coppie mostra indice SPGP sempre un campione prima del fronte SPE6 a 2,5 V. SPGP riporta 5000 campioni per tutti gli impulsi, il detector misura 4999 o 5000. Gli intervalli ricostruiti dal detector sono 4.999.999 o 5.000.000 campioni. Il PPS analogico legacy richiede oltre 4000 campioni sopra 2,5 V e conserva lo stato attraverso confini contigui.
+- 1145 contiene SPE0–SPE6 e SPGP. Il detector a pendenza del notebook, applicato alle forme d’onda SPE6 dei 30 eventi, riproduce tutte le sette coppie SPGP e gli eventi senza impulsi. Rispetto al fronte SPE6 a 2,5 V, SPGP è sempre un campione prima. SPGP riporta 5000 campioni per tutti gli impulsi, il detector misura 4999 o 5000. Gli intervalli ricostruiti dal detector sono 4.999.999 o 5.000.000 campioni. Il PPS analogico legacy richiede oltre 4000 campioni sopra 2,5 V e conserva lo stato attraverso confini contigui.
 - I payload TGPS del 1145 contengono testo con timezone CET e marcature successive a cadenza di un secondo. Nei primi record il timestamp nel testo è un secondo avanti rispetto all'header MIDAS convertito in CET. Il primo TGPS precede il primo evento SPE nel file. L'associazione tra fronte, timestamp GPS e latenza di registrazione resta da verificare sul frontend. SPGP è salvato come dato diagnostico.
 - Il 1148 è un run distinto con `With_TWPA=True` nel BOR. Le bank dei primi 30 eventi hanno SPE0–SPE5 e SPGP. Il decoder conserva i sei canali effettivi e segnala l'assenza della forma d'onda PPS.
 - Il segno I/Q e il mapping configurato sono coperti dal test a tono sintetico. Il riferimento storico legacy è in [audit del 680](frequency_coordinates_run680_audit.md). Per SPE serve una conferma del cablaggio o un tono acquisito noto.
@@ -52,6 +52,8 @@ Primi cinque eventi del 1145, una finestra per ciascuno dei tre modi, PSD, files
 | LZF | 100,21 | 2,27 | 2,18 | 533 |
 | gzip default | 94,71 | 3,84 | 3,79 | 532 |
 
+Scrittura isolata dei tre spettri della prima finestra, con gli stessi chunk e chiusura HDF5 inclusa. Nessun codec 0,05 s / 62,92 MB, LZF 0,58 s / 60,05 MB, gzip 2,21 s / 54,54 MB.
+
 Il default senza compressione privilegia il throughput. Il calcolo di Parseval nelle misure di benchmark e nei pilot brevi ha dato un errore relativo massimo inferiore a 1,3 × 10⁻⁷.
 
 ## Pilot
@@ -60,7 +62,12 @@ Il throughput è misurato in milioni di campioni ricevuti per secondo di wall cl
 
 | Run | Eventi | Finestre | Scarti ricevuti | Wall s | CPU s | RSS MiB | HDF5 MB | MS/s |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 680 completo | 1.000 | 209 | 3.576.000 | 384,23 | 378,42 | 565 | 13.190,08 | 2,73 |
 | 1145 completo | 30 | 6 | 1.457.280 | 12,63 | 12,38 | 556 | 417,69 | 2,49 |
 | 1148 TWPA, estratto | 30 | 6 | 1.457.280 | 12,45 | 12,25 | 551 | 417,68 | 2,53 |
 
-I prodotti del pilot e del benchmark sono in `/tmp/iqv3.k0hv3K`. Nei due estratti SPE non sono state rilevate interruzioni di seriale o bank malformate. Il 1145 ha terminato con EOR. In tutti i prodotti il tempo UTC delle finestre resta non ancorato.
+I prodotti del pilot e del benchmark sono in `/tmp/iqv3.k0hv3K`. Nei due pilot SPE non sono state rilevate interruzioni di seriale o bank malformate. Il 1145 ha terminato con EOR. In tutti i prodotti il tempo UTC delle finestre resta non ancorato.
+
+Il 680 ha raggiunto EOR senza salti di seriale o bank malformate. I 210 impulsi PPS misurati sono distanziati esattamente di 5.000.000 campioni. Errore massimo di Parseval pari a 1,28 × 10⁻⁷.
+
+Il confronto usa i momenti ADC del prodotto approvato `run00680_noise_v2.h5` nella campagna `noise_fullrange_v2_20261109`. I suoi volt ADC corrispondono alla scala CLI ±5 V. Applicando il rapporto BOR 2/5 e il segno di Qhardware, le differenze relative su RMS totale e AC sono inferiori a 1,9 ppm per tutti i modi. Le differenze assolute sulle medie I e Q sono inferiori a 0,15 µV. Il riferimento storico comprende 1.048.576.000 campioni, mentre le finestre v3 coprono 1.045.000.000 campioni.
