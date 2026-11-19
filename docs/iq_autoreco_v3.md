@@ -205,7 +205,7 @@ Verificati localmente il percorso ext4, il ClassAd senza OAuth, la validazione d
 - Verificare la consegna e il rinnovo di `t1` sul worker.
 - Concludere il pilot 1148 fino a `verified`, controllare la pulizia locale e l’assenza dei temporanei remoti.
 - Confermare con Giorgio mapping e segno I/Q, associazione SPGP–TGPS e durata SPGP al confine della bank. La qualità UTC resta non ancorata.
-- Esaminare l’anteprima del logbook e la decisione sul riuso del 1148. Abilitare Run3 dopo approvazione.
+- Esaminare l’anteprima del logbook. Abilitare Run3 dopo approvazione.
 - Installare la voce seguente solo dopo approvazione esplicita. Il wrapper crea la directory locale dei log e gestisce apertura giornaliera, redirezione stdout/stderr e retention.
 
 ```cron
@@ -239,10 +239,10 @@ Il wrapper registra il tentativo rimosso come fallito e, sottomette il nuovo ten
 /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --dry-run
 ```
 
-L’anteprima legge il foglio e la coda per la riconciliazione locale e riporta eleggibili, ricostruiti, attesa, sottomissioni previste e scritture previste per prodotti già verificati localmente. Il primo dry-run reale ha mostrato 44 eleggibili (1148–1191), 20 sottomissioni previste (1149–1168) e zero aggiornamenti. Dopo approvazione, impostare `enabled: true` in `config/autoreco_run3.json` ed eseguire manualmente:
+L’anteprima legge il foglio e la coda per la riconciliazione locale e riporta eleggibili, ricostruiti, attesa, sottomissioni previste e scritture previste per prodotti già verificati localmente. Il dry-run di avvio include il 1148 nella prima tranche. Dopo approvazione, impostare `enabled: true` in `config/autoreco_run3.json` ed eseguire manualmente:
 
 ```bash
 /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3
 ```
 
-Il 1148 resta in `deferred_runs` per evitare di rielaborare il raw. Il riuso è fattibile con un job dedicato e autorizzato che legge via GFAL il file Run3-pilot, verifica run, schema, dimensione 188.420.552 e Adler32 `4814c8d3`, e pubblica una copia verificata in Run3 con protezione dalle collisioni e ricevuta riferita alla destinazione definitiva. Una copia verificata con passaggio nello scratch del worker non richiede il supporto ai trasferimenti GFAL server-to-server. La ricevuta del solo percorso pilota non autorizza una scrittura al logbook. La promozione richiede una prova separata e non è stata eseguita.
+Il run 1148 viene ricostruito normalmente nella destinazione definitiva Run3.

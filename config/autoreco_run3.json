@@ -4,7 +4,7 @@
   "max_submit_per_cycle": 20,
   "run_min": 1148,
   "reco_version": "3.0",
-  "deferred_runs": [1148],
+  "deferred_runs": [],
   "max_attempts": 2,
   "failure_days": 7,
   "split_pairs": {"TM010": [0, 1], "TM011": [2, 3], "TM012": [4, 5]}
