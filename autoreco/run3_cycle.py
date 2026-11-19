@@ -8,9 +8,12 @@ from pathlib import Path
 import re
 import subprocess
 import time
+from types import SimpleNamespace
 import uuid
 
-from autoreco import save_state, state_path, submit_job, transfer_job_data
+from autoreco import (get_run_number, parse_integer, runs_to_reconstruct, save_state,
+                      state_path, submit_job, transfer_job_data, update_reco_done_batch)
+from googletool import get_headers, open_google_sheet, read_all_records
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
 from run3_storage import PILOT, PRODUCTION, RAW
 
@@ -171,11 +174,68 @@ def prepare(root, run, pairs, url, probe, attempt):
     return submit
 
 
+def discover(records, settings):
+    minimum = settings["run_min"]
+    by_run = {}
+    for record in records:
+        run = get_run_number(record)
+        if run is not None and run >= minimum:
+            if run in by_run:
+                raise ValueError(f"duplicate logbook run: {run}")
+            by_run[run] = record
+    criteria = SimpleNamespace(run=None, run_min=minimum, ignore_reco_done=False)
+    eligible = dict(runs_to_reconstruct(by_run.values(), criteria))
+    # The worker resolves raw names from the run number and supports one profile.
+    for run, filename in list(eligible.items()):
+        requested = str(by_run[run].get("reco_requested_version") or "").strip()
+        if filename != f"run{run:05d}.mid.gz" or requested not in ("", settings["reco_version"]):
+            print(f"Run {run}: filename or requested reconstruction version requires review")
+            del eligible[run]
+    return by_run, eligible
+
+
+def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
+    if state.get("status") == "sheet_updated":
+        return None
+    filename = f"run{run:05d}.mid.gz"
+    validate_receipt(state["publication"], dict(run=run, exit_code=0, status="success"),
+                     run, url, state["attempt"])
+    if (str(record.get("filename", "")).strip() != filename
+            or parse_integer(record.get("rucio_status")) != 0
+            or str(record.get("reco_requested_version") or "").strip() not in ("", version)):
+        print(f"Run {run}: logbook row changed; update deferred")
+        return None
+    done = parse_integer(record.get("reco_done"))
+    if (done == 1 and str(record.get("reco_output_path", "")).strip() == url
+            and str(record.get("reco_version", "")).strip() == version):
+        if not dry_run:
+            state["status"] = "sheet_updated"
+            save_state(run_dir, state)
+        return None
+    if done != 0:
+        print(f"Run {run}: reco_done changed; update deferred")
+        return None
+    return run_dir, dict(state, run_number=run, filename=filename, target_reco_done=1,
+                         expected_reco_done=0, reco_version=version, output_path=url)
+
+
 def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
-    runs = [1148] if args.pilot else sorted(set(settings["closed_runs"]))
-    if any(type(run) is not int or run < 1148 for run in runs):
-        raise ValueError("invalid ready-run number")
+    dry_run = getattr(args, "dry_run", False)
+    read_only = args.gc_dry_run or dry_run
+    records, eligible, updates, rebuilt = {}, {}, [], set()
+    if args.pilot:
+        runs = {1148}
+    else:
+        worksheet = open_google_sheet()
+        headers = get_headers(worksheet)
+        required = {"filename", "rucio_status", "reco_done", "reco_version", "reco_output_path"}
+        if not required.issubset(headers):
+            raise ValueError(f"logbook columns missing: {sorted(required - set(headers))}")
+        records, eligible = discover(read_all_records(worksheet), settings)
+        rebuilt = {run for run, row in records.items()
+                   if (parse_integer(row.get("reco_done")) or 0) > 0}
+        runs = set(eligible) - set(settings["deferred_runs"])
     active = 0
     waiting = []
     known = set(runs)
@@ -192,7 +252,7 @@ def cycle(root, settings, args):
             raise ValueError(f"symlink state: {state_file}")
         if state_file.exists():
             state = json.loads(state_file.read_text())
-            occupied = reconcile(run_dir, state, run, url, settings["failure_days"], args.gc_dry_run)
+            occupied = reconcile(run_dir, state, run, url, settings["failure_days"], read_only)
             active += occupied
             if not occupied and state["phase"] in ("failed", "verified"):
                 for previous in state.get("previous", []):
@@ -200,7 +260,14 @@ def cycle(root, settings, args):
                     if (source == "history" and len(jobs) == 1
                             and jobs[0]["JobStatus"] in (3, 4)
                             and previous["failed_at"] + settings["failure_days"]*86400 <= time.time()):
-                        clean_attempt(workdir(run_dir, previous["attempt"], run), dry_run=args.gc_dry_run)
+                        clean_attempt(workdir(run_dir, previous["attempt"], run), dry_run=read_only)
+            if state["phase"] == "verified":
+                rebuilt.add(run)
+                if run in records:
+                    update = plan_logbook_update(run_dir, run, state, records[run], url,
+                                                 settings["reco_version"], read_only)
+                    if update:
+                        updates.append(update)
             if (not occupied and state["phase"] == "failed"
                     and state["attempt_number"] < settings["max_attempts"] and run in runs):
                 history = state.get("previous", []) + [
@@ -208,9 +275,23 @@ def cycle(root, settings, args):
                 waiting.append((run, url, state["attempt_number"] + 1, history))
         elif run in runs:
             waiting.append((run, url, 1, []))
-    if args.gc_dry_run:
+    slots = max(0, settings["max_active"] - active)
+    submissions = waiting[:min(slots, settings.get("max_submit_per_cycle", slots))]
+    if dry_run:
+        print(f"Eleggibili ({len(eligible)}): {sorted(eligible)}")
+        print(f"Già ricostruiti ({len(rebuilt)}): {sorted(rebuilt)}")
+        pending = sorted(set(records) - rebuilt - {job[0] for job in submissions})
+        print(f"In attesa dopo le sottomissioni previste ({len(pending)}): {pending}")
+        print(f"Slot occupati da tentativi locali: {active}")
+        print(f"Job da sottomettere ({len(submissions)}): {[job[0] for job in submissions]}")
+        print("Aggiornamenti logbook:", [
+            (state["run_number"], state["target_reco_done"], state["reco_version"], state["output_path"])
+            for _, state in updates])
+    if read_only:
         return
-    for run, url, number, history in waiting[:max(0, settings["max_active"] - active)]:
+    if updates:
+        update_reco_done_batch(worksheet, headers, updates)
+    for run, url, number, history in submissions:
         run_dir = root / f"{run:05d}"
         attempt = uuid.uuid4().hex
         directory = workdir(run_dir, attempt, run)
@@ -227,14 +308,18 @@ def main():
     parser.add_argument("--pilot", action="store_true")
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--gc-dry-run", action="store_true")
+    parser.add_argument("--dry-run", action="store_true", help="Anteprima Run3 in sola lettura del logbook")
     parser.add_argument("--cron", action="store_true")
     args = parser.parse_args()
     settings = json.loads(args.config.read_text())
-    if not 1 <= settings["max_active"] <= 4 or settings["failure_days"] < 7 or settings["max_attempts"] < 1:
+    if (settings["max_active"] < 1 or settings["max_submit_per_cycle"] < 1
+            or settings["failure_days"] < 7 or settings["max_attempts"] < 1):
         parser.error("invalid Run3 concurrency or retention")
     if args.prepare_only and not args.pilot:
         parser.error("only the isolated pilot supports prepare-only")
-    if not (args.pilot or settings["enabled"]):
+    if args.dry_run and (args.pilot or args.cron):
+        parser.error("--dry-run is for manual production planning")
+    if not (args.pilot or args.dry_run or settings["enabled"]):
         parser.error("production requires explicit activation in the local configuration")
     if not args.pilot:
         pilot_state = state_path(BASE / "pilot/01148")

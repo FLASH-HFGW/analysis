@@ -634,6 +634,16 @@ def update_reco_done_batch(
             )
             continue
 
+        expected = state.get("expected_reco_done")
+        if expected is not None and (
+            current_value != expected or get_run_number(current_record) != run_number
+            or parse_integer(current_record.get("rucio_status")) != 0
+            or str(current_record.get("reco_requested_version") or "").strip()
+            not in ("", state["reco_version"])
+        ):
+            print(f"Run {run_number}: logbook row changed; update deferred")
+            continue
+
         target = state.get("target_reco_done")
         if target is None:
             target = current_value + 1

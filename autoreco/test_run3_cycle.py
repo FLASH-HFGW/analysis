@@ -147,6 +147,35 @@ class Run3CleanupTests(unittest.TestCase):
         self.reconcile("history", jobs)
         self.assertFalse(self.payload.exists())
 
+    def test_production_dry_run_applies_independent_limits_without_writes(self):
+        root = self.base / "production"
+        root.mkdir()
+        active_dir = root / "01152"
+        active_dir.mkdir()
+        run3.state_path(active_dir).write_text(json.dumps(dict(phase="submitted")))
+        records = [dict(run=run, filename=f"run{run:05d}.mid.gz", rucio_status=0,
+                        reco_done=0) for run in range(1148, 1155)]
+        records[-1]["reco_done"] = 1
+        records[-2]["rucio_status"] = 1
+        settings = dict(run_min=1148, reco_version="3.0", deferred_runs=[1148],
+                        max_active=4, max_submit_per_cycle=2, failure_days=7)
+        headers = list(records[0]) + ["reco_version", "reco_output_path"]
+        args = SimpleNamespace(pilot=False, dry_run=True, gc_dry_run=False)
+        with patch.object(run3, "open_google_sheet"), \
+             patch.object(run3, "get_headers", return_value=headers), \
+             patch.object(run3, "read_all_records", return_value=records), \
+             patch.object(run3, "reconcile", return_value=True), \
+             patch.object(run3, "submit_job") as submit, \
+             patch.object(run3, "update_reco_done_batch") as update, \
+             patch("builtins.print") as display:
+            run3.cycle(root, settings, args)
+            display.assert_any_call("Job da sottomettere (2): [1149, 1150]")
+            settings["max_active"] = 2
+            run3.cycle(root, settings, args)
+            display.assert_any_call("Job da sottomettere (1): [1149]")
+            submit.assert_not_called()
+            update.assert_not_called()
+
     def test_directory_escape_rejected(self):
         self.directory.rename(self.base / "moved")
         self.directory.symlink_to(self.base / "moved", target_is_directory=True)

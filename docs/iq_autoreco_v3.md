@@ -170,7 +170,7 @@ Il file finale occupa 188.420.552 B, con un incremento di 536.400 B. La misura e
 
 ## Integrazione operativa Run3
 
-Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona Run3 con `--run3`. La configurazione versionata è [autoreco_run3.json](../config/autoreco_run3.json). La produzione parte disabilitata e richiede anche uno stato pilota verificato. La release dei raw è esplicita tramite `closed_runs`, con soglia 1148. Va popolata da una fonte di chiusura approvata. Il worker verifica la disponibilità DAVS con GFAL e il payload richiede EOR. Il percorso dei raw riusa Run2. Il foglio Run2 preesistente è `log`. Il ciclo Run3 usa stato locale e non consulta o aggiorna il foglio durante il pilot. La convenzione di release Run3 e le colonne del logbook richiedono conferma prima dell’uso operativo.
+Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona Run3 con `--run3`. La configurazione versionata è [autoreco_run3.json](../config/autoreco_run3.json). La produzione parte disabilitata e richiede anche uno stato pilota verificato. La discovery usa il foglio `log` e il selettore Run2 da 1148 incluso, con filename presente, `rucio_status=0` e `reco_done=0`. Il nome deve corrispondere al raw atteso e una versione richiesta diversa da quella configurata rimanda la riga a verifica. Il worker verifica la disponibilità DAVS con GFAL e il payload richiede EOR. Il percorso dei raw riusa Run2. Il foglio Run2 preesistente è `log`. Il pilot usa solo lo stato locale. In produzione la riconciliazione verificata abilita l’aggiornamento batch preesistente di `reco_version`, `reco_output_path` e `reco_done` da 0 a 1. La versione configurata è 3.0. Una riga che cambia nel frattempo va riconciliata, e una scrittura già applicata è riconosciuta dagli stessi valori.
 
 | Area | Percorso |
 |---|---|
@@ -180,7 +180,7 @@ Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona 
 | Runtime | `/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3/{pilot,production,logs}`, su ext4 locale sotto `/home` |
 | Worker | Directory temporanea `noise-work.*` sotto `_CONDOR_SCRATCH_DIR`, rimossa alla chiusura del wrapper. |
 
-Il ciclo riusa builder, invio e stato atomico dell’autoreco. Il limite iniziale è quattro job Run3. Ogni job richiede 1 CPU, 4 GB RAM e 100 GB scratch, con Python 3.9, MIDAS e Python scientifico da CVMFS. Il worker usa `t1` per il download DAVS con checksum, elabora e valida lo schema compatto nello scratch, elimina il raw locale e trasferisce il risultato tramite GFAL. La pubblicazione carica un temporaneo univoco, ne confronta dimensione e Adler32, promuove con rename e ricontrolla il finale. Il pilota verifica prima il comportamento di rename in collisione usando due temporanei nella sola area di test. Se il server sovrascrive oppure il controllo fallisce, il job si ferma. La verifica è condizione per la futura produzione. Una collisione con un finale esistente non autorizza la sovrascrittura.
+Il ciclo riusa builder, invio e stato atomico dell’autoreco. I limiti configurabili iniziali sono 20 tentativi Run3 attivi e 20 nuove sottomissioni per ciclo. Ogni job richiede 1 CPU, 4 GB RAM e 100 GB scratch, con Python 3.9, MIDAS e Python scientifico da CVMFS. Il worker usa `t1` per il download DAVS con checksum, elabora e valida lo schema compatto nello scratch, elimina il raw locale e trasferisce il risultato tramite GFAL. La pubblicazione carica un temporaneo univoco, ne confronta dimensione e Adler32, promuove con rename e ricontrolla il finale. Il pilota verifica prima il comportamento di rename in collisione usando due temporanei nella sola area di test. Se il server sovrascrive oppure il controllo fallisce, il job si ferma. La verifica è condizione per la futura produzione. Una collisione con un finale esistente non autorizza la sovrascrittura.
 
 Il submit host sottomette con `condor_submit -spool` e recupera gli artefatti operativi del job completato con `condor_transfer_data`. Attende poi la conferma in history, valida la ricevuta del worker (run, tentativo, destinazione, validazione HDF5, dimensioni e Adler32 locale/remoto) e registra lo stato `verified` senza accesso a DAVS. Il tag univoco per tentativo riconcilia anche il caso in cui il submit riesca prima che il ClusterId sia registrato. Coda, history mancante e ricevuta mancante mantengono il tentativo in attesa. Un fallimento terminale senza finale è ritentabile fino al limite configurato. I job held restano protetti e richiedono intervento. Un finale senza ricevuta verificabile o un submit rimasto ambiguo richiedono riconciliazione manuale.
 
@@ -205,7 +205,7 @@ Verificati localmente il percorso ext4, il ClassAd senza OAuth, la validazione d
 - Verificare la consegna e il rinnovo di `t1` sul worker.
 - Concludere il pilot 1148 fino a `verified`, controllare la pulizia locale e l’assenza dei temporanei remoti.
 - Confermare con Giorgio mapping e segno I/Q, associazione SPGP–TGPS e durata SPGP al confine della bank. La qualità UTC resta non ancorata.
-- Confermare la fonte dei run chiusi Run3, le colonne del logbook e l’accesso alla destinazione finale. Popolare `closed_runs` e abilitare Run3 dopo approvazione.
+- Esaminare l’anteprima del logbook e la decisione sul riuso del 1148. Abilitare Run3 dopo approvazione.
 - Installare la voce seguente solo dopo approvazione esplicita. Il wrapper crea la directory locale dei log e gestisce apertura giornaliera, redirezione stdout/stderr e retention.
 
 ```cron
@@ -232,3 +232,17 @@ Quando history mostra `3` e il job è assente da `condor_q`, avviare dalla shell
 ```
 
 Il wrapper registra il tentativo rimosso come fallito e, sottomette il nuovo tentativo con `-spool`. Il worker verifica raw e finale prima di pubblicare. Un finale esistente è riusabile solo dopo verifica di checksum, oppure dopo confronto scientifico dei dataset con quelli di una nuova ricostruzione. Ripetere il wrapper per recupero delle ricevute e riconciliazione. Lo stato precedente e la diagnostica rimangono disponibili secondo retention. Per un controllo di sola sintassi usare `condor_submit -dry-run` senza `-spool`: sul submit host, la combinazione con `-spool` ha tentato anche il trasferimento del ClassAd di prova.
+
+### Anteprima e prima esecuzione Run3
+
+```bash
+/home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --dry-run
+```
+
+L’anteprima legge il foglio e la coda per la riconciliazione locale e riporta eleggibili, ricostruiti, attesa, sottomissioni previste e scritture previste per prodotti già verificati localmente. Il primo dry-run reale ha mostrato 44 eleggibili (1148–1191), 20 sottomissioni previste (1149–1168) e zero aggiornamenti. Dopo approvazione, impostare `enabled: true` in `config/autoreco_run3.json` ed eseguire manualmente:
+
+```bash
+/home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3
+```
+
+Il 1148 resta in `deferred_runs` per evitare di rielaborare il raw. Il riuso è fattibile con un job dedicato e autorizzato che legge via GFAL il file Run3-pilot, verifica run, schema, dimensione 188.420.552 e Adler32 `4814c8d3`, e pubblica una copia verificata in Run3 con protezione dalle collisioni e ricevuta riferita alla destinazione definitiva. Una copia verificata con passaggio nello scratch del worker non richiede il supporto ai trasferimenti GFAL server-to-server. La ricevuta del solo percorso pilota non autorizza una scrittura al logbook. La promozione richiede una prova separata e non è stata eseguita.
