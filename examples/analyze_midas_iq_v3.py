@@ -14,7 +14,7 @@ import numpy as np
 from scipy.fft import fft
 
 from iq_acquisition_metadata import PAIRS, number
-from iq_compact_spectra import CompactSpectra, append_row as append, spectrum_rows
+from iq_compact_spectra import CompactSpectra, ShortSpectra, append_row as append, spectrum_rows
 
 
 SPLIT = tuple(f"SPE{i}" for i in range(7))
@@ -116,7 +116,7 @@ def process(reader, odb, output, args):
     if scale.ndim != 1 or scale.size < 6 or not np.all(np.isfinite(scale) & (scale > 0)):
         raise ValueError("invalid BOR ADC ranges")
     lo = equipment["LocalOscill"]["Variables"]
-    output.attrs["schema_version"] = "1.2"
+    output.attrs["schema_version"] = "1.3"
     meta = output.create_group("metadata")
     meta.attrs.update(fs_hz=fs, iq_convention="I-iQhardware",
                       bor_settings_json=json.dumps(adc),
@@ -138,7 +138,7 @@ def process(reader, odb, output, args):
     quality = output.create_group("quality")
     gaps = table(quality, "breaks", [("serial", "<i8"), ("reason", "S160")])
     spectra = output.create_group("spectra")
-    compact = None
+    compact = short = None
     if args.product != "compact":
         spectra.attrs["profile"] = args.product
         spectra.create_dataset("frequency_hz", data=np.fft.fftfreq(n, 1/fs))
@@ -165,6 +165,8 @@ def process(reader, odb, output, args):
     def save_residual():
         nonlocal residual_chunks
         if fill:
+            if short is not None:
+                short.feed(buffers, fill)
             started = time.perf_counter()
             for mode, z in buffers.items():
                 values, peak = measure(z[:fill], histograms[mode])
@@ -212,6 +214,8 @@ def process(reader, odb, output, args):
         if reason:
             append(gaps, (serial, reason.encode()))
             save_residual()
+            if short is not None:
+                short.break_segment()
             discarded += fill
             fill = 0
             segment += 1
@@ -237,6 +241,7 @@ def process(reader, odb, output, args):
             clipped = {m: np.zeros(2, dtype=np.int64) for m in pairs}
             if args.product == "compact":
                 compact = CompactSpectra(spectra, n, pairs, args)
+                short = ShortSpectra(fs, pairs, args.compression, args.workers)
             for mode, (ci, cq) in pairs.items():
                 if compact is None:
                     spectrum_rows(spectra, mode, n, "f4" if args.product == "psd" else "c8",
@@ -297,6 +302,8 @@ def process(reader, odb, output, args):
             offset += take
             if fill < n:
                 continue
+            if short is not None:
+                short.feed(buffers, n)
             window = len(windows)
             append(windows, (segment, *first, serial, offset-1, first[0]/fs, np.nan))
             for mode, z in buffers.items():
@@ -350,6 +357,7 @@ def process(reader, odb, output, args):
     save_residual()
     if compact is not None:
         compact.finish(len(windows))
+        short.finish(output.create_group("short_psd"), received)
     for mode, rows in totals.items():
         counts, starts, metrics, peaks, clip_i, clip_q = zip(*rows)
         r = np.asarray(metrics)
