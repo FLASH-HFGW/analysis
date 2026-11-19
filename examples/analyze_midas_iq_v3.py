@@ -40,7 +40,8 @@ def decode(banks):
         if not raw.size or raw.size % 8:
             raise ValueError("invalid SPEC length")
         return "SPEC", raw.view(np.int16).reshape(-1, 8).T
-    channels = tuple(bank(banks, name, {4: 2, 5: 2}).view(np.int16) for name in SPLIT)
+    names = SPLIT if "SPE6" in banks else SPLIT[:-1]
+    channels = tuple(bank(banks, name, {4: 2, 5: 2}).view(np.int16) for name in names)
     if not channels[0].size or len({len(ch) for ch in channels}) != 1:
         raise ValueError("inconsistent SPE lengths")
     return "SPE", channels
@@ -109,7 +110,7 @@ def process(reader, odb, output, args):
         raise ValueError("one-second sample count must be integral")
     n = int(fs)
     scale = np.asarray(adc["Channel_range_mV"], float) * (0.002 / 65535)
-    if scale.ndim != 1 or scale.size < 7 or not np.all(np.isfinite(scale) & (scale > 0)):
+    if scale.ndim != 1 or scale.size < 6 or not np.all(np.isfinite(scale) & (scale > 0)):
         raise ValueError("invalid BOR ADC ranges")
     lo = equipment["LocalOscill"]["Variables"]
     output.attrs["schema_version"] = "1.0"
@@ -135,6 +136,7 @@ def process(reader, odb, output, args):
     anomalies = output.create_group("anomalies")
     output.create_group("histograms")
     layout = None
+    channels_present = None
     previous = None
     detector = PulseDetector()
     fill = received = discarded = segment = count = 0
@@ -167,7 +169,7 @@ def process(reader, odb, output, args):
         reason = None
         try:
             kind, channels = decode(banks)
-            if layout and kind != layout:
+            if layout and (kind != layout or len(channels) != channels_present):
                 raise ValueError("layout changed")
         except ValueError as exc:
             reason = str(exc)
@@ -185,6 +187,9 @@ def process(reader, odb, output, args):
             continue
         if layout is None:
             layout = kind
+            channels_present = len(channels)
+            if scale.size < channels_present:
+                raise ValueError("missing BOR range for a present channel")
             pairs = adc.get("IQ_channel_pairs") or (PAIRS if layout == "SPEC" else args.split_pairs)
             if not pairs:
                 raise ValueError("SPE mapping absent from BOR; provide --split-pairs for diagnostic processing")
@@ -192,7 +197,7 @@ def process(reader, odb, output, args):
                    or any(type(ch) is not int or not 0 <= ch < 6 for ch in pair)
                    or pair[0] == pair[1] for name, pair in pairs.items()):
                 raise ValueError("invalid IQ mapping")
-            meta.attrs.update(midas_layout=layout, pairs_json=json.dumps(pairs),
+            meta.attrs.update(midas_layout=layout, channels_present=channels_present, pairs_json=json.dumps(pairs),
                               mapping_source="BOR" if adc.get("IQ_channel_pairs") else
                               ("legacy historical mapping" if layout == "SPEC" else "explicit pilot configuration"))
             buffers = {m: np.empty(n, np.complex64) for m in pairs}
@@ -224,10 +229,11 @@ def process(reader, odb, output, args):
                     append(spgp, entry)
             except ValueError as exc:
                 append(gaps, (serial, str(exc).encode()))
-        for pulse in detector.feed(channels[6] > 2.5/scale[6], serial, received):
-            if pulse[-1] > 4000:
-                append(pps, pulse)
-                observed_spgp.append((pulse[0], pulse[1], pulse[3]))
+        if len(channels) > 6:
+            for pulse in detector.feed(channels[6] > 2.5/scale[6], serial, received):
+                if pulse[-1] > 4000:
+                    append(pps, pulse)
+                    observed_spgp.append((pulse[0], pulse[1], pulse[3]))
         offset = 0
         while offset < size:
             if not fill:
@@ -292,6 +298,7 @@ def process(reader, odb, output, args):
         stats[mode].attrs.update(dict(zip(METRICS,aggregate)))
         stats[mode].attrs.update(clip_I=int(r[:,15].sum()),clip_Q=int(r[:,16].sum()),
                                  peak_received_index=int(windows[best]["received_index"]+r[best,14]))
+    timing.attrs["pps_waveform_available"] = channels_present > 6
     quality.attrs.update(events=count, received_samples=received, discarded_samples=discarded+fill,
                          valid_windows=len(windows), saw_eor=eor, spgp_exact_matches=(
                          len(set(expected_spgp) & set(observed_spgp))),
@@ -307,6 +314,7 @@ def main():
     p.add_argument("--compression", choices=("lzf","gzip"))
     p.add_argument("--thresholds", type=float, nargs="+", default=[4.,5.,6.])
     p.add_argument("--max-events", type=int)
+    p.add_argument("--software-commit")
     p.add_argument("--workers", type=int, default=1)
     args = p.parse_args()
     if args.output.exists() or args.output.resolve() == args.source.resolve():
@@ -318,7 +326,7 @@ def main():
     import midas.file_reader
     wall, cpu = time.perf_counter(), time.process_time()
     source_stat = args.source.stat()
-    commit = subprocess.check_output(["git","rev-parse","HEAD"],
+    commit = args.software_commit or subprocess.check_output(["git","rev-parse","HEAD"],
                                      cwd=Path(__file__).resolve().parent, text=True).strip()
     fd, path = tempfile.mkstemp(dir=args.output.parent, prefix=f".{args.output.name}.")
     os.close(fd)

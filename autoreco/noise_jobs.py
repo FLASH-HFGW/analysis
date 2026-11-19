@@ -1,6 +1,7 @@
 """Generazione dei payload noise per il ciclo di vita esistente di autoreco."""
 import json
 import os
+import subprocess
 from pathlib import Path
 
 
@@ -60,4 +61,45 @@ on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 queue
 ''')
         result.append((script,submit))
+    return result
+
+def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
+                     configuration, max_events, request_cpus):
+    """Prepare sandbox-only pilot jobs using the existing noise download wrapper."""
+    module = analysis_script.with_name("iq_acquisition_metadata.py")
+    commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=analysis_script.parent, text=True
+    ).strip()
+    wrapper = Path(__file__).with_name("noise_job.sh").read_text()
+    result = []
+    for run in sorted(set(run_numbers)):
+        directory = output_dir / f"{run:05d}"
+        directory.mkdir(parents=True, exist_ok=True)
+        script, submit = directory / "script.sh", directory / "submit.sub"
+        script.write_text(wrapper)
+        script.chmod(0o755)
+        config = directory / "iq_v3_job.json"
+        config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events)))
+        transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, config)]
+        for value in [input_path, *transfer]:
+            if any(not (c.isalnum() or c in "/._-") for c in value):
+                raise ValueError("Unsupported HTCondor path: " + value)
+        submit.write_text(f"""executable = script.sh
+arguments = {input_path} {run} pilot {analysis_script.name} {config.name} {commit} {request_cpus}
+output = stdout-$(ClusterId).$(ProcID).txt
+error = stderr-$(ClusterId).$(ProcID).txt
+log = output-$(ClusterId).$(ProcID).log
+request_cpus = {request_cpus}
+request_memory = 4GB
+request_disk = 100GB
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = {','.join(transfer)}
+want_io_proxy = true
+use_oauth_services = t1
+t1_oauth_permissions = profile,email,openid,offline_access
+on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
+queue
+""")
+        result.append((script, submit))
     return result

@@ -985,12 +985,18 @@ def parse_args() -> argparse.Namespace:
             "insieme a --read-only"
         ),
     )
-    parser.add_argument("--analysis-kind", choices=("fft", "noise"), default="fft")
+    parser.add_argument("--analysis-kind", choices=("fft", "noise", "iq-v3"), default="fft")
     parser.add_argument("--noise-reference", type=Path,
                         help="Riferimento fisso per la modalità noise")
     parser.add_argument("--prepare-only", action="store_true",
                         help="Genera i job di una selezione esplicita senza logbook, coda o sottomissione")
+    parser.add_argument("--iq-v3-split-pairs", type=json.loads,
+                        help="Mapping I/Q diagnostico per il formato SPE")
     args = parser.parse_args()
+    if args.analysis_kind == "iq-v3":
+        if not (args.prepare_only and args.read_only and args.run is not None):
+            parser.error("iq-v3 richiede --prepare-only --read-only --run")
+        args.analysis_script_name = "analyze_midas_iq_v3.py"
     if args.prepare_only and args.run_min is not None:
         parser.error("--prepare-only richiede --run oppure --run-range")
     if args.analysis_kind == "noise":
@@ -1067,6 +1073,13 @@ def main() -> None:
         runs = [run for run in runs if load_state(args.output_dir / f"{run:05d}") is None]
         if not runs:
             print("Nessun nuovo job da preparare; stati esistenti conservati.")
+            return
+        if args.analysis_kind == "iq-v3":
+            from noise_jobs import build_iq_v3_jobs
+            files = build_iq_v3_jobs(runs, args.output_dir, args.input_path,
+                                     args.analysis_script, args.iq_v3_split_pairs,
+                                     args.max_events, args.cpus)
+            print(f"Preparati {len(files)} job pilota in {args.output_dir}.")
             return
         files = build_htcondor_files(
             run_numbers=runs, output_dir=args.output_dir, input_path=args.input_path,
