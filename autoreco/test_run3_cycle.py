@@ -38,6 +38,7 @@ class Run3CleanupTests(unittest.TestCase):
             return run3.reconcile(self.run, self.state, 1148, self.url, 7, dry_run)
 
     def test_active_held_and_missing_history_preserve_artifacts(self):
+        self.state["phase"] = "submitted"
         for code in (1, 2, 4, 5, 6, 7):
             self.assertTrue(self.reconcile("active", [dict(JobStatus=code)]))
         self.reconcile("history", [])
@@ -63,10 +64,20 @@ class Run3CleanupTests(unittest.TestCase):
         (self.directory / "run01148_job_status.json").write_text(
             json.dumps(dict(run=1148, status="success", exit_code=0)))
         jobs = [dict(JobStatus=4, ExitCode=0, ClusterId=3456, LeaveJobInQueue=True)]
-        with patch.object(run3, "transfer_job_data") as transfer:
+        def remove(*args, **kwargs):
+            self.assertEqual(json.loads(run3.state_path(self.run).read_text())["phase"], "verified")
+            self.assertTrue(self.payload.exists())
+
+        with patch.object(run3, "transfer_job_data") as transfer, \
+             patch.object(run3.subprocess, "run", side_effect=remove) as close, \
+             patch.object(run3, "condor_query", return_value=[]):
+            self.assertTrue(self.reconcile("active", jobs, dry_run=True))
+            close.assert_not_called()
             self.assertFalse(self.reconcile("active", jobs))
-            self.assertFalse(self.reconcile("active", jobs))
+            self.assertFalse(self.reconcile("history", []))
             transfer.assert_not_called()
+            close.assert_called_once()
+        self.assertTrue(self.state["queue_closed"])
         self.assertEqual(self.state["phase"], "verified")
         self.assertEqual(self.state["publication"], receipt)
         self.assertFalse(self.payload.exists())

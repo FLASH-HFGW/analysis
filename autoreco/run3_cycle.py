@@ -82,14 +82,46 @@ def validate_receipt(receipt, completion, run, url, attempt):
         raise ValueError("invalid Run3 publication receipt")
 
 
+def finalize_verified(run_dir, state, directory, dry_run, queue):
+    if queue:
+        if len(queue) != 1:
+            return True
+        job = queue[0]
+        if (not state.get("cluster") or str(job.get("ClusterId")) != str(state["cluster"]) or job["JobStatus"] != 4
+                or job.get("ExitCode") != 0 or job.get("ExitBySignal")):
+            return True
+        if dry_run:
+            print(f"would remove completed Condor job {state['cluster']}.0")
+            return True
+        cluster = int(state["cluster"])
+        attempt = state["attempt"]
+        constraint = (f'ClusterId == {cluster} && ProcId == 0 && JobStatus == 4 '
+                      f'&& ExitCode == 0 && FlashRun3Attempt == "{attempt}"')
+        subprocess.run(["condor_rm", "-constraint", constraint], check=True)
+        if condor_query("condor_q", attempt):
+            return True
+    keep_logs = time.time() - state["verified_at"] < 30*86400
+    clean_attempt(directory, dry_run=dry_run, keep_logs=keep_logs)
+    if not dry_run:
+        state.update(queue_closed=True, payload_cleaned=True, logs_cleaned=not keep_logs)
+        save_state(run_dir, state)
+    return False
+
+
 def reconcile(run_dir, state, run, url, retention, dry_run):
     """Return True if the run still occupies a slot."""
     attempt = state["attempt"]
     directory = workdir(run_dir, attempt, run)
     if state["phase"] == "verified":
         age = time.time() - state["verified_at"]
-        if state.get("logs_cleaned") or (state.get("payload_cleaned") and age < 30*86400):
-            return False
+        if state.get("queue_closed"):
+            if state.get("logs_cleaned") or (state.get("payload_cleaned") and age < 30*86400):
+                return False
+            queue = []
+        else:
+            source, jobs = lookup(attempt)
+            queue = jobs if source == "active" else []
+        return finalize_verified(run_dir, state, directory, dry_run, queue)
     source, jobs = lookup(attempt)
     if len(jobs) != 1:
         return state["phase"] not in ("verified", "failed") or source == "active"
@@ -106,30 +138,23 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
             save_state(run_dir, state)
         # Completed spooled jobs can remain in the queue after retrieval.
     if succeeded:
-        if state["phase"] != "verified":
-            receipt = directory / "publication.json"
-            status = directory / f"run{run:05d}_job_status.json"
-            local(receipt)
-            local(status)
-            if not (receipt.is_file() and status.is_file()):
-                return True
-            identity = json.loads(receipt.read_text())
-            completion = json.loads(status.read_text())
-            validate_receipt(identity, completion, run, url, attempt)
-        else:
-            identity = state["publication"]
-        if not dry_run and state["phase"] != "verified":
-            state.update(phase="verified", publication=identity, cluster=job["ClusterId"],
-                         verified_at=time.time())
-            save_state(run_dir, state)
-        if state["phase"] == "verified":
-            keep_logs = time.time() - state["verified_at"] < 30*86400
-            clean_attempt(directory, dry_run=dry_run, keep_logs=keep_logs)
-            if not dry_run:
-                state.update(payload_cleaned=True, logs_cleaned=not keep_logs)
-                save_state(run_dir, state)
-        return False
-    if state["phase"] == "verified" or job["JobStatus"] not in (3, 4):
+        receipt = directory / "publication.json"
+        status = directory / f"run{run:05d}_job_status.json"
+        local(receipt)
+        local(status)
+        if not (receipt.is_file() and status.is_file()):
+            return True
+        identity = json.loads(receipt.read_text())
+        completion = json.loads(status.read_text())
+        validate_receipt(identity, completion, run, url, attempt)
+        if dry_run:
+            return source == "active"
+        state.update(phase="verified", publication=identity, cluster=job["ClusterId"],
+                     verified_at=time.time())
+        save_state(run_dir, state)
+        return finalize_verified(run_dir, state, directory, dry_run,
+                                 jobs if source == "active" else [])
+    if job["JobStatus"] not in (3, 4):
         return True
     if state["phase"] != "failed" and not dry_run:
         state.update(phase="failed", failed_at=time.time(), cluster=job["ClusterId"])
