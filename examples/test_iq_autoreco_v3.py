@@ -25,6 +25,8 @@ class PilotTests(unittest.TestCase):
         np.testing.assert_equal(decode({"SPEC": bank(raw.flatten(), 5)})[1], raw.T)
         split = {f"SPE{i}": bank(raw[:, i], 5) for i in range(7)}
         np.testing.assert_equal(decode(split)[1], raw.T[:7])
+        del split["SPE6"]
+        np.testing.assert_equal(decode(split)[1], raw.T[:6])
         split["SPE5"] = bank(np.zeros(2, np.uint16))
         with self.assertRaises(ValueError):
             decode(split)
