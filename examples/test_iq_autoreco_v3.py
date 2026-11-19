@@ -5,6 +5,7 @@ import unittest
 import h5py
 import numpy as np
 
+from iq_compact_spectra import CompactSpectra
 from analyze_midas_iq_v3 import PulseDetector, decode, process
 
 
@@ -55,6 +56,26 @@ class PilotTests(unittest.TestCase):
             self.assertEqual(len(f["quality/breaks"]), 2)
             self.assertEqual(f["timing/windows"]["segment"].tolist(), [0, 0, 1])
 
+    def test_compact_storage(self):
+        n = 9
+        x = np.arange(n, dtype=np.float32).astype(np.complex64) * (1+2j)
+        power = np.abs(x)**2
+        ordered = np.fft.fftshift(power)
+        for product in ("psd", "fft"):
+            args = SimpleNamespace(compression=None, bin_hz=4, max_psd=True,
+                                   band=[(-2.5, 2)], band_product=product)
+            with h5py.File("test", "w", driver="core", backing_store=False) as f:
+                store = CompactSpectra(f, n, ["mode"], args)
+                self.assertLess(store.write("mode", x, power), 1e-7)
+                self.assertLess(store.write("mode", x*2, power*4), 1e-7)
+                store.finish(2)
+                np.testing.assert_array_equal(f["window_bin_width_hz"][:], [4, 4, 1])
+                np.testing.assert_array_equal(f["window_bin_edges_hz"][:], [-4.5, -0.5, 3.5, 4.5])
+                np.testing.assert_allclose(f["mode/mean_psd"][:], ordered*2.5)
+                np.testing.assert_array_equal(f["mode/max_psd"][:], ordered*4)
+                band = ordered[2:6] if product == "psd" else x[[-2, -1, 0, 1]]
+                np.testing.assert_array_equal(f["mode/band_0"][0], band)
+
     def test_pipeline(self):
         n = 64
         phase = 2 * np.pi * np.arange(n) / 8
@@ -66,14 +87,15 @@ class PilotTests(unittest.TestCase):
                    IQ_channel_pairs={"mode": [3, 2]})
         odb = {"Equipment": {"NetBox": {"Settings": adc},
                              "LocalOscill": {"Variables": {}}}, "Runinfo": {"Run number": 1}}
-        for kind, product in (("SPEC", "psd"), ("SPE", "fft")):
+        for kind, product in (("SPEC", "psd"), ("SPE", "fft"), ("SPE", "compact")):
             def pack(data):
                 if kind == "SPEC":
                     return {"SPEC": bank(data.flatten(), 5)}
                 return {f"SPE{i}": bank(data[:, i], 5) for i in range(7)} | {
                     "SPGP": bank(np.empty(0, np.uint32), 6)}
             args = SimpleNamespace(compression=None, max_events=10,
-                                   thresholds=[4], product=product, workers=1)
+                                   thresholds=[4], product=product, workers=1, bin_hz=10,
+                                   max_psd=False, band=[], band_product="psd")
             events = [event(0, pack(raw[:17])), event(2, pack(raw[:32])),
                       event(3, pack(raw[32:]))]
             with self.subTest(kind=kind), h5py.File("test", "w", driver="core", backing_store=False) as f:
@@ -84,12 +106,21 @@ class PilotTests(unittest.TestCase):
                 z = (raw[:, 3].astype(float) - 1j*raw[:, 2]) * (4/65535)
                 x = np.fft.fft(z)/n
                 expected = abs(x)**2 if product == "psd" else x
-                np.testing.assert_allclose(f["spectra/mode"][0], expected, atol=1e-8)
+                if product == "compact":
+                    np.testing.assert_allclose(f["spectra/mode/mean_psd"][:],
+                                               np.fft.fftshift(abs(x)**2), atol=1e-8)
+                    self.assertEqual(f["quality"].attrs["spectral_samples"], 64)
+                    self.assertEqual(f["quality"].attrs["temporal_samples"], 81)
+                else:
+                    np.testing.assert_allclose(f["spectra/mode"][0], expected, atol=1e-8)
+                self.assertEqual(f["statistics/mode"].attrs["temporal_samples"], 81)
+                self.assertEqual(f["histograms/mode/amplitude_counts"][:].sum(), 81)
                 self.assertEqual(np.argmax(abs(x[1:])) + 1, 8)
                 self.assertLess(f["statistics/mode"][0]["parseval_relative_error"], 1e-6)
                 a = f["anomalies/mode/episodes"][0]
                 self.assertEqual((a["received_index"], a["duration_samples"]), (27, 1))
                 self.assertEqual(f["anomalies/mode/population"][0]["above_samples"], 1)
+                self.assertEqual((a["start_serial"], a["start_offset_samples"]), (2, 10))
 
 
 if __name__ == "__main__":

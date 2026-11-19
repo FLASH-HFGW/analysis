@@ -14,7 +14,7 @@ import numpy as np
 from scipy.fft import fft
 
 from iq_acquisition_metadata import PAIRS, number
-from iq_compact_spectra import CompactSpectra, spectrum_rows
+from iq_compact_spectra import CompactSpectra, append_row as append, spectrum_rows
 
 
 SPLIT = tuple(f"SPE{i}" for i in range(7))
@@ -98,12 +98,6 @@ def measure(z, histogram=None):
               np.mean(squared*a), np.mean(squared*squared), vi, vq, cov,
               (vi-vq)/ac if ac else np.nan, -2*cov/ac if ac else np.nan, a[peak])
     return values, peak
-
-
-def append(dataset, row):
-    n = len(dataset)
-    dataset.resize(n + 1, axis=0)
-    dataset[n] = row
 
 
 def table(group, name, columns):

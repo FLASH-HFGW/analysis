@@ -1,4 +1,6 @@
 """HDF5 storage for unfiltered, energy-preserving IQ spectra."""
+from math import ceil
+
 import numpy as np
 
 
@@ -36,10 +38,10 @@ class CompactSpectra:
         self.bands = []
         self.band_product = args.band_product
         for low, high in args.band:
-            start, stop = np.ceil([low, high]).astype(np.int64) - self.first_hz
+            start, stop = ceil(low) - self.first_hz, ceil(high) - self.first_hz
             if not 0 <= start < stop <= n:
                 raise ValueError(f"band [{low}, {high}) has invalid FFT-bin bounds")
-            self.bands.append((int(start), int(stop)))
+            self.bands.append((start, stop))
         self.window_rows = {}
         self.band_rows = {}
         for mode in modes:
@@ -74,7 +76,7 @@ class CompactSpectra:
             else:
                 append_row(dataset, ordered[start:stop])
         before = ordered.sum(dtype=np.float64)
-        after = np.dot(density.astype(np.float64), self.widths)
+        after = np.sum(density.astype(np.float64) * self.widths)
         return abs(after - before) / before if before else 0.
 
     def finish(self, n_windows):

@@ -994,11 +994,14 @@ def parse_args() -> argparse.Namespace:
                         help="Mapping I/Q diagnostico per il formato SPE")
     parser.add_argument("--iq-v3-full-run", action="store_true",
                         help="Richiede EOR per il payload IQ v3")
-    parser.add_argument("--iq-v3-product", choices=("psd", "fft"), default="psd")
+    parser.add_argument("--iq-v3-product", choices=("compact", "psd", "fft"), default="compact")
+    parser.add_argument("--iq-v3-bin-hz", type=int, default=100)
     args = parser.parse_args()
     if args.analysis_kind == "iq-v3":
         if not (args.prepare_only and args.read_only and args.run is not None):
             parser.error("iq-v3 richiede --prepare-only --read-only --run")
+        if args.iq_v3_bin_hz <= 0:
+            parser.error("--iq-v3-bin-hz deve essere positivo")
         args.analysis_script_name = "analyze_midas_iq_v3.py"
     if args.prepare_only and args.run_min is not None:
         parser.error("--prepare-only richiede --run oppure --run-range")
@@ -1082,7 +1085,7 @@ def main() -> None:
             files = build_iq_v3_jobs(runs, args.output_dir, args.input_path,
                                      args.analysis_script, args.iq_v3_split_pairs,
                                      None if args.iq_v3_full_run else args.max_events,
-                                     args.cpus, args.iq_v3_product)
+                                     args.cpus, args.iq_v3_product, args.iq_v3_bin_hz)
             print(f"Preparati {len(files)} job pilota in {args.output_dir}.")
             return
         files = build_htcondor_files(

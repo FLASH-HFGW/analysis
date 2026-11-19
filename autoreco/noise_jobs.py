@@ -64,9 +64,10 @@ queue
     return result
 
 def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
-                     configuration, max_events, request_cpus, product="psd"):
+                     configuration, max_events, request_cpus, product="compact", bin_hz=100):
     """Prepare sandbox-only pilot jobs using the existing noise download wrapper."""
     module = analysis_script.with_name("iq_acquisition_metadata.py")
+    spectra_module = analysis_script.with_name("iq_compact_spectra.py")
     commit = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=analysis_script.parent, text=True
     ).strip()
@@ -79,8 +80,9 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
         script.write_text(wrapper)
         script.chmod(0o755)
         config = directory / "iq_v3_job.json"
-        config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events, product=product)))
-        transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, config)]
+        config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events,
+                                          product=product, bin_hz=bin_hz)))
+        transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, spectra_module, config)]
         for value in [input_path, *transfer]:
             if any(not (c.isalnum() or c in "/._-") for c in value):
                 raise ValueError("Unsupported HTCondor path: " + value)

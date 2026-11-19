@@ -53,14 +53,15 @@ gfal-copy "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mi
 echo "[timing] download end / analysis start $(date -u +%FT%TZ)"
 if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
     limit=$(jq -r '.max_events // empty' "$REFERENCE")
-    product=$(jq -er '.product // "psd"' "$REFERENCE")
+    product=$(jq -er '.product // "compact"' "$REFERENCE")
     limit_args=()
     if [[ -n "$limit" ]]; then
         limit_args=(--max-events "$limit")
     fi
+    bin_hz=$(jq -er '.bin_hz // 100' "$REFERENCE")
     pairs=$(jq -c '.split_pairs' "$REFERENCE")
     "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \
-        "$JOB_ROOT/${RUN_NAME}_iq_v3.h5" --product "$product" "${limit_args[@]}" --split-pairs "$pairs" \
+        "$JOB_ROOT/${RUN_NAME}_iq_v3.h5" --product "$product" --bin-hz "$bin_hz" "${limit_args[@]}" --split-pairs "$pairs" \
         --software-commit "$IQ_SIGN" --workers "$MODE_WORKERS"
     exit 0
 fi
