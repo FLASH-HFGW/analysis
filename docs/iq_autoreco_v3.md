@@ -14,7 +14,7 @@ Il formato SPE richiede il mapping I/Q esplicito tramite `--split-pairs` in asse
 
 L'orchestratore esistente prepara un job singolo con `--analysis-kind iq-v3 --prepare-only --read-only --run 1145 --max-events 30 --output-dir /tmp/IQ-PILOT` e la stessa mappa tramite `--iq-v3-split-pairs`. Il wrapper riusa download e credenziali del payload noise. Il job trasferisce il prodotto tramite lo spool Condor. La preparazione locale è passata. Il dry-run Condor ha richiesto autenticazione OAuth interattiva.
 
-## HDF5 1.1
+## HDF5 1.2
 
 | Percorso | Contenuto |
 |---|---|
@@ -22,17 +22,17 @@ L'orchestratore esistente prepara un job singolo con `--analysis-kind iq-v3 --pr
 | `timing/windows` | Una riga per FFT. Segmento, indice di ricezione e seriale/offset originali del primo e ultimo campione, inclusivi. `received_s` è il tempo nominale dei campioni validi ricevuti, calcolato con il rate BOR. UTC è NaN con qualità `unanchored`. |
 | `timing/{pps,spgp,tgps}` | PPS da SPEC CH6 per legacy e da SPGP per SPE. SPGP conserva le coppie nel formato sorgente. TGPS conserva payload, timestamp dell’header in secondi Unix e numero di campioni ricevuti prima del record. |
 | `timing/{pps_waveform,digitizer_events}` | Confronto analogico dove disponibile e registro ADC con seriale, timestamp MIDAS, indice iniziale, lunghezza e segmento. |
-| `spectra` | Asse bilatero condiviso in Hz, in ordine FFT. Dataset per modo con riga per finestra. |
+| `spectra` | Default compatto con PSD media per run e PSD aggregata per finestra. I diagnostici full spectrum conservano l’asse bilatero condiviso in ordine FFT. |
 | `statistics` | Dataset per modo con riga per finestra e aggregati come attributi. Unità nei nomi dei campi. Indice del picco locale, conteggi a fondo scala per componente ed errore relativo di Parseval. |
-| `anomalies/<modo>` | Tabelle `episodes` e `population` per finestra e soglia, con indici di ricezione, durate in campioni e picchi in V. |
+| `anomalies/<modo>` | Tabelle `episodes` e `population` per finestra e soglia, con indici di ricezione, seriali e offset ADC di inizio e picco, durate in campioni e picchi in V. |
 | `quality` | Errori di bank e salti di seriale, contatori di finestre e campioni, presenza EOR, confronto esatto SPGP e misure processo. |
-| `histograms` | Gruppo riservato, vuoto nel pilot. |
+| `histograms` | Per modo, bordi e conteggi per 512 classi lineari dell’ampiezza complessa, da zero al massimo ADC con i range BOR del modo. |
 
-Ogni canale fisico usa i bit signed int16 e il fattore `2 × range_di_picco_V / 65535` derivato dal BOR. Il segnale complesso è `I − iQhardware`. La pseudocovarianza normalizzata usa `E[(z−E[z])²] / E[|z−E[z]|²]`. Le statistiche aggregate si riferiscono alla popolazione delle sole finestre complete.
+Ogni canale fisico usa i bit signed int16 e il fattore `2 × range_di_picco_V / 65535` derivato dal BOR. Il segnale complesso è `I − iQhardware`. La pseudocovarianza normalizzata usa `E[(z−E[z])²] / E[|z−E[z]|²]`. Gli aggregati temporali e gli istogrammi includono tutti i campioni validi ricevuti, comprese le code prima delle discontinuità e a fine run. I momenti parziali sono combinati pesando per numero di campioni. FFT, PSD ed escursioni catalogate usano le sole finestre complete. `quality` espone `temporal_samples`, `spectral_samples` e il numero di code; `discarded_samples` indica gli esclusi dalla popolazione spettrale.
 
 Una finestra contiene esattamente `N = fs` campioni consecutivi. I confini delle bank attraversano le finestre se le seriali sono consecutive e il layout e le bank IQ sono coerenti. Un salto di seriale o una bank IQ non valida chiude il segmento e scarta l'eventuale finestra incompleta. Il contatore degli scarti riguarda code di campioni validi già ricevuti. Rimane da verificare la continuità fisica in presenza di perdite invisibili alle seriali. Le anomalie in SPGP e TGPS sono registrate per la qualità di timing.
 
-La finestra rettangolare conserva la DC e la media complessa. Con `X = FFT(z) / N`, `--product fft` conserva `X` in complex64 e V. Il default salva solo la PSD float32 `|X|² N/fs` in V²/Hz, bilatera e senza fattore due. L'integrale numerico usando la larghezza `fs/N` equivale a `mean(|z|²)`, inclusa la DC.
+La finestra rettangolare conserva la DC e la media complessa. Con `X = FFT(z) / N`, `--product fft` conserva `X` in complex64 e V. `--product psd` salva la PSD float32 completa `|X|² N/fs` in V²/Hz, bilatera e senza fattore due. L'integrale numerico usando la larghezza `fs/N` equivale a `mean(|z|²)`, inclusa la DC.
 
 La soglia è `|z − mean(z)| > k × sqrt(mean(|z − mean(z)|²))` per finestra, con `k` configurabile e default 4, 5, 6. Gli episodi sono sequenze consecutive entro la finestra applicabile e vengono troncati al cambio di finestra, dove cambia la soglia locale. La tabella popolazione include i casi senza escursioni. Sono candidati statistici.
 
@@ -86,7 +86,7 @@ Per Giorgio Dho
 
 ### HTCondor
 
-Il normale percorso Condor prepara un run esplicito e riusa download DAVS, CVMFS e spool. Per il run completo usare `--iq-v3-full-run` e un solo prodotto, PSD di default oppure `--iq-v3-product fft`. Nel job sono richiesti 4 GB RAM, 100 GB disco e una CPU. Il worker valida conteggi e Parseval nell’HDF5 chiuso prima del trasferimento. Il dry-run di una copia senza direttive OAuth ha validato la sintassi. Il submit reale richiede il token `t1`.
+Il normale percorso Condor prepara un run esplicito e riusa download DAVS, CVMFS e spool. Per il run completo usare `--iq-v3-full-run`. Il profilo standard è compatto e `--iq-v3-bin-hz` configura i bin; `--iq-v3-product psd` e `--iq-v3-product fft` selezionano i diagnostici completi. Nel job sono richiesti 4 GB RAM, 100 GB disco e una CPU. Il worker valida conteggi e Parseval nell’HDF5 chiuso prima del trasferimento. Il dry-run di una copia senza direttive OAuth ha validato la sintassi. Il submit reale richiede il token `t1`.
 
 Per autorizzare manualmente `t1`, sul submit host eseguire:
 
@@ -117,3 +117,38 @@ Prodotti completi, senza compressione, generati come file separati per la sola v
 Nel PSD completo, i tempi delle fasi principali sono 146,95 s statistiche, 88,81 s lettura MIDAS, 53,29 s FFT e potenza, 16,03 s escursioni, 10,32 s scrittura spettri e statistiche e 6,80 s conversione ADC. La banda di acquisizione nominale è 5 MS/s.
 
 La rilettura dei due HDF5 ha verificato l’uguaglianza bin per bin della PSD e di `abs(FFT)²` su tutte le 627 righe spettrali, con bin bilateri da 1 Hz ed errore relativo massimo tra potenza integrata e RMS² inferiore a 1,28 × 10⁻⁷. L’inversa complessa ha riprodotto la prima finestra ADC di ciascun modo entro 0,5 µV e la DC concorda con le medie I/Q. Sono stati verificati anche i momenti d’ampiezza della prima finestra, il bilancio delle popolazioni di escursione per tutte le finestre e soglie, e i riferimenti ADC. Sono presenti 209 finestre valide, una coda incompleta e zero finestre scartate per discontinuità ADC. I prodotti locali sono in `/tmp/iqv3-final.7EPljn`.
+
+## Profilo compatto standard
+
+`--product compact` è il default. `spectra/<modo>/mean_psd` è la media aritmetica in potenza lineare delle finestre FFT complete, accumulata in RAM in float64 e conservata in float32. L’asse a 1 Hz è implicito e condiviso tramite gli attributi `frequency_first_hz`, `frequency_spacing_hz` e `frequency_count` di `spectra`, in ordine di frequenza crescente.
+
+`spectra/<modo>/window_psd` contiene una riga per finestra e densità media float32 per bin. I bordi crescenti sono in `spectra/window_bin_edges_hz`, in Hz. Ogni centro FFT a 1 Hz rappresenta una cella di larghezza 1 Hz. Il primo bordo è mezzo Hz sotto il primo centro. `--bin-hz` imposta la larghezza nominale intera (default 100). L’ultimo bin può avere larghezza minore, disponibile con tutte le altre in `spectra/window_bin_width_hz`. La densità di ciascun bin è la somma delle potenze lineari divisa per la sua larghezza effettiva. La somma densità × larghezza conserva la potenza integrata bilatera, DC inclusa, entro l’arrotondamento float32.
+
+Opzioni del payload locale, disattivate per default
+
+- `--max-psd` salva anche il massimo float32 della PSD a 1 Hz per ciascuna frequenza e modo, circa 60 MB per tre modi a 5 MS/s. Le frequenze possono raggiungere il loro massimo in finestre diverse.
+- `--band LOW_HZ HIGH_HZ` è ripetibile e salva i centri FFT nell’intervallo semiaperto configurato, a 1 Hz per ogni finestra. `--band-product psd` usa float32 e V²/Hz. `--band-product fft` usa complex64 e V con fase. Ogni dataset `band_N` ha coordinate e limiti richiesti negli attributi. La selezione avviene dopo la FFT bilatera dell’intero segnale.
+- `--compression lzf` o `--compression gzip` applica un codec HDF5 lossless. Il default è senza compressione.
+- `--product psd` e `--product fft` conservano l’intero spettro per finestra per i diagnostici.
+
+L’asse compatto contiene esattamente gli stessi centri FFT del diagnostico, riordinati. Il mapping e la convenzione di segno conservano la provenienza preesistente. Non sono configurate bande di risonanza per default.
+
+### Benchmark compatto sul 1148 completo
+
+Un’unica passata MIDAS sul run chiuso. Input compresso 9.273.616.774 B, HDF5 standard **187.884.152 B** (2,03% del raw), 307,81 s wall, 3,41 MS/s e 706 MiB di picco RSS. Il benchmark è stato eseguito in parallelo con la lettura del vecchio HDF5 di riferimento. Il controllo di potenza integrata è stato poi semplificato da un prodotto scalare BLAS a una somma float64. Le righe salvate sono identiche, verificate offline, e il tempo riportato è quello della singola esecuzione completa.
+
+Il confronto offline con il PSD completo preesistente ha dato uguaglianza float32 per la PSD media e tutte le 627 righe aggregate. Il massimo errore relativo di conservazione dovuto al rebin è 3,82 × 10⁻¹⁰. Il confronto fra PSD aggregata integrata e RMS² temporale per finestra ha dato un errore massimo di 1,28 × 10⁻⁷. Le 209 FFT coprono 1.045.000.000 campioni. Le statistiche temporali e gli istogrammi contano 1.048.576.000 campioni, inclusa la coda di 3.576.000. Sono stati verificati statistiche per finestra, escursioni e riferimenti ai seriali ADC. Prodotto locale `/tmp/iqv3-final.7EPljn/1148-compact.h5`.
+
+Riscrittura offline dei soli dataset PSD standard con le impostazioni HDF5 del payload
+
+| Codec | MB decimali | Scrittura e chiusura (s) |
+|---|---:|---:|
+| Nessuno | 185,45 | 0,11 |
+| LZF | 185,51 | 1,85 |
+| gzip | 155,97 | 7,15 |
+
+Il default resta senza compressione per la velocità. gzip risparmia circa il 16% sui dataset PSD.
+
+### Dimensionamento HTCondor
+
+Con un run da 209,72 s di acquisizione e un worker per run, stimare gli slot con `ceil((307,81 s + 9273,62 MB / B_down + 187,88 MB / B_up) / 209,72 s)`. Le bande sono quelle effettive per job concorrente. La misura locale include la decompressione MIDAS. Con download e upload a 100, 50 o 25 MB/s per job, servono rispettivamente almeno 2, 3 o 4 slot. A 100 MB/s due slot lasciano un margine ridotto per coda e staging. L’ingresso condiviso deve sostenere almeno 44,2 MB/s e lo spool in uscita circa 0,90 MB/s, oltre al margine operativo. Verificare i tempi reali su un job isolato dopo OAuth prima di scegliere la concorrenza operativa.
