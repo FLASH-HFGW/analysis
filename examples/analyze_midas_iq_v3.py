@@ -82,11 +82,12 @@ def measure(z):
     mi, mq = i.mean(), q.mean()
     vi, vq = i.var(), q.var()
     cov = np.mean((i-mi)*(q-mq))
-    power = np.mean(a*a)
+    squared = a*a
+    power = squared.mean()
     ac = vi + vq
     peak = int(a.argmax())
     values = (mi, mq, np.sqrt(power), np.sqrt(ac), a.mean(), a.std(),
-              np.mean(a**3), np.mean(a**4), vi, vq, cov,
+              np.mean(squared*a), np.mean(squared*squared), vi, vq, cov,
               (vi-vq)/ac if ac else np.nan, -2*cov/ac if ac else np.nan, a[peak])
     return values, peak
 
@@ -113,7 +114,7 @@ def process(reader, odb, output, args):
     if scale.ndim != 1 or scale.size < 6 or not np.all(np.isfinite(scale) & (scale > 0)):
         raise ValueError("invalid BOR ADC ranges")
     lo = equipment["LocalOscill"]["Variables"]
-    output.attrs["schema_version"] = "1.0"
+    output.attrs["schema_version"] = "1.1"
     meta = output.create_group("metadata")
     meta.attrs.update(fs_hz=fs, iq_convention="I-iQhardware",
                       bor_settings_json=json.dumps(adc),
@@ -122,9 +123,13 @@ def process(reader, odb, output, args):
                       configuration_json=json.dumps(vars(args), default=str))
     timing = output.create_group("timing")
     timing.attrs.update(utc_quality="unanchored", index_reference="received valid sample ordinal")
-    pps = table(timing, "pps", [(k, "<i8") for k in ("serial", "offset_samples", "received_index", "width_samples")])
+    pulse_fields = [(k, "<i8") for k in ("serial", "offset_samples", "received_index", "width_samples")]
+    pps = table(timing, "pps", pulse_fields)
+    waveform = table(timing, "pps_waveform", pulse_fields)
+    digitizer = table(timing, "digitizer_events", [(k, "<i8") for k in (
+        "serial", "header_unix_s", "received_index", "samples", "segment")])
     spgp = table(timing, "spgp", [(k, "<i8") for k in ("serial", "offset_samples", "width_samples")])
-    gps = table(timing, "tgps", [("serial", "<i8"), ("header_unix_s", "<i8"), ("payload", "u1", (80,))])
+    gps = table(timing, "tgps", [("serial", "<i8"), ("header_unix_s", "<i8"), ("received_before", "<i8"), ("payload", "u1", (80,))])
     windows = table(timing, "windows", [(k, "<i8") for k in (
         "segment", "received_index", "first_serial", "first_offset_samples",
         "last_serial", "last_offset_samples")] + [("received_s", "<f8"), ("utc_unix_s", "<f8")])
@@ -146,7 +151,15 @@ def process(reader, odb, output, args):
     totals = {}
     eor = False
 
-    for event in reader:
+    profile = dict(midas_read_s=0., adc_decode_s=0., fft_s=0., statistics_s=0.,
+                   anomalies_s=0., hdf5_rows_s=0.)
+    events = iter(reader)
+    while True:
+        started = time.perf_counter()
+        event = next(events, None)
+        profile["midas_read_s"] += time.perf_counter() - started
+        if event is None:
+            break
         header = event.header
         if header.is_midas_internal_event():
             eor |= header.is_eor_event()
@@ -158,7 +171,7 @@ def process(reader, odb, output, args):
                 payload = bank(banks, "TGPS", {3: 1})
                 if len(payload) != 80:
                     raise ValueError("invalid TGPS length")
-                append(gps, (serial, header.timestamp, payload))
+                append(gps, (serial, header.timestamp, received, payload))
             except ValueError as exc:
                 append(gaps, (serial, str(exc).encode()))
         if header.event_id != 1:
@@ -218,21 +231,25 @@ def process(reader, odb, output, args):
                       ("observed_samples","<i8"),("above_samples","<i8"),("episodes","<i8")])
                 totals[mode] = []
         size = len(channels[0])
+        append(digitizer, (serial, header.timestamp, received, size, segment))
         if layout == "SPE":
             try:
                 words = bank(banks, "SPGP", {6: 4})
-                if words.size % 2 or np.any(words[::2] >= size) or np.any(words[1::2] == 0):
+                if words.size % 2 or np.any(words[::2] >= size) or np.any(words[1::2] == 0) or np.any(np.diff(words[::2].astype(np.int64)) <= 0):
                     raise ValueError("invalid SPGP index/width pairs")
                 for i, width in words.reshape(-1,2):
                     entry = (serial, int(i), int(width))
                     expected_spgp.append(entry)
                     append(spgp, entry)
+                    append(pps, (serial, int(i), received + int(i), int(width)))
             except ValueError as exc:
                 append(gaps, (serial, str(exc).encode()))
         if len(channels) > 6:
             for pulse in detector.feed(channels[6] > 2.5/scale[6], serial, received):
                 if pulse[-1] > 4000:
-                    append(pps, pulse)
+                    append(waveform, pulse)
+                    if layout == "SPEC":
+                        append(pps, pulse)
                     observed_spgp.append((pulse[0], pulse[1], pulse[3]))
         offset = 0
         while offset < size:
@@ -241,6 +258,7 @@ def process(reader, odb, output, args):
                 for c in clipped.values():
                     c.fill(0)
             take = min(n-fill, size-offset)
+            started = time.perf_counter()
             for mode, (ci,cq) in pairs.items():
                 i, q = (channels[ch][offset:offset+take] for ch in (ci,cq))
                 z = buffers[mode][fill:fill+take]
@@ -248,6 +266,7 @@ def process(reader, odb, output, args):
                 z.imag = q * np.float32(-scale[cq])
                 for j, raw in enumerate((i,q)):
                     clipped[mode][j] += np.count_nonzero((raw == -32768) | (raw == 32767))
+            profile["adc_decode_s"] += time.perf_counter() - started
             fill += take
             offset += take
             if fill < n:
@@ -255,24 +274,37 @@ def process(reader, odb, output, args):
             window = len(windows)
             append(windows, (segment, *first, serial, offset-1, first[0]/fs, np.nan))
             for mode, z in buffers.items():
+                started = time.perf_counter()
                 values, peak = measure(z)
+                profile["statistics_s"] += time.perf_counter() - started
+                started = time.perf_counter()
                 x = fft(z, workers=args.workers, overwrite_x=False) / np.float32(n)
                 power = np.abs(x)**2
                 expected = values[2]**2
                 error = abs(power.sum(dtype=np.float64)-expected)/expected if expected else 0.
+                profile["fft_s"] += time.perf_counter() - started
+                started = time.perf_counter()
                 append(spectra[mode], power * np.float32(n/fs) if args.product == "psd" else x)
                 row = (*values, peak, *clipped[mode], error)
                 append(stats[mode], row)
                 totals[mode].append(row)
+                profile["hdf5_rows_s"] += time.perf_counter() - started
+                started = time.perf_counter()
                 ac = np.abs(z - np.complex64(complex(values[0], -values[1])))
                 for threshold in args.thresholds:
                     spans = list(runs(ac > threshold*values[3]))
+                    rows = []
                     for a,b in spans:
                         local = int(ac[a:b].argmax()) + a
-                        append(anomalies[mode]["episodes"], (window, first[0]+a, b-a,
-                               first[0]+local, threshold, ac[local]))
+                        rows.append((window, first[0]+a, b-a, first[0]+local, threshold, ac[local]))
+                    if rows:
+                        episodes = anomalies[mode]["episodes"]
+                        end = len(episodes)
+                        episodes.resize(end + len(rows), axis=0)
+                        episodes[end:] = rows
                     append(anomalies[mode]["population"], (window, threshold, n,
                            sum(b-a for a,b in spans), len(spans)))
+                profile["anomalies_s"] += time.perf_counter() - started
             fill = 0
         received += size
 
@@ -298,6 +330,8 @@ def process(reader, odb, output, args):
         stats[mode].attrs.update(dict(zip(METRICS,aggregate)))
         stats[mode].attrs.update(clip_I=int(r[:,15].sum()),clip_Q=int(r[:,16].sum()),
                                  peak_received_index=int(windows[best]["received_index"]+r[best,14]))
+    quality.attrs.update(profile)
+    timing.attrs["pps_source"] = "SPGP" if layout == "SPE" else "SPEC channel 6"
     timing.attrs["pps_waveform_available"] = channels_present > 6
     quality.attrs.update(events=count, received_samples=received, discarded_samples=discarded+fill,
                          valid_windows=len(windows), saw_eor=eor, spgp_exact_matches=(
@@ -341,6 +375,15 @@ def main():
                  software_commit=commit)
             out["quality"].attrs.update(wall_s=time.perf_counter()-wall,
                  cpu_s=time.process_time()-cpu, max_rss_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        with h5py.File(path, "r") as check:
+            n_windows = len(check["timing/windows"])
+            if not n_windows or any(
+                len(check["spectra"][mode]) != n_windows
+                or len(check["statistics"][mode]) != n_windows
+                or not np.all(check["statistics"][mode]["parseval_relative_error"] < 1e-5)
+                for mode in check["statistics"]
+            ):
+                raise ValueError("HDF5 failed window-count or Parseval validation")
         os.link(path,args.output)
     finally:
         os.unlink(path)
