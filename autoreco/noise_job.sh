@@ -49,7 +49,11 @@ export BEARER_TOKEN
 BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
 echo "Starting $RUN_NAME on $(hostname) at $(date -u +%FT%TZ)"
 echo "[timing] download start $(date -u +%FT%TZ)"
-gfal-copy "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mid.gz" "$WORKDIR/${RUN_NAME}.mid.gz"
+download_opts=()
+if [[ "$REFERENCE" == iq_v3_job.json ]] && jq -e '.publication != null' "$REFERENCE" >/dev/null; then
+    download_opts=(-K ADLER32)
+fi
+gfal-copy "${download_opts[@]}" "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mid.gz" "$WORKDIR/${RUN_NAME}.mid.gz"
 echo "[timing] download end / analysis start $(date -u +%FT%TZ)"
 if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
     limit=$(jq -r '.max_events // empty' "$REFERENCE")
@@ -60,9 +64,28 @@ if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
     fi
     bin_hz=$(jq -er '.bin_hz // 100' "$REFERENCE")
     pairs=$(jq -c '.split_pairs' "$REFERENCE")
+    publication=$(jq -c '.publication // empty' "$REFERENCE")
+    output_file="$JOB_ROOT/${RUN_NAME}_iq_v3.h5"
+    if [[ -n "$publication" ]]; then
+        output_file="$WORKDIR/${RUN_NAME}_iq_v3.h5"
+    fi
     "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \
-        "$JOB_ROOT/${RUN_NAME}_iq_v3.h5" --product "$product" --bin-hz "$bin_hz" "${limit_args[@]}" --split-pairs "$pairs" \
+        "$output_file" --product "$product" --bin-hz "$bin_hz" "${limit_args[@]}" --split-pairs "$pairs" \
         --software-commit "$IQ_SIGN" --workers "$MODE_WORKERS"
+    if [[ -n "$publication" ]]; then
+        rm -- "$WORKDIR/${RUN_NAME}.mid.gz"
+        BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
+        "$PYTHON" - "$output_file" "$publication" "$RUN_NUMBER" <<'PYTHON'
+import json, sys
+from pathlib import Path
+from run3_storage import publish, validate_product
+settings = json.loads(sys.argv[2])
+path = Path(sys.argv[1])
+validate_product(path, int(sys.argv[3]))
+identity = publish(path, settings["url"], probe=settings["probe"])
+Path("publication.json").write_text(json.dumps(dict(url=settings["url"], **identity)))
+PYTHON
+    fi
     exit 0
 fi
 "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \

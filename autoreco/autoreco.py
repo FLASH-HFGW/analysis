@@ -424,16 +424,14 @@ def discover_existing_jobs(
         )
 
 
-def submit_job(submit_path: Path) -> str:
+def submit_job(submit_path: Path, *, spool=True) -> str:
     """Sottomette un job in spool e restituisce il ClusterId."""
-    result = run_command(
-        ["condor_submit", "-spool", submit_path.name],
-        cwd=submit_path.parent,
-    )
+    command = ["condor_submit", *(["-spool"] if spool else []), submit_path.name]
+    result = run_command(command, cwd=submit_path.parent)
     if result.returncode != 0:
         diagnostics = submit_path.parent / "submit_error.json"
         diagnostics.write_text(json.dumps({
-            "timestamp": utc_now(), "command": ["condor_submit", "-spool", submit_path.name],
+            "timestamp": utc_now(), "command": command,
             "exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
         }, indent=2) + "\n")
         diagnostics.chmod(0o600)

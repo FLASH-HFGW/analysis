@@ -1,0 +1,9 @@
+{
+  "enabled": false,
+  "max_active": 4,
+  "max_attempts": 2,
+  "failure_days": 7,
+  "closed_runs": [],
+  "submit_oidc_account": null,
+  "split_pairs": {"TM010": [0, 1], "TM011": [2, 3], "TM012": [4, 5]}
+}

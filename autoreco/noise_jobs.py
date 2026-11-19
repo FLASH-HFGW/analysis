@@ -64,7 +64,7 @@ queue
     return result
 
 def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
-                     configuration, max_events, request_cpus, product="compact", bin_hz=100):
+                     configuration, max_events, request_cpus, product="compact", bin_hz=100, publication=None, attempt=None):
     """Prepare sandbox-only pilot jobs using the existing noise download wrapper."""
     module = analysis_script.with_name("iq_acquisition_metadata.py")
     spectra_module = analysis_script.with_name("iq_compact_spectra.py")
@@ -81,11 +81,20 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
         script.chmod(0o755)
         config = directory / "iq_v3_job.json"
         config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events,
-                                          product=product, bin_hz=bin_hz)))
+                                          product=product, bin_hz=bin_hz, publication=publication)))
         transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, spectra_module, config)]
+        if publication:
+            worker_module = Path(__file__).resolve().with_name("run3_storage.py")
+            transfer.append(os.path.relpath(worker_module, directory))
         for value in [input_path, *transfer]:
             if any(not (c.isalnum() or c in "/._-") for c in value):
                 raise ValueError("Unsupported HTCondor path: " + value)
+        returned = f"run{run:05d}_job_status.json"
+        if publication:
+            returned += ",publication.json"
+        else:
+            returned += f",run{run:05d}_iq_v3.h5"
+        tag = f'+FlashRun3Attempt = "{attempt}"\n' if attempt else ""
         submit.write_text(f"""executable = script.sh
 arguments = {input_path} {run} pilot {analysis_script.name} {config.name} {commit} {request_cpus}
 output = stdout-$(ClusterId).$(ProcID).txt
@@ -96,13 +105,13 @@ request_memory = 4GB
 request_disk = 100GB
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
-transfer_output_files = run{run:05d}_iq_v3.h5,run{run:05d}_job_status.json
+transfer_output_files = {returned}
 transfer_input_files = {','.join(transfer)}
 want_io_proxy = true
 use_oauth_services = t1
 t1_oauth_permissions = profile,email,openid,offline_access
 on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
-queue
+{tag}queue
 """)
         result.append((script, submit))
     return result
