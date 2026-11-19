@@ -46,7 +46,7 @@ class PilotTests(unittest.TestCase):
                                thresholds=[4], product="psd", workers=1)
         channels = {f"SPE{i}": bank(np.zeros(8, np.uint16)) for i in range(6)}
         events = [event(serial, channels | {"SPGP": bank(np.array(words, np.uint32), 6)})
-                  for serial, words in ((0, []), (1, [1, 2, 7, 2]), (3, [8, 2]))]
+                  for serial, words in ((0, []), (1, [1, 2, 7, 2]), (3, [7]))]
         with h5py.File("test", "w", driver="core", backing_store=False) as f:
             process(events, odb, f, args)
             self.assertEqual(f["timing"].attrs["pps_source"], "SPGP")
