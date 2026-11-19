@@ -10,14 +10,16 @@ import subprocess
 import time
 import uuid
 
-from autoreco import save_state, state_path, submit_job
-from noise_jobs import build_iq_v3_jobs
+from autoreco import save_state, state_path, submit_job, transfer_job_data
+from noise_jobs import build_iq_v3_jobs, check_run3_inputs
 from run3_storage import ENDPOINT, PILOT, PRODUCTION, RAW, size, verify
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
 ANALYSIS = Path(__file__).resolve().parents[1] / "examples/analyze_midas_iq_v3.py"
 ARTIFACT = re.compile(r"(script\.sh|submit\.sub|iq_v3_job\.json|publication\.json|"
                       r"submit_error\.json|run\d+_job_status\.json|"
+                      r"analyze_midas_iq_v3\.py|iq_acquisition_metadata\.py|"
+                      r"iq_compact_spectra\.py|run3_storage\.py|"
                       r"(stdout|stderr)-\d+\.\d+\.txt|output-\d+\.\d+\.log)")
 
 
@@ -76,6 +78,14 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
         if state.get("logs_cleaned") or (state.get("payload_cleaned") and age < 30*86400):
             return False
     source, jobs = lookup(attempt)
+    if source == "active" and len(jobs) == 1:
+        job = jobs[0]
+        if (job["JobStatus"] == 4 and job.get("ExitCode") == 0
+                and not job.get("ExitBySignal") and not dry_run
+                and state["phase"] != "verified" and not state.get("output_retrieved")):
+            transfer_job_data(str(job["ClusterId"]), directory)
+            state.update(output_retrieved=True, cluster=job["ClusterId"])
+            save_state(run_dir, state)
     if source == "active" or len(jobs) != 1:
         return state["phase"] not in ("verified", "failed") or source == "active"
     job = jobs[0]
@@ -120,8 +130,10 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
 
 
 def prepare(root, run, pairs, url, probe, attempt):
-    return build_iq_v3_jobs([run], root, RAW, ANALYSIS, pairs, None, 1,
-                            publication={"url": url, "probe": probe}, attempt=attempt)[0][1]
+    submit = build_iq_v3_jobs([run], root, RAW, ANALYSIS, pairs, None, 1,
+                              publication={"url": url, "probe": probe}, attempt=attempt)[0][1]
+    check_run3_inputs(submit)
+    return submit
 
 
 def cycle(root, settings, args):
@@ -176,7 +188,7 @@ def cycle(root, settings, args):
         submit = prepare(directory.parent, run, settings["split_pairs"], url, args.pilot, attempt)
         state = dict(attempt=attempt, attempt_number=number, phase="submitting", previous=history)
         save_state(run_dir, state)
-        state.update(cluster=submit_job(submit, spool=False), phase="submitted")
+        state.update(cluster=submit_job(submit), phase="submitted")
         save_state(run_dir, state)
 
 

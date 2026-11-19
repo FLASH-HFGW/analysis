@@ -1,6 +1,7 @@
 """Generazione dei payload noise per il ciclo di vita esistente di autoreco."""
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -82,10 +83,17 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
         config = directory / "iq_v3_job.json"
         config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events,
                                           product=product, bin_hz=bin_hz, publication=publication)))
-        transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, spectra_module, config)]
+        sources = (analysis_script, module, spectra_module)
         if publication:
-            worker_module = Path(__file__).resolve().with_name("run3_storage.py")
-            transfer.append(os.path.relpath(worker_module, directory))
+            sources += (Path(__file__).resolve().with_name("run3_storage.py"),)
+            for source in sources:
+                target = directory / source.name
+                if target.is_symlink():
+                    raise ValueError(f"symlink staging target: {target}")
+                shutil.copyfile(source, target)
+            transfer = [source.name for source in sources] + [config.name]
+        else:
+            transfer = [os.path.relpath(p, directory) for p in (*sources, config)]
         for value in [input_path, *transfer]:
             if any(not (c.isalnum() or c in "/._-") for c in value):
                 raise ValueError("Unsupported HTCondor path: " + value)
@@ -103,6 +111,7 @@ log = output-$(ClusterId).$(ProcID).log
 request_cpus = {request_cpus}
 request_memory = 4GB
 request_disk = 100GB
+transfer_executable = YES
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_output_files = {returned}
@@ -115,3 +124,19 @@ on_exit_hold = (ExitBySignal == True) || (ExitCode != 0)
 """)
         result.append((script, submit))
     return result
+
+
+def check_run3_inputs(submit):
+    """Check the exact paths Condor will spool from the local submit directory."""
+    attributes = dict(line.split(" = ", 1) for line in submit.read_text().splitlines()
+                      if " = " in line)
+    paths = [attributes["executable"], *attributes["transfer_input_files"].split(",")]
+    if len(paths) != len(set(paths)):
+        raise ValueError("duplicate Run3 transfer input")
+    for name in paths:
+        path = submit.parent / name
+        if Path(name).name != name or path.is_symlink() or not path.is_file():
+            raise ValueError(f"invalid staged Run3 input: {path}")
+        with path.open("rb") as stream:
+            if not stream.read(1):
+                raise ValueError(f"empty staged Run3 input: {path}")

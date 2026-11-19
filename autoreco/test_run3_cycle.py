@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import run3_cycle as run3
 import run3_storage as storage
+from noise_jobs import check_run3_inputs
 
 
 class Run3CleanupTests(unittest.TestCase):
@@ -40,6 +41,27 @@ class Run3CleanupTests(unittest.TestCase):
             self.assertTrue(self.reconcile("active", [dict(JobStatus=code)]))
         self.reconcile("history", [])
         self.assertTrue(self.payload.exists())
+
+    def test_completed_spooled_job_retrieves_operational_receipts_once(self):
+        jobs = [dict(JobStatus=4, ExitCode=0, ClusterId=123)]
+        self.state["phase"] = "submitted"
+        with patch.object(run3, "transfer_job_data") as transfer:
+            self.assertTrue(self.reconcile("active", jobs, dry_run=True))
+            transfer.assert_not_called()
+            self.assertTrue(self.reconcile("active", jobs))
+            self.assertTrue(self.reconcile("active", jobs))
+            transfer.assert_called_once_with("123", self.directory)
+            self.assertEqual(self.state["phase"], "submitted")
+
+    def test_staging_uses_only_local_inputs_and_small_outputs(self):
+        submit = run3.prepare(self.base / "staging", 1148, {"TM010": [0, 1]},
+                              self.url, True, "a"*32)
+        check_run3_inputs(submit)
+        self.assertIn("transfer_output_files = run01148_job_status.json,publication.json",
+                      submit.read_text())
+        (submit.parent / "iq_compact_spectra.py").unlink()
+        with self.assertRaisesRegex(ValueError, "iq_compact_spectra.py"):
+            check_run3_inputs(submit)
 
     def test_failed_remote_verification_preserves_payload(self):
         with self.assertRaises(ValueError):

@@ -182,7 +182,7 @@ Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona 
 
 Il ciclo riusa builder, invio e stato atomico dell’autoreco. Il limite iniziale è quattro job Run3. Ogni job richiede 1 CPU, 4 GB RAM e 100 GB scratch, con Python 3.9, MIDAS e Python scientifico da CVMFS. Il worker usa `t1` per il download DAVS con checksum, elabora e valida lo schema compatto nello scratch, elimina il raw locale e trasferisce il risultato tramite GFAL. La pubblicazione carica un temporaneo univoco, ne confronta dimensione e Adler32, promuove con rename e ricontrolla il finale. Il pilota verifica prima il comportamento di rename in collisione usando due temporanei nella sola area di test. Se il server sovrascrive oppure il controllo fallisce, il job si ferma. La verifica è condizione per la futura produzione. Una collisione con un finale esistente non autorizza la sovrascrittura.
 
-Condor restituisce ricevuta e stato con il trasferimento standard della sandbox. Il submit host attende conclusione in history, verifica le ricevute, ricontrolla via GFAL il finale e registra lo stato `verified`. Il tag univoco per tentativo riconcilia anche il caso in cui il submit riesca prima che il ClusterId sia registrato. Coda, history mancante e ricevuta mancante mantengono il tentativo in attesa. Un fallimento terminale senza finale è ritentabile fino al limite configurato. I job held restano protetti e richiedono intervento. Un finale senza ricevuta verificabile o un submit rimasto ambiguo richiedono riconciliazione manuale.
+Il submit host sottomette con `condor_submit -spool` e recupera gli artefatti operativi del job completato con `condor_transfer_data`. Attende poi la conferma in history, verifica le ricevute, ricontrolla via GFAL il finale e registra lo stato `verified`. Il tag univoco per tentativo riconcilia anche il caso in cui il submit riesca prima che il ClusterId sia registrato. Coda, history mancante e ricevuta mancante mantengono il tentativo in attesa. Un fallimento terminale senza finale è ritentabile fino al limite configurato. I job held restano protetti e richiedono intervento. Un finale senza ricevuta verificabile o un submit rimasto ambiguo richiedono riconciliazione manuale.
 
 La pulizia integrata usa liste di nomi noti nel runtime e rifiuta symlink nei percorsi. Un job verificato perde payload e ricevute temporanee dopo il salvataggio dello stato, mantenendo i log per 30 giorni. La diagnostica dei falliti resta almeno sette giorni e viene pulita solo dopo controllo di coda/history e assenza di retry attivi. I log cron sono giornalieri, con retention di 30 giorni. `--gc-dry-run` mostra i file candidati senza rimuoverli o sottomettere job. Nessun finale remoto è candidato alla pulizia.
 
@@ -211,3 +211,24 @@ Verificati localmente il percorso ext4, il ClassAd senza OAuth, la validazione d
 ```cron
 # */5 * * * * /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --cron
 ```
+
+### Staging locale del payload e recupero di 3455.0
+
+Il Run2 878, concluso con exit code zero, dichiarava `transfer_executable = Yes` e usava sorgenti in staging. Il ClassAd di 3455.0 riportava sei fallimenti di trasferimento e identificava soltanto il primo, `analyze_midas_iq_v3.py`, attraverso un percorso relativo esterno alla directory del job. Il job era held prima dell’avvio sul worker. La sandbox dichiarata comprendeva cinque input, `analyze_midas_iq_v3.py`, `iq_acquisition_metadata.py`, `iq_compact_spectra.py`, `run3_storage.py` e `iq_v3_job.json`, più l’eseguibile `script.sh`. Il conteggio dei fallimenti non permette di stabilire che ciascun file sia fallito individualmente.
+
+Run3 copia i sorgenti nello staging locale del singolo tentativo e verifica la leggibilità dei sei file prima del submit. I nomi nel submit sono relativi allo staging e privi di componenti parent. Lo spool distribuisce il payload e recupera solo `publication.json` e `run01148_job_status.json`, oltre ai consueti log Condor. MIDAS e HDF5 scientifico transitano direttamente fra worker e CNAF via GFAL, con lo stesso token `t1` già configurato.
+
+Dalla shell del submit host, dopo la rimozione manuale approvata del job held:
+
+```bash
+condor_rm 3455.0
+condor_history 3455.0 -af JobStatus
+```
+
+Quando history mostra `3` e il job è assente da `condor_q`, avviare dalla shell già configurata per GFAL:
+
+```bash
+/home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --pilot
+```
+
+Il wrapper registra il tentativo rimosso come fallito e, se il finale pilota è assente e il raw è disponibile, sottomette il nuovo tentativo con `-spool`. Ripetere il wrapper per recupero delle ricevute, verifica remota e riconciliazione. Lo stato precedente e la diagnostica rimangono disponibili secondo retention. Per un controllo di sola sintassi usare `condor_submit -dry-run` senza `-spool`: sul submit host, la combinazione con `-spool` ha tentato anche il trasferimento del ClassAd di prova.
