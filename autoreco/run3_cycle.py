@@ -91,18 +91,20 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
         if state.get("logs_cleaned") or (state.get("payload_cleaned") and age < 30*86400):
             return False
     source, jobs = lookup(attempt)
-    if source == "active" and len(jobs) == 1:
-        job = jobs[0]
-        if (job["JobStatus"] == 4 and job.get("ExitCode") == 0
-                and not job.get("ExitBySignal") and not dry_run
-                and state["phase"] != "verified" and not state.get("output_retrieved")):
-            transfer_job_data(str(job["ClusterId"]), directory)
-            state.update(output_retrieved=True, cluster=job["ClusterId"])
-            save_state(run_dir, state)
-    if source == "active" or len(jobs) != 1:
+    if len(jobs) != 1:
         return state["phase"] not in ("verified", "failed") or source == "active"
     job = jobs[0]
     succeeded = job["JobStatus"] == 4 and job.get("ExitCode") == 0 and not job.get("ExitBySignal")
+    if source == "active":
+        if not succeeded:
+            return True
+        if state["phase"] != "verified" and not state.get("output_retrieved"):
+            if dry_run:
+                return True
+            transfer_job_data(str(job["ClusterId"]), directory)
+            state.update(output_retrieved=True, cluster=job["ClusterId"])
+            save_state(run_dir, state)
+        # Completed spooled jobs can remain in the queue after retrieval.
     if succeeded:
         if state["phase"] != "verified":
             receipt = directory / "publication.json"

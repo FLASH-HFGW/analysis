@@ -54,6 +54,23 @@ class Run3CleanupTests(unittest.TestCase):
             transfer.assert_called_once_with("123", self.directory)
             self.assertEqual(self.state["phase"], "submitted")
 
+    def test_completed_retained_in_queue_reconciles_and_is_idempotent(self):
+        self.state.update(phase="submitted", cluster=3456, output_retrieved=True)
+        receipt = dict(url=self.url, run=1148, attempt=self.state["attempt"],
+                       validated=True, size=100, remote_size=100,
+                       local_adler32="12345678", remote_adler32="12345678")
+        (self.directory / "publication.json").write_text(json.dumps(receipt))
+        (self.directory / "run01148_job_status.json").write_text(
+            json.dumps(dict(run=1148, status="success", exit_code=0)))
+        jobs = [dict(JobStatus=4, ExitCode=0, ClusterId=3456, LeaveJobInQueue=True)]
+        with patch.object(run3, "transfer_job_data") as transfer:
+            self.assertFalse(self.reconcile("active", jobs))
+            self.assertFalse(self.reconcile("active", jobs))
+            transfer.assert_not_called()
+        self.assertEqual(self.state["phase"], "verified")
+        self.assertEqual(self.state["publication"], receipt)
+        self.assertFalse(self.payload.exists())
+
     def test_staging_uses_only_local_inputs_and_small_outputs(self):
         submit = run3.prepare(self.base / "staging", 1148, {"TM010": [0, 1]},
                               self.url, True, "a"*32)
