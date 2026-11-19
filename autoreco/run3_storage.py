@@ -1,4 +1,8 @@
-"""GFAL publication and verification shared by the Run3 worker and submit host."""
+"""Run3 worker GFAL operations and shared endpoint constants."""
+import json
+import os
+from pathlib import Path
+import tempfile
 import re
 import subprocess
 import uuid
@@ -11,7 +15,12 @@ PILOT = ENDPOINT + "/flash/analysis/autoreco/Run3-pilot"
 
 
 def gfal(tool, *args, missing=False):
-    result = subprocess.run(["gfal-" + tool, *map(str, args)], capture_output=True, text=True)
+    credentials = Path(os.environ["_CONDOR_CREDS"]) / "t1.use"
+    token = json.loads(credentials.read_text())["access_token"]
+    if not isinstance(token, str) or not token:
+        raise ValueError("HTCondor t1 access token is unavailable")
+    result = subprocess.run(["gfal-" + tool, *map(str, args)], capture_output=True, text=True,
+                            env=dict(os.environ, BEARER_TOKEN=token))
     if result.returncode:
         if missing and re.search(r"(?i)\b404\b|no such file or directory", result.stderr):
             return None
@@ -24,12 +33,23 @@ def size(url, missing=False):
     return None if info is None else int(re.search(r"(?m)^\s*Size:\s*(\d+)", info)[1])
 
 
+def download_raw(url, path):
+    expected = size(url)
+    if expected <= 0:
+        raise ValueError(f"raw is empty: {url}")
+    gfal("copy", "-K", "ADLER32", url, path.resolve().as_uri())
+    if path.stat().st_size != expected or size(url) != expected:
+        raise ValueError(f"raw size changed during download: {url}")
+
+
 def verify(url, identity):
-    if size(url) != identity["size"]:
+    remote_size = size(url)
+    if remote_size != identity["size"]:
         raise ValueError(f"remote size mismatch: {url}")
     checksum = gfal("sum", url, "ADLER32").split()[-1].lower().zfill(8)
-    if checksum != identity["adler32"]:
+    if checksum != identity["local_adler32"]:
         raise ValueError(f"remote checksum mismatch: {url}")
+    return dict(identity, remote_size=remote_size, remote_adler32=checksum)
 
 
 def validate_product(path, run):
@@ -59,18 +79,59 @@ def validate_product(path, run):
 
 
 
-def publish(path, destination, *, probe=False):
-    """Verify the remote payload before and after atomic promotion."""
+def local_identity(path):
     checksum = 1
     with path.open("rb") as source:
         for block in iter(lambda: source.read(1024*1024), b""):
             checksum = zlib.adler32(block, checksum)
-    identity = dict(size=path.stat().st_size, adler32=f"{checksum:08x}")
-    directory = destination.rsplit("/", 1)[0]
-    gfal("mkdir", "-p", directory)
-    if size(destination, missing=True) is not None:
-        verify(destination, identity)
-        return identity
+    return dict(size=path.stat().st_size, local_adler32=f"{checksum:08x}")
+
+
+def verify_existing(path, destination, identity, run):
+    try:
+        return verify(destination, identity)
+    except ValueError:
+        if run is None:
+            raise
+    # A repeat reconstruction has different runtime metadata. Reuse only if
+    # the existing product has the same scientific inputs and dataset bytes.
+    import h5py
+    import numpy as np
+
+    with tempfile.TemporaryDirectory(dir=path.parent) as scratch:
+        existing = Path(scratch) / "existing.h5"
+        gfal("copy", "-K", "ADLER32", destination, existing.as_uri())
+        validate_product(existing, run)
+        with h5py.File(path, "r") as candidate, h5py.File(existing, "r") as previous:
+            for name in ("pairs_json", "bor_settings_json", "bor_lo_json", "source_size_bytes",
+                         "iq_convention", "fs_hz", "midas_layout"):
+                if candidate["metadata"].attrs[name] != previous["metadata"].attrs[name]:
+                    raise ValueError(f"existing Run3 product differs in {name}")
+
+            def compare(name, item):
+                other = previous[name]
+                if name not in ("metadata", "quality"):
+                    for key, value in item.attrs.items():
+                        if key != "processing_s":
+                            np.testing.assert_equal(value, other.attrs[key])
+                if isinstance(item, h5py.Dataset):
+                    if item.shape != other.shape or item.dtype != other.dtype:
+                        raise ValueError(f"existing Run3 product differs at {name}")
+                    for start in range(0, len(item), 16):
+                        selection = slice(start, start+16)
+                        if item[selection].tobytes() != other[selection].tobytes():
+                            raise ValueError(f"existing Run3 product differs at {name}")
+
+            candidate.visititems(compare)
+        return verify(destination, local_identity(existing))
+
+
+def publish(path, destination, *, probe=False, run=None):
+    """Verify the remote payload before and after atomic promotion."""
+    identity = local_identity(path)
+    gfal("mkdir", "-p", destination.rsplit("/", 1)[0])
+    if not probe and size(destination, missing=True) is not None:
+        return verify_existing(path, destination, identity, run)
     staged = destination + ".partial-" + uuid.uuid4().hex
     second = staged + "-probe"
     print(f"GFAL staging: {staged}", flush=True)
@@ -78,7 +139,6 @@ def publish(path, destination, *, probe=False):
         gfal("copy", "-K", "ADLER32", path.resolve().as_uri(), staged)
         verify(staged, identity)
         if probe:
-            # Test collision semantics only against private pilot temporaries.
             gfal("copy", "-K", "ADLER32", path.resolve().as_uri(), second)
             try:
                 gfal("rename", staged, second)
@@ -88,10 +148,13 @@ def publish(path, destination, *, probe=False):
             else:
                 raise RuntimeError("endpoint rename overwrites destinations")
         if size(destination, missing=True) is None:
-            gfal("rename", staged, destination)
-        verify(destination, identity)
+            try:
+                gfal("rename", staged, destination)
+            except RuntimeError:
+                if size(destination, missing=True) is None:
+                    raise
+        return verify_existing(path, destination, identity, run)
     finally:
         for temporary in (staged, second) if probe else (staged,):
             if size(temporary, missing=True) is not None:
                 gfal("rm", temporary)
-    return identity

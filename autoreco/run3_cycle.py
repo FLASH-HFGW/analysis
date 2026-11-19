@@ -12,7 +12,7 @@ import uuid
 
 from autoreco import save_state, state_path, submit_job, transfer_job_data
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
-from run3_storage import ENDPOINT, PILOT, PRODUCTION, RAW, size, verify
+from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
 ANALYSIS = Path(__file__).resolve().parents[1] / "examples/analyze_midas_iq_v3.py"
@@ -69,6 +69,19 @@ def workdir(run_dir, attempt, run):
     return path
 
 
+def validate_receipt(receipt, completion, run, url, attempt):
+    checksum = receipt.get("local_adler32", "")
+    if (receipt.get("url") != url or receipt.get("run") != run
+            or receipt.get("attempt") != attempt or receipt.get("validated") is not True
+            or type(receipt.get("size")) is not int or receipt["size"] <= 0
+            or receipt.get("remote_size") != receipt["size"]
+            or not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-f]{8}", checksum)
+            or receipt.get("remote_adler32") != checksum
+            or completion.get("run") != run or completion.get("exit_code") != 0
+            or completion.get("status") != "success"):
+        raise ValueError("invalid Run3 publication receipt")
+
+
 def reconcile(run_dir, state, run, url, retention, dry_run):
     """Return True if the run still occupies a slot."""
     attempt = state["attempt"]
@@ -100,11 +113,9 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
                 return True
             identity = json.loads(receipt.read_text())
             completion = json.loads(status.read_text())
-            if identity["url"] != url or completion["run"] != run or completion["exit_code"] != 0:
-                raise ValueError("unexpected publication receipt")
+            validate_receipt(identity, completion, run, url, attempt)
         else:
             identity = state["publication"]
-        verify(url, identity)
         if not dry_run and state["phase"] != "verified":
             state.update(phase="verified", publication=identity, cluster=job["ClusterId"],
                          verified_at=time.time())
@@ -118,9 +129,6 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
         return False
     if state["phase"] == "verified" or job["JobStatus"] not in (3, 4):
         return True
-    if size(url, missing=True) is not None:
-        print(f"Run {run}: final exists after failed job; manual reconciliation required")
-        return True
     if state["phase"] != "failed" and not dry_run:
         state.update(phase="failed", failed_at=time.time(), cluster=job["ClusterId"])
         save_state(run_dir, state)
@@ -131,7 +139,7 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
 
 def prepare(root, run, pairs, url, probe, attempt):
     submit = build_iq_v3_jobs([run], root, RAW, ANALYSIS, pairs, None, 1,
-                              publication={"url": url, "probe": probe}, attempt=attempt)[0][1]
+                              publication={"url": url, "probe": probe, "attempt": attempt}, attempt=attempt)[0][1]
     check_run3_inputs(submit)
     return submit
 
@@ -176,12 +184,6 @@ def cycle(root, settings, args):
     if args.gc_dry_run:
         return
     for run, url, number, history in waiting[:max(0, settings["max_active"] - active)]:
-        if size(url, missing=True) is not None:
-            print(f"Run {run}: existing final requires manual reconciliation")
-            continue
-        raw = f"{ENDPOINT}/{RAW}/run{run:05d}.mid.gz"
-        if not size(raw, missing=True):
-            continue
         run_dir = root / f"{run:05d}"
         attempt = uuid.uuid4().hex
         directory = workdir(run_dir, attempt, run)
@@ -253,10 +255,6 @@ def main():
             print(prepare(manual, 1148, settings["split_pairs"],
                           f"{PILOT}/run01148_iq_v3.h5", True, uuid.uuid4().hex))
         else:
-            account = settings.get("submit_oidc_account")
-            if account and not os.environ.get("BEARER_TOKEN"):
-                os.environ["BEARER_TOKEN"] = subprocess.check_output(
-                    ["oidc-token", account], text=True).strip()
             cycle(root, settings, args)
 
 

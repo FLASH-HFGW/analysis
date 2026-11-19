@@ -1,4 +1,7 @@
+import json
+import os
 from pathlib import Path
+from types import SimpleNamespace
 import tempfile
 import time
 import unittest
@@ -23,17 +26,15 @@ class Run3CleanupTests(unittest.TestCase):
             self.addCleanup(mock.stop)
         self.run = self.base / "01148"
         self.state = dict(attempt="a"*32, phase="verified", verified_at=time.time(),
-                          publication={"size": 100, "adler32": "12345678"})
+                          publication={"size": 100, "local_adler32": "12345678"})
         self.directory = self.run / self.state["attempt"] / "01148"
         self.directory.mkdir(parents=True)
         self.payload = self.directory / "script.sh"
         self.payload.touch()
         self.url = run3.PILOT + "/run01148_iq_v3.h5"
 
-    def reconcile(self, source, jobs, *, dry_run=False, verify_error=None):
-        with patch.object(run3, "lookup", return_value=(source, jobs)), \
-             patch.object(run3, "verify", side_effect=verify_error), \
-             patch.object(run3, "size", return_value=None):
+    def reconcile(self, source, jobs, *, dry_run=False):
+        with patch.object(run3, "lookup", return_value=(source, jobs)):
             return run3.reconcile(self.run, self.state, 1148, self.url, 7, dry_run)
 
     def test_active_held_and_missing_history_preserve_artifacts(self):
@@ -63,11 +64,37 @@ class Run3CleanupTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "iq_compact_spectra.py"):
             check_run3_inputs(submit)
 
-    def test_failed_remote_verification_preserves_payload(self):
-        with self.assertRaises(ValueError):
-            self.reconcile("history", [dict(JobStatus=4, ExitCode=0)],
-                           verify_error=ValueError("bad checksum"))
+    def test_receipt_required_and_verified_without_remote_access(self):
+        self.state["phase"] = "submitted"
+        jobs = [dict(JobStatus=4, ExitCode=0, ClusterId=123)]
+        receipt = dict(url=self.url, run=1148, attempt=self.state["attempt"],
+                       validated=True, size=100, remote_size=100,
+                       local_adler32="12345678", remote_adler32="87654321")
+        path = self.directory / "publication.json"
+        self.assertTrue(self.reconcile("history", jobs))
+        (self.directory / "run01148_job_status.json").write_text(
+            json.dumps(dict(run=1148, status="success", exit_code=0)))
+        path.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, "publication receipt"):
+            self.reconcile("history", jobs)
         self.assertTrue(self.payload.exists())
+        receipt["remote_adler32"] = receipt["local_adler32"]
+        path.write_text(json.dumps(receipt))
+        with patch.dict(os.environ, {}, clear=True), patch.object(storage, "gfal") as remote:
+            self.assertFalse(self.reconcile("history", jobs))
+            remote.assert_not_called()
+        self.assertEqual(self.state["phase"], "verified")
+
+    def test_scheduling_without_personal_credentials(self):
+        root = self.base / "pilot"
+        root.mkdir()
+        with patch.dict(os.environ, {}, clear=True), patch.object(storage, "gfal") as remote, \
+             patch.object(run3, "submit_job", return_value="123") as submit:
+            run3.cycle(root, dict(max_active=1, split_pairs={"TM010": [0, 1]},
+                                  failure_days=7, max_attempts=2),
+                       SimpleNamespace(pilot=True, gc_dry_run=False))
+            remote.assert_not_called()
+            submit.assert_called_once()
 
     def test_verified_cleanup_dry_run_symlink_and_logging(self):
         target = self.base / "outside"
@@ -101,6 +128,56 @@ class Run3CleanupTests(unittest.TestCase):
 
 
 class PublicationTests(unittest.TestCase):
+    def test_worker_reads_renewed_credential_for_each_gfal_process(self):
+        with tempfile.TemporaryDirectory() as folder, \
+             patch.dict(os.environ, {"_CONDOR_CREDS": folder, "BEARER_TOKEN": "personal"}, clear=True), \
+             patch.object(storage.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout="ok")) as call:
+            credential = Path(folder) / "t1.use"
+            for token in ("synthetic-one", "synthetic-two"):
+                credential.write_text(json.dumps({"access_token": token}))
+                storage.gfal("stat", "davs://example.invalid/test")
+                self.assertEqual(call.call_args.kwargs["env"]["BEARER_TOKEN"], token)
+            self.assertEqual(os.environ["BEARER_TOKEN"], "personal")
+
+
+    def test_existing_product_with_different_runtime_metadata(self):
+        import h5py
+        from urllib.parse import unquote, urlparse
+
+        with tempfile.TemporaryDirectory() as tmp:
+            candidate, existing = (Path(tmp) / name for name in ("candidate.h5", "published.h5"))
+            for timestamp, path in enumerate((candidate, existing)):
+                with h5py.File(path, "w") as f:
+                    meta = f.create_group("metadata")
+                    for key in ("pairs_json", "bor_settings_json", "bor_lo_json", "source_size_bytes",
+                                "iq_convention", "fs_hz", "midas_layout"):
+                        meta.attrs[key] = "same"
+                    meta.attrs["runtime"] = timestamp
+                    f.create_dataset("spectrum", data=[1, 2, 3])
+            url = storage.PILOT + "/run01148_iq_v3.h5"
+
+            def gfal(tool, *args):
+                self.assertEqual(tool, "copy")
+                Path(unquote(urlparse(args[-1]).path)).write_bytes(existing.read_bytes())
+
+            remote = storage.local_identity(existing)
+            def verify(destination, identity):
+                self.assertEqual(destination, url)
+                if identity != remote:
+                    raise ValueError("different file bytes")
+                return dict(identity, remote_size=identity["size"],
+                            remote_adler32=identity["local_adler32"])
+
+            with patch.object(storage, "gfal", side_effect=gfal), \
+                 patch.object(storage, "verify", side_effect=verify), \
+                 patch.object(storage, "validate_product"):
+                result = storage.verify_existing(candidate, url, storage.local_identity(candidate), 1148)
+                self.assertEqual(result["remote_adler32"], remote["local_adler32"])
+                with h5py.File(candidate, "r+") as f:
+                    f["spectrum"][0] = 5
+                with self.assertRaisesRegex(ValueError, "differs at spectrum"):
+                    storage.verify_existing(candidate, url, storage.local_identity(candidate), 1148)
+
     def test_collision_probe(self):
         from urllib.parse import unquote, urlparse
 

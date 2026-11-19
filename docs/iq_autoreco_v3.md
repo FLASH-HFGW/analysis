@@ -170,7 +170,7 @@ Il file finale occupa 188.420.552 B, con un incremento di 536.400 B. La misura e
 
 ## Integrazione operativa Run3
 
-Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona Run3 con `--run3`. La configurazione versionata è [autoreco_run3.json](../config/autoreco_run3.json). La produzione parte disabilitata e richiede anche uno stato pilota verificato. La release dei raw è esplicita tramite `closed_runs`, con soglia 1148. Va popolata da una fonte di chiusura approvata. Si verifica la disponibilità DAVS con GFAL e il payload richiede EOR. Il percorso dei raw riusa Run2. Il foglio Run2 preesistente è `log`. Il ciclo Run3 usa stato locale e non consulta o aggiorna il foglio durante il pilot. La convenzione di release Run3 e le colonne del logbook richiedono conferma prima dell’uso operativo.
+Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona Run3 con `--run3`. La configurazione versionata è [autoreco_run3.json](../config/autoreco_run3.json). La produzione parte disabilitata e richiede anche uno stato pilota verificato. La release dei raw è esplicita tramite `closed_runs`, con soglia 1148. Va popolata da una fonte di chiusura approvata. Il worker verifica la disponibilità DAVS con GFAL e il payload richiede EOR. Il percorso dei raw riusa Run2. Il foglio Run2 preesistente è `log`. Il ciclo Run3 usa stato locale e non consulta o aggiorna il foglio durante il pilot. La convenzione di release Run3 e le colonne del logbook richiedono conferma prima dell’uso operativo.
 
 | Area | Percorso |
 |---|---|
@@ -182,7 +182,7 @@ Il profilo scientifico è quello di `573aee5`. Il wrapper configurato seleziona 
 
 Il ciclo riusa builder, invio e stato atomico dell’autoreco. Il limite iniziale è quattro job Run3. Ogni job richiede 1 CPU, 4 GB RAM e 100 GB scratch, con Python 3.9, MIDAS e Python scientifico da CVMFS. Il worker usa `t1` per il download DAVS con checksum, elabora e valida lo schema compatto nello scratch, elimina il raw locale e trasferisce il risultato tramite GFAL. La pubblicazione carica un temporaneo univoco, ne confronta dimensione e Adler32, promuove con rename e ricontrolla il finale. Il pilota verifica prima il comportamento di rename in collisione usando due temporanei nella sola area di test. Se il server sovrascrive oppure il controllo fallisce, il job si ferma. La verifica è condizione per la futura produzione. Una collisione con un finale esistente non autorizza la sovrascrittura.
 
-Il submit host sottomette con `condor_submit -spool` e recupera gli artefatti operativi del job completato con `condor_transfer_data`. Attende poi la conferma in history, verifica le ricevute, ricontrolla via GFAL il finale e registra lo stato `verified`. Il tag univoco per tentativo riconcilia anche il caso in cui il submit riesca prima che il ClusterId sia registrato. Coda, history mancante e ricevuta mancante mantengono il tentativo in attesa. Un fallimento terminale senza finale è ritentabile fino al limite configurato. I job held restano protetti e richiedono intervento. Un finale senza ricevuta verificabile o un submit rimasto ambiguo richiedono riconciliazione manuale.
+Il submit host sottomette con `condor_submit -spool` e recupera gli artefatti operativi del job completato con `condor_transfer_data`. Attende poi la conferma in history, valida la ricevuta del worker (run, tentativo, destinazione, validazione HDF5, dimensioni e Adler32 locale/remoto) e registra lo stato `verified` senza accesso a DAVS. Il tag univoco per tentativo riconcilia anche il caso in cui il submit riesca prima che il ClusterId sia registrato. Coda, history mancante e ricevuta mancante mantengono il tentativo in attesa. Un fallimento terminale senza finale è ritentabile fino al limite configurato. I job held restano protetti e richiedono intervento. Un finale senza ricevuta verificabile o un submit rimasto ambiguo richiedono riconciliazione manuale.
 
 La pulizia integrata usa liste di nomi noti nel runtime e rifiuta symlink nei percorsi. Un job verificato perde payload e ricevute temporanee dopo il salvataggio dello stato, mantenendo i log per 30 giorni. La diagnostica dei falliti resta almeno sette giorni e viene pulita solo dopo controllo di coda/history e assenza di retry attivi. I log cron sono giornalieri, con retention di 30 giorni. `--gc-dry-run` mostra i file candidati senza rimuoverli o sottomettere job. Nessun finale remoto è candidato alla pulizia.
 
@@ -196,13 +196,13 @@ SUBMIT=$("$WRAPPER" --run3 --pilot --prepare-only)
 (cd "$(dirname "$SUBMIT")" && condor_submit -dry-run pilot.classad submit.sub)
 ```
 
-Aprire l’URL stampato, autenticarsi e autorizzare `t1`. Ripetere il dry-run. Il submit host necessita anche di un bearer DAVS valido per discovery e verifiche, separato dalla consegna `t1` ai worker. Usare il `BEARER_TOKEN` dell’ambiente operativo o impostare `submit_oidc_account` con un account già configurato e approvato. Poi avviare il solo pilot con `"$WRAPPER" --run3 --pilot` e ripetere lo stesso comando per riconciliare. Il burn-in non richiede il mount `flash-data`.
+Aprire l’URL stampato, autenticarsi e autorizzare `t1`. Ripetere il dry-run. Il submit host non richiede il bearer DAVS. Sul worker ciascuna operazione GFAL legge la credenziale corrente da `$_CONDOR_CREDS/t1.use` secondo la guida ASTROCM. Poi avviare il solo pilot con `"$WRAPPER" --run3 --pilot` e ripetere lo stesso comando per riconciliare. Il burn-in non richiede il mount `flash-data`.
 
 Verificati localmente il percorso ext4, il ClassAd senza OAuth, la validazione dell’HDF5 1148 già disponibile, sei test scientifici e sei test operativi sintetici. Il dry-run reale richiede OAuth. GFAL sul raw risponde HTTP 401 prima dell’autenticazione. Disponibilità DAVS, semantica di rename, trasferimento e pulizia effettiva restano da verificare con il pilot autenticato.
 
 ### Prima dell’attivazione
 
-- Autorizzare `t1` e confermare le credenziali DAVS del submit host.
+- Verificare la consegna e il rinnovo di `t1` sul worker.
 - Concludere il pilot 1148 fino a `verified`, controllare la pulizia locale e l’assenza dei temporanei remoti.
 - Confermare con Giorgio mapping e segno I/Q, associazione SPGP–TGPS e durata SPGP al confine della bank. La qualità UTC resta non ancorata.
 - Confermare la fonte dei run chiusi Run3, le colonne del logbook e l’accesso alla destinazione finale. Popolare `closed_runs` e abilitare Run3 dopo approvazione.
@@ -231,4 +231,4 @@ Quando history mostra `3` e il job è assente da `condor_q`, avviare dalla shell
 /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --pilot
 ```
 
-Il wrapper registra il tentativo rimosso come fallito e, se il finale pilota è assente e il raw è disponibile, sottomette il nuovo tentativo con `-spool`. Ripetere il wrapper per recupero delle ricevute, verifica remota e riconciliazione. Lo stato precedente e la diagnostica rimangono disponibili secondo retention. Per un controllo di sola sintassi usare `condor_submit -dry-run` senza `-spool`: sul submit host, la combinazione con `-spool` ha tentato anche il trasferimento del ClassAd di prova.
+Il wrapper registra il tentativo rimosso come fallito e, sottomette il nuovo tentativo con `-spool`. Il worker verifica raw e finale prima di pubblicare. Un finale esistente è riusabile solo dopo verifica di checksum, oppure dopo confronto scientifico dei dataset con quelli di una nuova ricostruzione. Ripetere il wrapper per recupero delle ricevute e riconciliazione. Lo stato precedente e la diagnostica rimangono disponibili secondo retention. Per un controllo di sola sintassi usare `condor_submit -dry-run` senza `-spool`: sul submit host, la combinazione con `-spool` ha tentato anche il trasferimento del ClassAd di prova.

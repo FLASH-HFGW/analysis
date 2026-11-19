@@ -49,11 +49,17 @@ export BEARER_TOKEN
 BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
 echo "Starting $RUN_NAME on $(hostname) at $(date -u +%FT%TZ)"
 echo "[timing] download start $(date -u +%FT%TZ)"
-download_opts=()
+raw_url="davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mid.gz"
 if [[ "$REFERENCE" == iq_v3_job.json ]] && jq -e '.publication != null' "$REFERENCE" >/dev/null; then
-    download_opts=(-K ADLER32)
+    "$PYTHON" - "$raw_url" "$WORKDIR/${RUN_NAME}.mid.gz" <<'PYTHON'
+import sys
+from pathlib import Path
+from run3_storage import download_raw
+download_raw(sys.argv[1], Path(sys.argv[2]))
+PYTHON
+else
+    gfal-copy "$raw_url" "$WORKDIR/${RUN_NAME}.mid.gz"
 fi
-gfal-copy "${download_opts[@]}" "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mid.gz" "$WORKDIR/${RUN_NAME}.mid.gz"
 echo "[timing] download end / analysis start $(date -u +%FT%TZ)"
 if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
     limit=$(jq -r '.max_events // empty' "$REFERENCE")
@@ -82,8 +88,9 @@ from run3_storage import publish, validate_product
 settings = json.loads(sys.argv[2])
 path = Path(sys.argv[1])
 validate_product(path, int(sys.argv[3]))
-identity = publish(path, settings["url"], probe=settings["probe"])
-Path("publication.json").write_text(json.dumps(dict(url=settings["url"], **identity)))
+identity = publish(path, settings["url"], probe=settings["probe"], run=int(sys.argv[3]))
+Path("publication.json").write_text(json.dumps(dict(url=settings["url"], run=int(sys.argv[3]),
+                                                attempt=settings["attempt"], validated=True, **identity)))
 PYTHON
     fi
     exit 0
