@@ -1,5 +1,6 @@
 """Single-pass MIDAS pilot. See docs/iq_autoreco_v3.md."""
 import argparse
+from bisect import bisect_right
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,7 @@ import numpy as np
 from scipy.fft import fft
 
 from iq_acquisition_metadata import PAIRS, number
+from iq_compact_spectra import CompactSpectra, spectrum_rows
 
 
 SPLIT = tuple(f"SPE{i}" for i in range(7))
@@ -75,8 +77,14 @@ class PulseDetector:
                 yield pulse
 
 
-def measure(z):
-    a = np.abs(z).astype(np.float64)
+def measure(z, histogram=None):
+    amplitude = np.abs(z)
+    if histogram is not None:
+        edges, counts = histogram
+        bins = np.minimum((amplitude * np.float32(len(counts) / edges[-1])).astype(np.int32),
+                          len(counts) - 1)
+        counts += np.bincount(bins, minlength=len(counts))
+    a = amplitude.astype(np.float64)
     i = z.real.astype(np.float64)
     q = -z.imag.astype(np.float64)
     mi, mq = i.mean(), q.mean()
@@ -114,7 +122,7 @@ def process(reader, odb, output, args):
     if scale.ndim != 1 or scale.size < 6 or not np.all(np.isfinite(scale) & (scale > 0)):
         raise ValueError("invalid BOR ADC ranges")
     lo = equipment["LocalOscill"]["Variables"]
-    output.attrs["schema_version"] = "1.1"
+    output.attrs["schema_version"] = "1.2"
     meta = output.create_group("metadata")
     meta.attrs.update(fs_hz=fs, iq_convention="I-iQhardware",
                       bor_settings_json=json.dumps(adc),
@@ -136,10 +144,17 @@ def process(reader, odb, output, args):
     quality = output.create_group("quality")
     gaps = table(quality, "breaks", [("serial", "<i8"), ("reason", "S160")])
     spectra = output.create_group("spectra")
-    spectra.create_dataset("frequency_hz", data=np.fft.fftfreq(n, 1/fs))
+    compact = None
+    if args.product != "compact":
+        spectra.attrs["profile"] = args.product
+        spectra.create_dataset("frequency_hz", data=np.fft.fftfreq(n, 1/fs))
     stats = output.create_group("statistics")
     anomalies = output.create_group("anomalies")
-    output.create_group("histograms")
+    histogram_group = output.create_group("histograms")
+    histograms = {}
+    event_starts, event_serials = [], []
+    residual_chunks = 0
+    aggregation_max_error = 0.
     layout = None
     channels_present = None
     previous = None
@@ -153,6 +168,16 @@ def process(reader, odb, output, args):
 
     profile = dict(midas_read_s=0., adc_decode_s=0., fft_s=0., statistics_s=0.,
                    anomalies_s=0., hdf5_rows_s=0.)
+    def save_residual():
+        nonlocal residual_chunks
+        if fill:
+            started = time.perf_counter()
+            for mode, z in buffers.items():
+                values, peak = measure(z[:fill], histograms[mode])
+                totals[mode].append((fill, first[0], values, peak, *clipped[mode]))
+            profile["statistics_s"] += time.perf_counter() - started
+            residual_chunks += 1
+
     events = iter(reader)
     while True:
         started = time.perf_counter()
@@ -192,6 +217,7 @@ def process(reader, odb, output, args):
         previous = serial
         if reason:
             append(gaps, (serial, reason.encode()))
+            save_residual()
             discarded += fill
             fill = 0
             segment += 1
@@ -215,23 +241,29 @@ def process(reader, odb, output, args):
                               ("legacy historical mapping" if layout == "SPEC" else "explicit pilot configuration"))
             buffers = {m: np.empty(n, np.complex64) for m in pairs}
             clipped = {m: np.zeros(2, dtype=np.int64) for m in pairs}
-            for mode in pairs:
-                d = spectra.create_dataset(mode, shape=(0,n), maxshape=(None,n),
-                                           chunks=(1,min(n,262144)), compression=args.compression,
-                                           dtype="f4" if args.product == "psd" else "c8")
-                d.attrs["unit"] = "V^2/Hz" if args.product == "psd" else "V"
+            if args.product == "compact":
+                compact = CompactSpectra(spectra, n, pairs, args)
+            for mode, (ci, cq) in pairs.items():
+                if compact is None:
+                    spectrum_rows(spectra, mode, n, "f4" if args.product == "psd" else "c8",
+                                  "V^2/Hz" if args.product == "psd" else "V", args.compression)
+                limit = 32768 * np.hypot(scale[ci], scale[cq])
+                histograms[mode] = np.linspace(0, limit, 513), np.zeros(512, dtype=np.int64)
                 table(stats, mode, [(k, "<f8") for k in METRICS] + [
                     ("peak_offset_samples","<i8"), ("clip_I","<i8"), ("clip_Q","<i8"),
                     ("parseval_relative_error","<f8")])
                 group = anomalies.create_group(mode)
                 table(group, "episodes", [(k,"<i8") for k in (
-                    "window","received_index","duration_samples","peak_received_index")] +
+                    "window","received_index","duration_samples","peak_received_index",
+                    "start_serial","start_offset_samples","peak_serial","peak_offset_samples")] +
                     [("threshold_rms","<f8"),("peak_ac_V","<f8")])
                 table(group, "population", [("window","<i8"),("threshold_rms","<f8"),
                       ("observed_samples","<i8"),("above_samples","<i8"),("episodes","<i8")])
                 totals[mode] = []
         size = len(channels[0])
         append(digitizer, (serial, header.timestamp, received, size, segment))
+        event_starts.append(received)
+        event_serials.append(serial)
         if layout == "SPE":
             try:
                 words = bank(banks, "SPGP", {6: 4})
@@ -275,7 +307,7 @@ def process(reader, odb, output, args):
             append(windows, (segment, *first, serial, offset-1, first[0]/fs, np.nan))
             for mode, z in buffers.items():
                 started = time.perf_counter()
-                values, peak = measure(z)
+                values, peak = measure(z, histograms[mode])
                 profile["statistics_s"] += time.perf_counter() - started
                 started = time.perf_counter()
                 x = fft(z, workers=args.workers, overwrite_x=False) / np.float32(n)
@@ -284,10 +316,13 @@ def process(reader, odb, output, args):
                 error = abs(power.sum(dtype=np.float64)-expected)/expected if expected else 0.
                 profile["fft_s"] += time.perf_counter() - started
                 started = time.perf_counter()
-                append(spectra[mode], power * np.float32(n/fs) if args.product == "psd" else x)
+                if compact is not None:
+                    aggregation_max_error = max(aggregation_max_error, compact.write(mode, x, power))
+                else:
+                    append(spectra[mode], power if args.product == "psd" else x)
                 row = (*values, peak, *clipped[mode], error)
                 append(stats[mode], row)
-                totals[mode].append(row)
+                totals[mode].append((n, first[0], values, peak, *clipped[mode]))
                 profile["hdf5_rows_s"] += time.perf_counter() - started
                 started = time.perf_counter()
                 ac = np.abs(z - np.complex64(complex(values[0], -values[1])))
@@ -296,7 +331,13 @@ def process(reader, odb, output, args):
                     rows = []
                     for a,b in spans:
                         local = int(ac[a:b].argmax()) + a
-                        rows.append((window, first[0]+a, b-a, first[0]+local, threshold, ac[local]))
+                        start_index, peak_index = first[0]+a, first[0]+local
+                        start_event = bisect_right(event_starts, start_index) - 1
+                        peak_event = bisect_right(event_starts, peak_index) - 1
+                        rows.append((window, start_index, b-a, peak_index,
+                                     event_serials[start_event], start_index-event_starts[start_event],
+                                     event_serials[peak_event], peak_index-event_starts[peak_event],
+                                     threshold, ac[local]))
                     if rows:
                         episodes = anomalies[mode]["episodes"]
                         end = len(episodes)
@@ -312,24 +353,35 @@ def process(reader, odb, output, args):
         raise ValueError("no valid digitizer events")
     if not eor and not args.max_events:
         raise ValueError("no MIDAS EOR; input may be incomplete")
+    save_residual()
+    if compact is not None:
+        compact.finish(len(windows))
     for mode, rows in totals.items():
-        if not rows:
-            continue
-        r = np.asarray(rows)
-        mi, mq = r[:, :2].mean(axis=0)
-        vi = np.mean(r[:,8] + (r[:,0]-mi)**2)
-        vq = np.mean(r[:,9] + (r[:,1]-mq)**2)
-        cov = np.mean(r[:,10] + (r[:,0]-mi)*(r[:,1]-mq))
-        amp = r[:,4].mean()
+        counts, starts, metrics, peaks, clip_i, clip_q = zip(*rows)
+        r = np.asarray(metrics)
+        weights = np.asarray(counts, dtype=np.float64) / sum(counts)
+        mi, mq = weights @ r[:, :2]
+        vi = weights @ (r[:,8] + (r[:,0]-mi)**2)
+        vq = weights @ (r[:,9] + (r[:,1]-mq)**2)
+        cov = weights @ (r[:,10] + (r[:,0]-mi)*(r[:,1]-mq))
+        amp = weights @ r[:,4]
         ac = vi+vq
         best = int(r[:,13].argmax())
-        aggregate = (mi,mq,np.sqrt(np.mean(r[:,2]**2)), np.sqrt(ac),amp,
-                     np.sqrt(np.mean(r[:,5]**2+(r[:,4]-amp)**2)),
-                     r[:,6].mean(),r[:,7].mean(),vi,vq,cov,
+        aggregate = (mi,mq,np.sqrt(weights @ (r[:,2]**2)), np.sqrt(ac),amp,
+                     np.sqrt(weights @ (r[:,5]**2+(r[:,4]-amp)**2)),
+                     weights @ r[:,6],weights @ r[:,7],vi,vq,cov,
                      (vi-vq)/ac if ac else np.nan,-2*cov/ac if ac else np.nan,r[best,13])
         stats[mode].attrs.update(dict(zip(METRICS,aggregate)))
-        stats[mode].attrs.update(clip_I=int(r[:,15].sum()),clip_Q=int(r[:,16].sum()),
-                                 peak_received_index=int(windows[best]["received_index"]+r[best,14]))
+        stats[mode].attrs.update(clip_I=int(sum(clip_i)),clip_Q=int(sum(clip_q)),
+                                 temporal_samples=sum(counts),
+                                 peak_received_index=starts[best]+peaks[best])
+        group = histogram_group.create_group(mode)
+        edges, hist_counts = histograms[mode]
+        group.create_dataset("amplitude_edges_v", data=edges)
+        group.create_dataset("amplitude_counts", data=hist_counts)
+    quality.attrs.update(spectral_samples=len(windows)*n, temporal_samples=received,
+                         residual_chunks=residual_chunks,
+                         aggregation_max_relative_error=aggregation_max_error)
     quality.attrs.update(profile)
     timing.attrs["pps_source"] = "SPGP" if layout == "SPE" else "SPEC channel 6"
     timing.attrs["pps_waveform_available"] = channels_present > 6
@@ -344,7 +396,12 @@ def main():
     p.add_argument("source", type=Path)
     p.add_argument("output", type=Path)
     p.add_argument("--split-pairs", type=json.loads)
-    p.add_argument("--product", choices=("psd","fft"), default="psd")
+    p.add_argument("--product", choices=("compact","psd","fft"), default="compact")
+    p.add_argument("--bin-hz", type=int, default=100)
+    p.add_argument("--max-psd", action="store_true")
+    p.add_argument("--band", type=float, nargs=2, action="append", default=[],
+                   metavar=("LOW_HZ", "HIGH_HZ"))
+    p.add_argument("--band-product", choices=("psd","fft"), default="psd")
     p.add_argument("--compression", choices=("lzf","gzip"))
     p.add_argument("--thresholds", type=float, nargs="+", default=[4.,5.,6.])
     p.add_argument("--max-events", type=int)
@@ -357,6 +414,11 @@ def main():
         p.error("thresholds must be finite and positive")
     if args.max_events is not None and args.max_events < 1:
         p.error("max-events must be positive")
+    if args.bin_hz <= 0 or any(not np.isfinite([low, high]).all() or low >= high
+                               for low, high in args.band):
+        p.error("bin width must be positive and band bounds finite and increasing")
+    if args.product != "compact" and (args.band or args.max_psd):
+        p.error("band and maximum PSD options require --product compact")
     import midas.file_reader
     wall, cpu = time.perf_counter(), time.process_time()
     source_stat = args.source.stat()
@@ -377,8 +439,9 @@ def main():
                  cpu_s=time.process_time()-cpu, max_rss_kib=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         with h5py.File(path, "r") as check:
             n_windows = len(check["timing/windows"])
-            if not n_windows or any(
-                len(check["spectra"][mode]) != n_windows
+            if not n_windows or check["quality"].attrs["aggregation_max_relative_error"] > 1e-6 or any(
+                len(check["spectra"][mode]["window_psd"] if args.product == "compact"
+                    else check["spectra"][mode]) != n_windows
                 or len(check["statistics"][mode]) != n_windows
                 or not np.all(check["statistics"][mode]["parseval_relative_error"] < 1e-5)
                 for mode in check["statistics"]
