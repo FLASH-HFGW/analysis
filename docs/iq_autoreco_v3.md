@@ -14,7 +14,7 @@ Il formato SPE richiede il mapping I/Q esplicito tramite `--split-pairs` in asse
 
 L'orchestratore esistente prepara un job singolo con `--analysis-kind iq-v3 --prepare-only --read-only --run 1145 --max-events 30 --output-dir /tmp/IQ-PILOT` e la stessa mappa tramite `--iq-v3-split-pairs`. Il wrapper riusa download e credenziali del payload noise. Il job trasferisce il prodotto tramite lo spool Condor. La preparazione locale è passata. Il dry-run Condor ha richiesto autenticazione OAuth interattiva.
 
-## HDF5 1.2
+## HDF5 1.3
 
 | Percorso | Contenuto |
 |---|---|
@@ -23,6 +23,7 @@ L'orchestratore esistente prepara un job singolo con `--analysis-kind iq-v3 --pr
 | `timing/{pps,spgp,tgps}` | PPS da SPEC CH6 per legacy e da SPGP per SPE. SPGP conserva le coppie nel formato sorgente. TGPS conserva payload, timestamp dell’header in secondi Unix e numero di campioni ricevuti prima del record. |
 | `timing/{pps_waveform,digitizer_events}` | Confronto analogico dove disponibile e registro ADC con seriale, timestamp MIDAS, indice iniziale, lunghezza e segmento. |
 | `spectra` | Default compatto con PSD media per run e PSD aggregata per finestra. I diagnostici full spectrum conservano l’asse bilatero condiviso in ordine FFT. |
+| `short_psd` | PSD medie bilatere da segmenti di 16.384 campioni, rettangolare e Hann, con asse e contatori condivisi. |
 | `statistics` | Dataset per modo con riga per finestra e aggregati come attributi. Unità nei nomi dei campi. Indice del picco locale, conteggi a fondo scala per componente ed errore relativo di Parseval. |
 | `anomalies/<modo>` | Tabelle `episodes` e `population` per finestra e soglia, con indici di ricezione, seriali e offset ADC di inizio e picco, durate in campioni e picchi in V. |
 | `quality` | Errori di bank e salti di seriale, contatori di finestre e campioni, presenza EOR, confronto esatto SPGP e misure processo. |
@@ -152,3 +153,17 @@ Il default resta senza compressione per la velocità. gzip risparmia circa il 16
 ### Dimensionamento HTCondor
 
 Con un run da 209,72 s di acquisizione e un worker per run, stimare gli slot con `ceil((307,81 s + 9273,62 MB / B_down + 187,88 MB / B_up) / 209,72 s)`. Le bande sono quelle effettive per job concorrente. La misura locale include la decompressione MIDAS. Con download e upload a 100, 50 o 25 MB/s per job, servono rispettivamente almeno 2, 3 o 4 slot. A 100 MB/s due slot lasciano un margine ridotto per coda e staging. L’ingresso condiviso deve sostenere almeno 44,2 MB/s e lo spool in uscita circa 0,90 MB/s, oltre al margine operativo. Verificare i tempi reali su un job isolato dopo OAuth prima di scegliere la concorrenza operativa.
+
+## PSD medie a 16.384 campioni
+
+Lo schema 1.3 aggiunge al profilo compatto il gruppo `short_psd`. L’asse bilatero crescente `frequency_hz` è condiviso tra `rectangular/<modo>` e `hann/<modo>`, entrambi PSD medie float32 in V²/Hz. Si usa lo stesso IQ in volt del profilo compatto, con scala ADC BOR per canale e la convenzione I/Q configurata.
+
+I segmenti sono consecutivi, non sovrapposti e lunghi esattamente 16.384 campioni. Riutilizzano i buffer delle FFT da un secondo, comprese le loro code, con un riporto attraverso confini contigui. Una discontinuità chiude il riporto corrente. I campioni di coda che non completano un segmento restano nelle statistiche temporali. Gli attributi del gruppo espongono `segments_per_mode`, `used_samples_per_mode`, `residual_samples_per_mode` e `frequency_spacing_hz`.
+
+Ogni finestra opera sul segmento dopo sottrazione della media complessa. Le due varianti condividono il buffer centrato. La media delle potenze lineari è accumulata in float64, con PSD bilatera `|FFT(w·(z−mean(z)))|² / (fs·Σw²)` e conversione finale a float32. A 5 MS/s il passo è 305,17578125 Hz. La finestra rettangolare ha ENBW pari al passo. Per la Hann simmetrica `w[j] = 0,5 − 0,5 cos(2πj/(N−1))`, l’ENBW è circa 457,7916 Hz. I gruppi delle finestre registrano l’ENBW e la somma dei quadrati dei pesi. I dataset registrano l’errore relativo di Parseval e il valor quadratico medio ponderato corrispondente.
+
+La rettangolare segue la formulazione di §5.2.1 della [tesi di Valeria Spasiano](Tesi_Valeria_Spasiano.pdf). La Hann simmetrica mantiene la scelta di finestra dell’autoreco storico, usando tutti i 16.384 campioni e la griglia FFT corrispondente con normalizzazione PSD. Nessuna delle due PSD deriva dal rebin della FFT da un secondo.
+
+Benchmark sul 1148 chiuso, in un’unica passata, con un worker FFT e un thread BLAS. I 1.048.576.000 campioni hanno prodotto 64.000 segmenti per modo per entrambe le finestre, con residuo corto zero. L’errore relativo massimo di Parseval, ricalcolato dai sei dataset float32, è 7,18 × 10⁻⁸. Tutti i 30 dataset preesistenti del profilo compatto coincidono esattamente con il riferimento.
+
+Il file finale occupa 188.420.552 B, con un incremento di 536.400 B. La misura end-to-end è 342,99 s wall, 3,06 MS/s e 728,5 MiB di picco RSS. Le due PSD corte, inclusa la verifica della potenza nel dominio temporale, hanno richiesto 82,23 s all’interno dell’esecuzione. Prodotto locale `/tmp/iqv3-final.7EPljn/1148-compact-short.h5`.

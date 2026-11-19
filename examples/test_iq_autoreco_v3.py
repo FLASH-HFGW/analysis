@@ -5,7 +5,7 @@ import unittest
 import h5py
 import numpy as np
 
-from iq_compact_spectra import CompactSpectra
+from iq_compact_spectra import CompactSpectra, ShortSpectra
 from analyze_midas_iq_v3 import PulseDetector, decode, process
 
 
@@ -55,6 +55,32 @@ class PilotTests(unittest.TestCase):
             self.assertEqual(len(f["timing/pps_waveform"]), 0)
             self.assertEqual(len(f["quality/breaks"]), 2)
             self.assertEqual(f["timing/windows"]["segment"].tolist(), [0, 0, 1])
+
+    def test_short_psd_across_buffers_and_discontinuity(self):
+        n = ShortSpectra.length
+        fs = 5_000_000
+        t = np.arange(n)
+        tone = (2 + 3j + np.exp(2j*np.pi*321*t/n)).astype(np.complex64)
+        short = ShortSpectra(fs, ["mode"], None, 1)
+        source = np.concatenate([tone, 2*tone, np.full(29, 500, dtype=np.complex64)])
+        for start, stop in ((0, 5000), (5000, 5010), (5010, n+7), (n+7, len(source))):
+            short.feed({"mode": source[start:stop]}, stop-start)
+        short.break_segment()
+        source = np.concatenate([3*tone, tone[:35]])
+        short.feed({"mode": source}, len(source))
+        with h5py.File("test", "w", driver="core", backing_store=False) as f:
+            short.finish(f, 3*n + 64)
+            self.assertEqual(f.attrs["segments_per_mode"], 3)
+            self.assertEqual(f.attrs["residual_samples_per_mode"], 64)
+            rows = np.stack([tone, 2*tone, 3*tone]).astype(np.complex128)
+            rows -= rows.mean(axis=1, keepdims=True)
+            for name, weights in (("rectangular", np.ones(n)), ("hann", np.hanning(n))):
+                x = np.fft.fftshift(np.fft.fft(rows*weights, axis=1), axes=1)
+                expected = np.mean(abs(x)**2, axis=0)/(fs*np.sum(weights**2))
+                d = f[name]["mode"]
+                np.testing.assert_allclose(d[:], expected, rtol=2e-6, atol=1e-10)
+                self.assertEqual(f["frequency_hz"][d[:].argmax()], 321*fs/n)
+                self.assertLess(d.attrs["parseval_relative_error"], 2e-7)
 
     def test_compact_storage(self):
         n = 9
