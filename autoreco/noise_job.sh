@@ -52,10 +52,15 @@ echo "[timing] download start $(date -u +%FT%TZ)"
 gfal-copy "davs://xfer-archive.cr.cnaf.infn.it:8443/${INPUT_PATH}/${RUN_NAME}.mid.gz" "$WORKDIR/${RUN_NAME}.mid.gz"
 echo "[timing] download end / analysis start $(date -u +%FT%TZ)"
 if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
-    limit=$(jq -er '.max_events' "$REFERENCE")
+    limit=$(jq -r '.max_events // empty' "$REFERENCE")
+    product=$(jq -er '.product // "psd"' "$REFERENCE")
+    limit_args=()
+    if [[ -n "$limit" ]]; then
+        limit_args=(--max-events "$limit")
+    fi
     pairs=$(jq -c '.split_pairs' "$REFERENCE")
     "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \
-        "$JOB_ROOT/${RUN_NAME}_iq_v3.h5" --max-events "$limit" --split-pairs "$pairs" \
+        "$JOB_ROOT/${RUN_NAME}_iq_v3.h5" --product "$product" "${limit_args[@]}" --split-pairs "$pairs" \
         --software-commit "$IQ_SIGN" --workers "$MODE_WORKERS"
     exit 0
 fi

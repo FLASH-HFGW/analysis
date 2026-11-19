@@ -64,7 +64,7 @@ queue
     return result
 
 def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
-                     configuration, max_events, request_cpus):
+                     configuration, max_events, request_cpus, product="psd"):
     """Prepare sandbox-only pilot jobs using the existing noise download wrapper."""
     module = analysis_script.with_name("iq_acquisition_metadata.py")
     commit = subprocess.check_output(
@@ -79,7 +79,7 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
         script.write_text(wrapper)
         script.chmod(0o755)
         config = directory / "iq_v3_job.json"
-        config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events)))
+        config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events, product=product)))
         transfer = [os.path.relpath(p, directory) for p in (analysis_script, module, config)]
         for value in [input_path, *transfer]:
             if any(not (c.isalnum() or c in "/._-") for c in value):
@@ -94,6 +94,7 @@ request_memory = 4GB
 request_disk = 100GB
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
+transfer_output_files = run{run:05d}_iq_v3.h5,run{run:05d}_job_status.json
 transfer_input_files = {','.join(transfer)}
 want_io_proxy = true
 use_oauth_services = t1

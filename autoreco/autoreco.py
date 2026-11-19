@@ -992,6 +992,9 @@ def parse_args() -> argparse.Namespace:
                         help="Genera i job di una selezione esplicita senza logbook, coda o sottomissione")
     parser.add_argument("--iq-v3-split-pairs", type=json.loads,
                         help="Mapping I/Q diagnostico per il formato SPE")
+    parser.add_argument("--iq-v3-full-run", action="store_true",
+                        help="Richiede EOR per il payload IQ v3")
+    parser.add_argument("--iq-v3-product", choices=("psd", "fft"), default="psd")
     args = parser.parse_args()
     if args.analysis_kind == "iq-v3":
         if not (args.prepare_only and args.read_only and args.run is not None):
@@ -1078,7 +1081,8 @@ def main() -> None:
             from noise_jobs import build_iq_v3_jobs
             files = build_iq_v3_jobs(runs, args.output_dir, args.input_path,
                                      args.analysis_script, args.iq_v3_split_pairs,
-                                     args.max_events, args.cpus)
+                                     None if args.iq_v3_full_run else args.max_events,
+                                     args.cpus, args.iq_v3_product)
             print(f"Preparati {len(files)} job pilota in {args.output_dir}.")
             return
         files = build_htcondor_files(
