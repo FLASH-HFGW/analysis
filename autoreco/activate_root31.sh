@@ -27,12 +27,48 @@ PY
 [[ $(sha256sum "$bundle" | cut -d' ' -f1) == "$sha" ]]
 deps="$runtime/root31/uproot-py39.tgz"
 
-flock -x "$runtime/production/.autoreco.lock" bash -s -- "$repo" "$release" "$bundle" "$deps" "$sha" <<'BASH'
+flock -x "$runtime/production/.autoreco.lock" bash -s -- "$repo" "$release" "$bundle" "$deps" "$sha" "$receipt_dir" <<'BASH'
 set -euo pipefail
 git -C "$1" merge --ff-only "$2"
 if [[ ! -f "$4" ]] || ! cmp -s "$3" "$4"; then
     install -D -m 0644 "$3" "$4"
 fi
+PYTHONPATH="$1/autoreco" /usr/bin/python3 - "$6" <<'PY'
+import json
+import time
+import sys
+from pathlib import Path
+
+from autoreco import save_state, state_path
+from run3_cycle import BASE, PRODUCTION, final_url, local, validate_receipt, workdir
+
+source = Path(sys.argv[1])
+r = json.loads((source / "publication.json").read_text())
+run = r["run"]
+url = final_url(PRODUCTION, run, True)
+completion = json.loads((source / f"run{run:05d}_job_status.json").read_text())
+validate_receipt(r, completion, run, url, r["attempt"])
+target = BASE / "root-migration" / f"{run:05d}"
+local(target)
+path = state_path(target)
+local(path)
+if not path.exists():
+    old_path = state_path(BASE / "production" / f"{run:05d}")
+    local(old_path)
+    old = json.loads(old_path.read_text())
+    reference = json.loads((source / "iq_v3_job.json").read_text())["publication"]["reference"]
+    assert old["phase"] == "verified" and old["queue_closed"] and old["status"] == "sheet_updated"
+    assert old["publication"] == reference
+    (log,) = source.glob("output-*.0.log")
+    cluster = int(log.name.split("-")[1].split(".")[0])
+    d = workdir(target, r["attempt"], run)
+    d.mkdir(parents=True, exist_ok=True)
+    save_state(target, dict(phase="verified", attempt=r["attempt"], cluster=cluster,
+                            attempt_number=1, previous=[], output_retrieved=True,
+                            verified_at=time.time(), product_url=url, publication=r,
+                            migration=dict(reference=reference, reco_done=old["target_reco_done"],
+                                           expected_version=old["reco_version"])))
+PY
 /usr/bin/python3 - "$1/config/autoreco_run3.json" "$4" "$5" <<'PY'
 import json
 import os
