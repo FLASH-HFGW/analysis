@@ -1,4 +1,5 @@
 """Generazione dei payload noise per il ciclo di vita esistente di autoreco."""
+import hashlib
 import json
 import os
 import shutil
@@ -89,6 +90,12 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
                              ("iq_thermometers.py", "extract_thermometers.py"))
         if publication:
             sources += (Path(__file__).resolve().with_name("run3_storage.py"),)
+            if publication.get("format") == "root":
+                deps = Path(publication["dependencies"])
+                if deps.name != "uproot-py39.tgz" or hashlib.sha256(deps.read_bytes()).hexdigest() != publication["dependencies_sha256"]:
+                    raise ValueError("ROOT dependency archive does not match configured hash")
+                sources += (deps, *(analysis_script.with_name(name) for name in
+                                    ("iq_midas_aux.py", "iq_root.py", "iq_root_worker.py")))
             for source in sources:
                 target = directory / source.name
                 if target.is_symlink():

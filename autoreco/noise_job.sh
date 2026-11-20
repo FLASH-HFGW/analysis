@@ -72,15 +72,26 @@ if [[ "$REFERENCE" == iq_v3_job.json && "$OUTPUT_PATH" == pilot ]]; then
     pairs=$(jq -c '.split_pairs' "$REFERENCE")
     publication=$(jq -c '.publication // empty' "$REFERENCE")
     output_file="$JOB_ROOT/${RUN_NAME}_iq_v3.h5"
+    archive_args=()
+    if [[ -n "$publication" && $(jq -r '.format' <<<"$publication") == root ]]; then
+        archive_args=(--archive-midas-aux)
+        mkdir "$WORKDIR/uproot"
+        tar -xzf "$JOB_ROOT/uproot-py39.tgz" -C "$WORKDIR/uproot"
+        export PYTHONPATH="$WORKDIR/uproot:$PYTHONPATH"
+    fi
     if [[ -n "$publication" ]]; then
         output_file="$WORKDIR/${RUN_NAME}_iq_v3.h5"
     fi
     "$PYTHON" "$ANALYSIS_SCRIPT" "$WORKDIR/${RUN_NAME}.mid.gz" \
         "$output_file" --product "$product" --bin-hz "$bin_hz" "${limit_args[@]}" --split-pairs "$pairs" \
-        --software-commit "$IQ_SIGN" --workers "$MODE_WORKERS"
+        --software-commit "$IQ_SIGN" --workers "$MODE_WORKERS" "${archive_args[@]}"
     if [[ -n "$publication" ]]; then
         rm -- "$WORKDIR/${RUN_NAME}.mid.gz"
         BEARER_TOKEN=$(jq -er '.access_token | select(type == "string" and length > 0)' "${_CONDOR_CREDS}/t1.use")
+        if [[ ${#archive_args[@]} -gt 0 ]]; then
+            "$PYTHON" iq_root_worker.py "$output_file" "$publication" "$RUN_NUMBER" "$raw_url"
+            exit 0
+        fi
         "$PYTHON" - "$output_file" "$publication" "$RUN_NUMBER" <<'PYTHON'
 import json, sys
 from pathlib import Path

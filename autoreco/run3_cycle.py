@@ -23,6 +23,7 @@ ARTIFACT = re.compile(r"(script\.sh|submit\.sub|iq_v3_job\.json|publication\.jso
                       r"submit_error\.json|run\d+_job_status\.json|"
                       r"analyze_midas_iq_v3\.py|iq_acquisition_metadata\.py|"
                       r"iq_compact_spectra\.py|run3_storage\.py|iq_thermometers\.py|extract_thermometers\.py|"
+                      r"iq_root\.py|iq_root_worker\.py|iq_midas_aux\.py|uproot-py39\.tgz|"
                       r"(stdout|stderr)-\d+\.\d+\.txt|output-\d+\.\d+\.log)")
 
 
@@ -81,7 +82,8 @@ def validate_receipt(receipt, completion, run, url, attempt):
             or not isinstance(checksum, str) or not re.fullmatch(r"[0-9a-f]{8}", checksum)
             or receipt.get("remote_adler32") != checksum
             or completion.get("run") != run or completion.get("exit_code") != 0
-            or completion.get("status") != "success"):
+            or completion.get("status") != "success"
+            or (url.endswith(".root") and receipt.get("root_schema") != "3.1")):
         raise ValueError("invalid Run3 publication receipt")
 
 
@@ -167,11 +169,46 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
     return False
 
 
-def prepare(root, run, pairs, url, probe, attempt):
+def prepare(root, run, pairs, url, probe, attempt, settings=None, reference=None):
+    config = dict(url=url, probe=probe, attempt=attempt)
+    if url.endswith(".root"):
+        config.update(format="root", dependencies=settings["root_dependencies"],
+                      dependencies_sha256=settings["root_dependencies_sha256"])
+        if reference:
+            config["reference"] = reference
     submit = build_iq_v3_jobs([run], root, RAW, ANALYSIS, pairs, None, 1,
-                              publication={"url": url, "probe": probe, "attempt": attempt}, attempt=attempt)[0][1]
+                              publication=config, attempt=attempt)[0][1]
     check_run3_inputs(submit)
     return submit
+
+
+def final_url(destination, run, root=False):
+    return f"{destination}/run{run:05d}_iq_v3" + (".1.root" if root else ".h5")
+
+
+def migration_inputs(records):
+    """Select released logbook rows that still point to a completed canonical HDF5."""
+    inputs = {}
+    for run, record in records.items():
+        uri = final_url(PRODUCTION, run)
+        done = parse_integer(record.get("reco_done"))
+        if (done is None or done < 1 or parse_integer(record.get("rucio_status")) != 0
+                or str(record.get("filename", "")).strip() != f"run{run:05d}.mid.gz"
+                or str(record.get("reco_output_path", "")).strip() != uri
+                or str(record.get("reco_requested_version") or "").strip() not in ("", "3.0", "3.1")):
+            continue
+        path = state_path(BASE / "production" / f"{run:05d}")
+        local(path)
+        if not path.is_file():
+            continue
+        state = json.loads(path.read_text())
+        if state.get("phase") != "verified" or not state.get("queue_closed"):
+            continue
+        validate_receipt(state["publication"], dict(run=run, exit_code=0, status="success"),
+                         run, uri, state["attempt"])
+        inputs[run] = dict(reference=state["publication"], reco_done=done,
+                           expected_version=str(record.get("reco_version", "")).strip())
+    return inputs
 
 
 def discover(records, settings):
@@ -200,29 +237,38 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
     filename = f"run{run:05d}.mid.gz"
     validate_receipt(state["publication"], dict(run=run, exit_code=0, status="success"),
                      run, url, state["attempt"])
+    migration = state.get("migration")
+    versions = ("", "3.0", version) if migration else ("", version)
     if (str(record.get("filename", "")).strip() != filename
             or parse_integer(record.get("rucio_status")) != 0
-            or str(record.get("reco_requested_version") or "").strip() not in ("", version)):
+            or str(record.get("reco_requested_version") or "").strip() not in versions):
         print(f"Run {run}: logbook row changed; update deferred")
         return None
     done = parse_integer(record.get("reco_done"))
-    if (done == 1 and str(record.get("reco_output_path", "")).strip() == url
-            and str(record.get("reco_version", "")).strip() == version):
+    prior = migration["reco_done"] if migration else 0
+    target = prior if migration else 1
+    current_path = str(record.get("reco_output_path", "")).strip()
+    current_version = str(record.get("reco_version", "")).strip()
+    if done == target and current_path == url and current_version == version:
         if not dry_run:
             state["status"] = "sheet_updated"
             save_state(run_dir, state)
         return None
-    if done != 0:
-        print(f"Run {run}: reco_done changed; update deferred")
+    if done != prior or (migration and (current_path != migration["reference"]["url"]
+                                        or current_version != migration["expected_version"])):
+        print(f"Run {run}: earlier reconstruction references changed; update deferred")
         return None
-    return run_dir, dict(state, run_number=run, filename=filename, target_reco_done=1,
-                         expected_reco_done=0, reco_version=version, output_path=url)
+    return run_dir, dict(state, run_number=run, filename=filename, target_reco_done=target,
+                         expected_reco_done=prior, reco_version=version, output_path=url)
 
 
 def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
     dry_run = getattr(args, "dry_run", False)
     read_only = args.gc_dry_run or dry_run
+    migration = getattr(args, "migrate_root", False)
+    root_output = not args.pilot and (migration or settings.get("output_format") == "root")
+    migrations = {}
     records, eligible, updates, rebuilt = {}, {}, [], set()
     if args.pilot:
         runs = {1148}
@@ -232,9 +278,16 @@ def cycle(root, settings, args):
         required = {"filename", "rucio_status", "reco_done", "reco_version", "reco_output_path"}
         if not required.issubset(headers):
             raise ValueError(f"logbook columns missing: {sorted(required - set(headers))}")
-        records, eligible = discover(read_all_records(worksheet), settings)
+        discover_settings = dict(settings, reco_version="3.1") if root_output else settings
+        records, eligible = discover(read_all_records(worksheet), discover_settings)
+        if migration:
+            migrations = migration_inputs(records)
+            eligible = {run: records[run]["filename"] for run in migrations}
         rebuilt = {run for run, row in records.items()
                    if (parse_integer(row.get("reco_done")) or 0) > 0}
+        if migration:
+            rebuilt = {run for run, row in records.items()
+                       if str(row.get("reco_output_path", "")).strip() == final_url(destination, run, True)}
         runs = set(eligible) - set(settings["deferred_runs"])
     active = 0
     waiting = []
@@ -244,7 +297,7 @@ def cycle(root, settings, args):
             local(directory)
             known.add(int(directory.name))
     for run in sorted(known):
-        url = f"{destination}/run{run:05d}_iq_v3.h5"
+        url = final_url(destination, run, root_output)
         run_dir = root / f"{run:05d}"
         local(run_dir)
         state_file = state_path(run_dir)
@@ -252,7 +305,10 @@ def cycle(root, settings, args):
             raise ValueError(f"symlink state: {state_file}")
         if state_file.exists():
             state = json.loads(state_file.read_text())
-            occupied = reconcile(run_dir, state, run, url, settings["failure_days"], read_only)
+            # Pre-release submissions have no product_url and still expect HDF5.
+            previous_url = state.get("product_url", final_url(destination, run, migration))
+            version = "3.1" if previous_url.endswith(".root") else settings["reco_version"]
+            occupied = reconcile(run_dir, state, run, previous_url, settings["failure_days"], read_only)
             active += occupied
             if not occupied and state["phase"] in ("failed", "verified"):
                 for previous in state.get("previous", []):
@@ -264,8 +320,7 @@ def cycle(root, settings, args):
             if state["phase"] == "verified":
                 rebuilt.add(run)
                 if run in records:
-                    update = plan_logbook_update(run_dir, run, state, records[run], url,
-                                                 settings["reco_version"], read_only)
+                    update = plan_logbook_update(run_dir, run, state, records[run], previous_url, version, read_only)
                     if update:
                         updates.append(update)
             if (not occupied and state["phase"] == "failed"
@@ -275,8 +330,9 @@ def cycle(root, settings, args):
                 waiting.append((run, url, state["attempt_number"] + 1, history))
         elif run in runs:
             waiting.append((run, url, 1, []))
-    slots = max(0, settings["max_active"] - active)
-    submissions = waiting[:min(slots, settings.get("max_submit_per_cycle", slots))]
+    limit = settings.get("migration_max_active", 40) if migration else settings["max_active"]
+    slots = max(0, limit - active)
+    submissions = waiting[:slots if migration else min(slots, settings.get("max_submit_per_cycle", slots))]
     if dry_run:
         print(f"Eleggibili ({len(eligible)}): {sorted(eligible)}")
         print(f"Già ricostruiti ({len(rebuilt)}): {sorted(rebuilt)}")
@@ -295,8 +351,16 @@ def cycle(root, settings, args):
         run_dir = root / f"{run:05d}"
         attempt = uuid.uuid4().hex
         directory = workdir(run_dir, attempt, run)
-        submit = prepare(directory.parent, run, settings["split_pairs"], url, args.pilot, attempt)
-        state = dict(attempt=attempt, attempt_number=number, phase="submitting", previous=history)
+        input_state = migrations.get(run)
+        if root_output:
+            submit = prepare(directory.parent, run, settings["split_pairs"], url, args.pilot, attempt,
+                             settings, input_state["reference"] if input_state else None)
+        else:
+            submit = prepare(directory.parent, run, settings["split_pairs"], url, args.pilot, attempt)
+        state = dict(attempt=attempt, attempt_number=number, phase="submitting", previous=history,
+                     product_url=url)
+        if input_state:
+            state["migration"] = input_state
         save_state(run_dir, state)
         state.update(cluster=submit_job(submit), phase="submitted")
         save_state(run_dir, state)
@@ -310,11 +374,17 @@ def main():
     parser.add_argument("--gc-dry-run", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Anteprima Run3 in sola lettura del logbook")
     parser.add_argument("--cron", action="store_true")
+    parser.add_argument("--migrate-root", action="store_true")
     args = parser.parse_args()
     settings = json.loads(args.config.read_text())
     if (settings["max_active"] < 1 or settings["max_submit_per_cycle"] < 1
             or settings["failure_days"] < 7 or settings["max_attempts"] < 1):
         parser.error("invalid Run3 concurrency or retention")
+    if args.migrate_root and (args.pilot or args.cron or
+                              (settings.get("output_format") != "root" and not args.dry_run)):
+        parser.error("ROOT migration requires an enabled ROOT configuration, except in dry-run")
+    if settings.get("migration_max_active", 40) < 1:
+        parser.error("invalid migration concurrency")
     if args.prepare_only and not args.pilot:
         parser.error("only the isolated pilot supports prepare-only")
     if args.dry_run and (args.pilot or args.cron):
@@ -327,10 +397,13 @@ def main():
         if (not pilot_state.is_file() or
                 json.loads(pilot_state.read_text()).get("phase") != "verified"):
             parser.error("production requires a verified isolated pilot")
-    root = BASE / ("pilot" if args.pilot else "production")
+    root = BASE / ("pilot" if args.pilot else "root-migration" if args.migrate_root else "production")
     local(root)
     root.mkdir(parents=True, exist_ok=True)
-    lock = root / ".autoreco.lock"
+    lock_dir = BASE / "production" if args.migrate_root else root
+    local(lock_dir)
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    lock = lock_dir / ".autoreco.lock"
     if lock.is_symlink():
         raise ValueError("symlink runtime lock")
     with lock.open("a") as handle:

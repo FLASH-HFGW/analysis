@@ -412,6 +412,7 @@ def main():
     p.add_argument("--thresholds", type=float, nargs="+", default=[4.,5.,6.])
     p.add_argument("--max-events", type=int)
     p.add_argument("--software-commit")
+    p.add_argument("--archive-midas-aux", action="store_true")
     p.add_argument("--workers", type=int, default=1)
     args = p.parse_args()
     if args.output.exists() or args.output.resolve() == args.source.resolve():
@@ -433,9 +434,19 @@ def main():
     fd, path = tempfile.mkstemp(dir=args.output.parent, prefix=f".{args.output.name}.")
     os.close(fd)
     try:
-        with midas.file_reader.MidasFile(str(args.source), use_numpy=True) as reader, h5py.File(path,"w") as out:
-            odb = reader.get_bor_odb_dump().data
-            process(reader, odb, out, args)
+        with h5py.File(path, "w") as out:
+            archive = None
+            if args.archive_midas_aux:
+                from iq_midas_aux import Archive, CapturingReader
+                archive = Archive(out)
+                reader = CapturingReader(str(args.source), archive)
+            else:
+                reader = midas.file_reader.MidasFile(str(args.source), use_numpy=True)
+            with reader:
+                odb = reader.get_bor_odb_dump().data
+                process(reader, odb, out, args)
+            if archive is not None:
+                archive.finish(out["metadata"].attrs, out["quality"].attrs["saw_eor"])
             if args.source.stat().st_mtime_ns != source_stat.st_mtime_ns:
                 raise ValueError("source changed during processing")
             out["metadata"].attrs.update(source=str(args.source.resolve()),

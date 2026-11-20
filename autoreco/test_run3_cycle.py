@@ -176,6 +176,24 @@ class Run3CleanupTests(unittest.TestCase):
             submit.assert_not_called()
             update.assert_not_called()
 
+    def test_migration_preserves_done_and_compares_previous_url(self):
+        run = 1148
+        old = run3.final_url(run3.PRODUCTION, run)
+        new = run3.final_url(run3.PRODUCTION, run, True)
+        state = dict(attempt="a"*32, phase="verified",
+                     migration=dict(reference=dict(url=old), reco_done=2, expected_version="3.0"),
+                     publication=dict(run=run, attempt="a"*32, url=new, size=100, remote_size=100,
+                                      local_adler32="12345678", remote_adler32="12345678",
+                                      root_schema="3.1", validated=True))
+        record = dict(filename="run01148.mid.gz", rucio_status=0, reco_done=2,
+                      reco_version="3.0", reco_output_path=old)
+        _, update = run3.plan_logbook_update(self.run, run, state, record, new, "3.1", True)
+        self.assertEqual(update["expected_reco_done"], 2)
+        self.assertEqual(update["target_reco_done"], 2)
+        self.assertEqual(update["output_path"], new)
+        record["reco_output_path"] = old + ".other"
+        self.assertIsNone(run3.plan_logbook_update(self.run, run, state, record, new, "3.1", True))
+
     def test_directory_escape_rejected(self):
         self.directory.rename(self.base / "moved")
         self.directory.symlink_to(self.base / "moved", target_is_directory=True)

@@ -93,6 +93,13 @@ def verify_existing(path, destination, identity, run):
     except ValueError:
         if run is None:
             raise
+    if path.suffix == ".root":
+        from iq_root_worker import compare_root
+        with tempfile.TemporaryDirectory(dir=path.parent) as scratch:
+            other = Path(scratch) / "existing.root"
+            gfal("copy", "-K", "ADLER32", destination, other.as_uri())
+            compare_root(path, other, run)
+            return verify(destination, local_identity(other))
     # A repeat reconstruction has different runtime metadata. Reuse only if
     # the existing product has the same scientific inputs and dataset bytes.
     import h5py

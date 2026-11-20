@@ -635,11 +635,16 @@ def update_reco_done_batch(
             continue
 
         expected = state.get("expected_reco_done")
+        migration = state.get("migration")
+        requested = str(current_record.get("reco_requested_version") or "").strip()
+        allowed = ("", "3.0", state["reco_version"]) if migration else ("", state.get("reco_version", "1.0"))
         if expected is not None and (
             current_value != expected or get_run_number(current_record) != run_number
-            or parse_integer(current_record.get("rucio_status")) != 0
-            or str(current_record.get("reco_requested_version") or "").strip()
-            not in ("", state["reco_version"])
+            or parse_integer(current_record.get("rucio_status")) != 0 or requested not in allowed
+            or (migration and (
+                str(current_record.get("reco_output_path", "")).strip() != migration["reference"]["url"]
+                or str(current_record.get("reco_version", "")).strip() != migration["expected_version"]
+            ))
         ):
             print(f"Run {run_number}: logbook row changed; update deferred")
             continue
@@ -658,7 +663,8 @@ def update_reco_done_batch(
         if output_path:
             cells.append(Cell(row_number, output_col, output_path))
         # reco_done è il commit marker logico e viene aggiunto per ultimo.
-        cells.append(Cell(row_number, reco_done_col, target))
+        if not migration:
+            cells.append(Cell(row_number, reco_done_col, target))
         ready.append(
             (
                 run_dir,
