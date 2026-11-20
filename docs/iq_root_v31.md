@@ -152,26 +152,9 @@ su un file di verifica ricavato dal 1148. Non è una seconda esecuzione
 end-to-end. La ricevuta operativa si trova in
 `/tmp/flash-root31-e2e.5LBPzL/01422/publication.json`.
 
-Il rilascio manuale verifica ricevute e SHA-256 della dipendenza e
-applica il fast-forward sotto il lock esistente, conservando gli altri
-campi della configurazione. Il cron attivo userà il nuovo formato
-dal ciclo successivo e i job già in coda manterranno il loro formato.
-
-```bash
-/tmp/flash-run3-root31-release/autoreco/activate_root31.sh \
-  /tmp/flash-root31-e2e.5LBPzL/01422 \
-  /tmp/flash-root31-build/uproot-py39.tgz
-```
-
-Per avviare il loop di migrazione dalla UI dopo il rilascio:
-
-```bash
-while /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --migrate-root; do
-  sleep 60
-done
-```
-
-L'anteprima reale ha selezionato 272 run e 40 job iniziali, senza scrivere
+Per l'attivazione, la migrazione automatica nel cron esistente e i
+controlli operativi usare il [runbook finale](run3_root31_runbook.md).
+Il dry-run reale ha selezionato 272 run e 40 job iniziali, senza scrivere
 il foglio. L'HDF5 verificato in questa fotografia ammonta a 51,24 GB
-potenziali. Il dry-run di consolidamento senza le verifiche remote
-successive alla migrazione classifica zero byte eliminabili.
+potenziali. Il consolidamento senza evidenza remota successiva alla
+migrazione classifica zero byte eliminabili.
