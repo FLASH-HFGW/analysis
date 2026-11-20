@@ -14,6 +14,7 @@ import numpy as np
 from scipy.fft import fft
 
 from iq_acquisition_metadata import PAIRS, number
+from iq_thermometers import Thermometers
 from iq_compact_spectra import CompactSpectra, ShortSpectra, append_row as append, spectrum_rows
 
 
@@ -174,6 +175,7 @@ def process(reader, odb, output, args):
             profile["statistics_s"] += time.perf_counter() - started
             residual_chunks += 1
 
+    thermometers = Thermometers(odb)
     events = iter(reader)
     while True:
         started = time.perf_counter()
@@ -185,6 +187,7 @@ def process(reader, odb, output, args):
         if header.is_midas_internal_event():
             eor |= header.is_eor_event()
             continue
+        thermometers.observe(event)
         serial = int(header.serial_number)
         banks = event.banks
         if "TGPS" in banks:
@@ -354,6 +357,7 @@ def process(reader, odb, output, args):
         raise ValueError("no valid digitizer events")
     if not eor and not args.max_events:
         raise ValueError("no MIDAS EOR; input may be incomplete")
+    thermometers.write(output, complete=eor, provenance="MIDAS INPT during IQ scan")
     save_residual()
     if compact is not None:
         compact.finish(len(windows))

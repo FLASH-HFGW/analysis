@@ -22,7 +22,7 @@ ANALYSIS = Path(__file__).resolve().parents[1] / "examples/analyze_midas_iq_v3.p
 ARTIFACT = re.compile(r"(script\.sh|submit\.sub|iq_v3_job\.json|publication\.json|"
                       r"submit_error\.json|run\d+_job_status\.json|"
                       r"analyze_midas_iq_v3\.py|iq_acquisition_metadata\.py|"
-                      r"iq_compact_spectra\.py|run3_storage\.py|"
+                      r"iq_compact_spectra\.py|run3_storage\.py|iq_thermometers\.py|extract_thermometers\.py|"
                       r"(stdout|stderr)-\d+\.\d+\.txt|output-\d+\.\d+\.log)")
 
 

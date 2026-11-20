@@ -84,6 +84,9 @@ def build_iq_v3_jobs(run_numbers, output_dir, input_path, analysis_script,
         config.write_text(json.dumps(dict(split_pairs=configuration, max_events=max_events,
                                           product=product, bin_hz=bin_hz, publication=publication)))
         sources = (analysis_script, module, spectra_module)
+        if analysis_script.name == "analyze_midas_iq_v3.py":
+            sources += tuple(analysis_script.with_name(name) for name in
+                             ("iq_thermometers.py", "extract_thermometers.py"))
         if publication:
             sources += (Path(__file__).resolve().with_name("run3_storage.py"),)
             for source in sources:

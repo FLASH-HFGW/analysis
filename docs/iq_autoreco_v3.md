@@ -246,3 +246,7 @@ L’anteprima legge il foglio e la coda per la riconciliazione locale e riporta 
 ```
 
 Il run 1148 viene ricostruito normalmente nella destinazione definitiva Run3.
+
+### Estensione termometrica additiva
+
+Il gruppo opzionale `thermometers` versione 1.0 è aggiunto durante la scansione IQ. Ogni sottogruppo conserva una coppia di dataset `events` (Unix MIDAS, ID e seriale) e `values` (dtype originale), con documento e fingerprint dello schema del BOR/estrattore storico. Gli eventi INPT di equipment aggiuntivi sono conservati. Gli attributi distinguono EOR, famiglie assenti, bank malformate e completezza. I prodotti preesistenti restano leggibili e possono essere privi del gruppo. Nell'AVS a 25 valori, gli indici zero-based 15, 16 e 17 corrispondono a Dale1.5K_cavity, CMN143_MC e CMN130_MC, in mK secondo lo schema storico, con precedenza alle unità ODB.
