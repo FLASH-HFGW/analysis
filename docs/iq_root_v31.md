@@ -131,9 +131,47 @@ PYTHONPATH=autoreco:/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-
 
 Il rapporto distingue assenti, incompatibili, non validi e verificati;
 le colonne di cancellabilità esigono checksum recenti in un'evidenza
-prodottа sul worker (modalità `--worker-evidence`), corrispondenza
+prodotta sul worker (modalità `--worker-evidence`), corrispondenza
 scientifica e logbook già aggiornato. Passare il JSON restituito dal
 worker a `--remote-evidence` per stimare i byte effettivamente
 recuperabili e riconoscere nomi o temporanei residui. Senza evidenza
 aggiornata risultano zero byte eliminabili. Nessun comando elimina i raw
 o gli HDF5.
+
+## Esito reale e comando di rilascio
+
+Il test 4202 sul MIDAS 1422 ha concluso con exit code zero. Tempo sullo
+slot 642 s, analisi 370,51 s e conversione/validazione/pubblicazione 32,02 s.
+Il ROOT pesa **156.901.974 B**, Adler32 locale/remoto **721868e3**.
+Sono identici tutti i **43 dataset HDF5 esistenti** e tutti i **67 dataset**
+del round-trip. L'archivio conserva 1.251 header, 7.249 record di bank,
+21.484 byte di payload ausiliario, entrambi gli ODB e 12 letture per
+ciascuna delle tre famiglie. Il test finale è stato aperto dal worker
+con uproot; ROOT C++ e PyROOT hanno letto il layout nativo in locale
+su un file di verifica ricavato dal 1148. Non è una seconda esecuzione
+end-to-end. La ricevuta operativa si trova in
+`/tmp/flash-root31-e2e.5LBPzL/01422/publication.json`.
+
+Il rilascio manuale verifica ricevute e SHA-256 della dipendenza e
+applica il fast-forward sotto il lock esistente, conservando gli altri
+campi della configurazione. Il cron attivo userà il nuovo formato
+dal ciclo successivo e i job già in coda manterranno il loro formato.
+
+```bash
+/tmp/flash-run3-root31-release/autoreco/activate_root31.sh \
+  /tmp/flash-root31-e2e.5LBPzL/01422 \
+  /tmp/flash-root31-build/uproot-py39.tgz
+```
+
+Per avviare il loop di migrazione dalla UI dopo il rilascio:
+
+```bash
+while /home/mazzitel/HFGW/analysis/autoreco/run_autoreco_cron_configured.sh --run3 --migrate-root; do
+  sleep 60
+done
+```
+
+L'anteprima reale ha selezionato 272 run e 40 job iniziali, senza scrivere
+il foglio. L'HDF5 verificato in questa fotografia ammonta a 51,24 GB
+potenziali. Il dry-run di consolidamento senza le verifiche remote
+successive alla migrazione classifica zero byte eliminabili.
