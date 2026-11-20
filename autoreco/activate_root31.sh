@@ -5,7 +5,7 @@ receipt_dir=${1:?Supply the directory containing the verified ROOT test receipts
 bundle=${2:?Supply the validated uproot-py39.tgz archive}
 repo=/home/mazzitel/HFGW/analysis
 runtime=/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3
-release=$(git -C "$(dirname "$0")" rev-parse HEAD)
+release=$(git -C "$repo" rev-parse --verify refs/heads/autoreco-run3-root31-release)
 sha=27e6410933869f9bc1faf90be7fcd6dfc55b99671d5c9629bca0349474939323
 
 /usr/bin/python3 - "$receipt_dir" <<'PY'
@@ -43,7 +43,7 @@ from pathlib import Path
 path = Path(sys.argv[1])
 settings = json.loads(path.read_text())
 settings.update(output_format="root", root_dependencies=sys.argv[2],
-                root_dependencies_sha256=sys.argv[3])
+                root_dependencies_sha256=sys.argv[3], migration_auto=True)
 settings.setdefault("migration_max_active", 40)
 fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".root31-config-")
 try:

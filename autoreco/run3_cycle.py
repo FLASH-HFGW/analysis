@@ -366,6 +366,18 @@ def cycle(root, settings, args):
         save_state(run_dir, state)
 
 
+def scheduled_cycles(root, settings, args):
+    cycle(root, settings, args)
+    if (args.cron and not args.pilot and settings.get("output_format") == "root"
+            and settings.get("migration_auto")):
+        migration = BASE / "root-migration"
+        local(migration)
+        migration.mkdir(exist_ok=True)
+        print("Run3 ROOT migration", flush=True)
+        # The production lock is already held. Each cycle has its own slot budget.
+        cycle(migration, settings, argparse.Namespace(**dict(vars(args), migrate_root=True)))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
@@ -440,7 +452,7 @@ def main():
             print(prepare(manual, 1148, settings["split_pairs"],
                           f"{PILOT}/run01148_iq_v3.h5", True, uuid.uuid4().hex))
         else:
-            cycle(root, settings, args)
+            scheduled_cycles(root, settings, args)
 
 
 if __name__ == "__main__":

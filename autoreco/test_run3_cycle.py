@@ -194,6 +194,18 @@ class Run3CleanupTests(unittest.TestCase):
         record["reco_output_path"] = old + ".other"
         self.assertIsNone(run3.plan_logbook_update(self.run, run, state, record, new, "3.1", True))
 
+    def test_root_cron_runs_two_cycles_under_the_callers_lock(self):
+        production = self.base / "production"
+        args = SimpleNamespace(cron=True, pilot=False, migrate_root=False)
+        with patch.object(run3, "cycle") as work:
+            settings = dict(output_format="root", migration_auto=True,
+                            max_active=20, migration_max_active=40)
+            run3.scheduled_cycles(production, settings, args)
+            self.assertEqual([call.args[0] for call in work.call_args_list],
+                             [production, self.base / "root-migration"])
+            self.assertFalse(work.call_args_list[0].args[2].migrate_root)
+            self.assertTrue(work.call_args_list[1].args[2].migrate_root)
+
     def test_directory_escape_rejected(self):
         self.directory.rename(self.base / "moved")
         self.directory.symlink_to(self.base / "moved", target_is_directory=True)
