@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 9 (VNA reference audit)
+**Aggiornamento:** 2026-11-22 · baseline 10 (Valeria thesis cross-check)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -143,3 +143,15 @@ L'utente segnala che **le bank MIDAS** dovrebbero riportare **l'ultima misura VN
 - Non applicare correttivi alle PSD dei ROOT; i confronti esistenti restano soltanto in unità ADC.
 
 **Prossima azione mirata:** chiedere a Codex di indagare il writer/parser della VNA in ODB e confrontare pochi valori indicizzati dai file sorgente, senza nuovi raw o job; determinare se sia un semplice errore di serializzazione/naming, una disposizione prevista o una discrepanza effettiva. Mantenere distinta questa verifica dalla calibrazione RF end-to-end.
+
+## 12. Riscontro diretto nella tesi di Valeria Spasiano (2026)
+
+**Fonte letta:** `Search for ultralight dark matter with the QUAX-LNF haloscope experiment` (PDF fornito dall'utente, 149 pagine). Riferimenti alla numerazione delle pagine della tesi.
+
+- **§5.3.2, p. 101:** MIDAS equipment VNA/SA; componenti reali e immaginarie delle calibrazioni sono memorizzate nell'**ODB**. Nessuna descrizione esplicita dell'ordine/interlacciamento degli array `Real/Imag` osservato nei Run3.
+- **§6.1.1–6.1.2, pp. 105–112:** misure **S21, S22, S12**, componenti reali/immaginarie acquisite dal VNA; il fit simultaneo è svolto sui **moduli**, non direttamente sulle fasi. La tesi **non risolve** la discrepanza di serializzazione ODB: confrontare codice del frontend con file e ODB, senza assumere l'ordine corretto.
+- **§6.1.1, p. 105:** dopo il malfunzionamento TWPA viene caratterizzata una configurazione **senza TWPA**, con **G = (67.81 ± 0.39) dB**, **Tn = (3.955 ± 0.468) K**; il riferimento al run 680 e l'applicabilità quantitativa richiedono riscontro sulla configurazione effettiva.
+- **§3.3.4, pp. 53–54:** schema di catena con TWPA al livello più freddo, HEMT a 4 K e **FET a temperatura ambiente**, posto dopo lo stadio criogenico. **Correzione del linguaggio precedente:** non dare per dimostrato che il FET abbia fisicamente sostituito il TWPA nella stessa posizione, né che fosse il primo stadio RF; l'utente conferma una configurazione precedente «FET al posto del TWPA» ma va riconciliata con routing e disegno specifici del run 680.
+- **§5.2, pp. 94–99:** coefficiente di correzione della risposta in frequenza della down-conversion `k_z(f)` per modo, distinto dal guadagno complessivo della catena RF. Per correzioni fisiche evitare confusione tra queste calibrazioni.
+
+**Azione:** usare la tesi come riferimento per definizioni e metodo; indagare l'ordine degli array ODB nei frontend/parser. Nessuna correzione applicata a PSD o dati pubblicati.
