@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 3 (review documentale)
+**Aggiornamento:** 2026-11-22 · baseline 4 (storage policy)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -67,6 +67,15 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 - Nessun run aggiuntivo senza richiesta esplicita; non pubblicare riferimenti Run2 in area Run3.
 - Archiviare risultati verificabili (checksum, percorsi, commit, metodi, report), non credenziali, token o dati raw in Git.
 - Non introdurre modifiche allo schema ROOT v3.1 validato senza decisione esplicita.
+
+
+### Policy storage/I-O FLASH (vincolo permanente, confermato dall'utente il 22/11/2026)
+
+- **GPFS:** destinato **esclusivamente a prodotti scientifici**, in genere file grandi **>100 MB**. La dimensione è un criterio indicativo, non una deroga alla natura scientifica del prodotto: non scrivere log/config/documentazione su GPFS, anche se voluminosi.
+- **GFAL:** tutti i **prodotti scientifici generati dai job** devono essere gestiti/pubblicati/trasferiti tramite **GFAL**; non utilizzare il mount `rclone` come meccanismo di pubblicazione dei risultati. Il mount può essere usato in **sola lettura** per accedere a dati scientifici già presenti; se necessario, copiare gli input su scratch locale, senza modificare gli originali.
+- **Storage locale:** log, configurazioni, manifest, report, tabelle piccole, figure leggere, script, file di controllo e metadati di esecuzione rimangono **locali**, fuori da GPFS. Il codice e la documentazione appropriata si versionano su Git, senza committare prodotti ingombranti o credenziali.
+- I job devono scrivere prima in **scratch isolato** e pubblicare tramite GFAL solamente i prodotti scientifici previsti. Non collocare automaticamente tutti gli output in GPFS.
+- Questa regola vale anche per il **pilota Run2–Run3** e prevale sulle indicazioni precedenti troppo generiche su output in area comparativa o sul mount `rclone`.
 
 ## 6. Stato e prossime azioni
 
