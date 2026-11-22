@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 11 (VNA ODB stride defect confirmed)
+**Aggiornamento:** 2026-11-22 · baseline 12 (nine conditional RF fits)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -166,4 +166,27 @@ L'utente segnala che **le bank MIDAS** dovrebbero riportare **l'ultima misura VN
 - Il frontend `Calibration.py` scrive `freq,y1,y2` nel file e passa `y1,y2` a `odb_set`; non applica esplicitamente sfalsamenti. Il parser `FitCall.py` costruisce i moduli `sqrt(Re²+Im²)` dalle colonne della stessa riga **del file originale**, non dagli array ODB sospetti: i fit eseguiti per questo percorso **non sono affetti**. La validità di ogni fit storico resta da verificare rispetto alle versioni e sorgenti realmente usate.
 - **RMS/PSD e altri prodotti del pilota ROOT rimangono invariati**: nessuna calibrazione VNA era stata applicata.
 - **Rimedio proposto ma non applicato:** validare driver e versione effettiva; materializzare array contigui prima dell'ODB write (oppure correggere il binding); eseguire un test round-trip in ODB *isolato*, mai in produzione. Conservare gli array storici originali e documentarne i limiti; per misure VNA complesse usare i file sorgente attendibili.
-- **Incidente di sicurezza separato:** Codex ha segnalato che materiale contenente una credenziale SSH è apparso nell'output di uno strumento; considerare la credenziale potenzialmente esposta, sostituirla e rimuovere la chiave pubblica precedente dai sistemi autorizzati. **Non archiviare contenuto, posizione o fingerprint della credenziale nel repository.**
+- Durante l'indagine è comparsa una chiave SSH di test in un output Codex; l'utente ha precisato che si tratta di una chiave di test, senza impatto operativo dichiarato. **Non archiviare alcun materiale della chiave nel repository.**
+
+## 14. Fit RF S12/S21/S22 sui file originali — risultati Codex (22/11/2026)
+
+**Fonte:** resoconto Codex fornito dall'utente; report completo, `fit_summary.csv`, figure e `fit_details.json` rimangono locali nel worktree `/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/` e **non sono stati letti direttamente** da ChatGPT.
+
+Codex ha svolto **nove fit simultanei** S12/S21/S22 (tre run × tre modi) sui file VNA originali tramite `FitCall.py`, con tre inizializzazioni per caso. Convergenza dei minimi dichiarata, ma **nessuna covarianza accurata**: i parametri sotto sono **descrittivi e privi di incertezze validate**, non misure definitive; cautela speciale per residui TM010. Interpretare `28.649` nella tabella come **28 649** (separatore migliaia italiano) e non come 28,649.
+
+| Run | Modo | Frequenza risonanza (GHz) | Q caricato (nominale, non validato) |
+|---|---|---:|---:|
+| 680 | TM010 | 8.737118963 | 28649 |
+| 680 | TM011 | 8.780840531 | 29771 |
+| 680 | TM012 | 8.841180745 | 24515 |
+| 1148 | TM010 | 8.744546604 | 16987 |
+| 1148 | TM011 | 8.787252190 | 22523 |
+| 1148 | TM012 | 8.846293765 | 10177 |
+| 1429 | TM010 | 8.744932701 | 22183 |
+| 1429 | TM011 | 8.788242547 | 24498 |
+| 1429 | TM012 | 8.847077580 | 12412 |
+
+- Fit condizionali secondo le relazioni dei percorsi della tesi: guadagno **L5 ~66,7–67,5 dB** per run 680 e **~75,3–81,1 dB** per i due Run3. **Non** considerare tali numeri una calibrazione cavità→ADC, in assenza di routing, condizioni FET/TWPA durante sweep e risposta conversione RF/IF/ADC.
+- Stime di Q intrinseco, accoppiamenti e guadagni restano **condizionali** alle ipotesi del modello. S11 ricostruibile da file storico ma **non associabile con certezza** ai nove casi contemporanei.
+- **Decisione:** non dividere le PSD per guadagno L5 né per |S21|²; non modificare ROOT originali o produzione. I fit rimangono diagnostica RF finché non sia verificata una risposta end-to-end nelle condizioni operative.
+- **Prossima azione consigliata:** esaminare i report locali tramite versione Git dei **soli documenti e tabelle leggere** oppure riassunto numerico da Codex; valutare residui, robustezza rispetto a inizializzazioni, definizioni dei piani di misura e disponibilità della calibrazione della down-conversion per eventuale interpretazione quantitativa. Nessun nuovo job necessario per il solo esame.
