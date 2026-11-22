@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 6 (ADC calibration audit)
+**Aggiornamento:** 2026-11-22 · baseline 7 (FET/TWPA hardware clarification)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -120,3 +120,9 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 - Risultati RMS/PSD, istogrammi `|z|` e righe spettrali del pilota confrontabili **solo al piano ADC**, con bande e campioni dichiarati. Non dedurre da essi temperatura di rumore, rumore intrinseco della cavità o sensibilità riferita all'ingresso in assenza di risposta end-to-end per run, modo e frequenza.
 - **Conseguenza essenziale:** differenze tra run 680 (pump OFF) e Run3 (pump ON) sono confondibili con il cambiamento della catena RF. Anche TM012 1148→1429 (+28,2746% potenza ADC) non dimostra da sola un cambiamento del rumore fisico.
 - Nessuna correzione numerica necessaria al confronto **ADC**; nessuna modifica di prodotti originali. Prima dell'interpretazione fisica: recuperare eventuali curve calibrate di trasferimento/guadagno e condizioni RF.
+
+## 9. Chiarimento hardware: primo stadio FET vs TWPA (22/11/2026)
+
+**Conferma diretta dell'utente:** nelle acquisizioni precedenti, incluso il periodo di Run2 di riferimento, il primo stadio di amplificazione era un **FET**, installato **al posto del TWPA guasto**. Per Run3 (1148 e 1429), i metadati indicano `With_TWPA=True` e pump acceso. **La tesi di Valeria** è indicata dall'utente come fonte storica, ma il testo della tesi non è stato letto direttamente durante questo aggiornamento: non attribuirle valori numerici non verificati.
+
+**Implicazione:** la differenza Run2/Run3 riguarda la **catena analogica di amplificazione**, non solo pump ON/OFF. Non interpretare differenze di RMS/PSD al piano ADC come variazioni di rumore della cavità. Per eventuali correzioni servono guadagno end-to-end e/o noise temperature riferiti a un piano dichiarato, per modo/frequenza/configurazione. Controllare, in sola lettura, le calibrazioni in `/home/mazzitel/flash-data/data/LNF/calib/`; non confondere S21 del solo TWPA con transfer function complessiva.
