@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 7 (FET/TWPA hardware clarification)
+**Aggiornamento:** 2026-11-22 · baseline 8 (VNA provenance check planned)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -126,3 +126,7 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 **Conferma diretta dell'utente:** nelle acquisizioni precedenti, incluso il periodo di Run2 di riferimento, il primo stadio di amplificazione era un **FET**, installato **al posto del TWPA guasto**. Per Run3 (1148 e 1429), i metadati indicano `With_TWPA=True` e pump acceso. **La tesi di Valeria** è indicata dall'utente come fonte storica, ma il testo della tesi non è stato letto direttamente durante questo aggiornamento: non attribuirle valori numerici non verificati.
 
 **Implicazione:** la differenza Run2/Run3 riguarda la **catena analogica di amplificazione**, non solo pump ON/OFF. Non interpretare differenze di RMS/PSD al piano ADC come variazioni di rumore della cavità. Per eventuali correzioni servono guadagno end-to-end e/o noise temperature riferiti a un piano dichiarato, per modo/frequenza/configurazione. Controllare, in sola lettura, le calibrazioni in `/home/mazzitel/flash-data/data/LNF/calib/`; non confondere S21 del solo TWPA con transfer function complessiva.
+
+## 10. Provenienza delle misure VNA per run — verifica richiesta
+
+L'utente segnala che **le bank MIDAS** dovrebbero riportare **l'ultima misura VNA valida**. Questa informazione è **da verificare** in BOR/ODB/bank e nei metadati ROOT, senza dedurre validità da un semplice riferimento o dalla data del file. Per run 680, 1148 e 1429: risalire per ciascun modo a riferimento VNA (timestamp, file, percorso, configurazione), riconciliarlo con `/home/mazzitel/flash-data/data/LNF/calib/`, e distinguere l'ultimo riferimento archiviato dalla calibrazione effettivamente applicabile (FET/TWPA, pump, piano di misura, frequenze). Verificare in particolare i tre riferimenti esterni Mode3 del 1429 segnalati come non reperiti. Nessuna correzione PSD prima della verifica.
