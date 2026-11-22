@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 10 (Valeria thesis cross-check)
+**Aggiornamento:** 2026-11-22 · baseline 11 (VNA ODB stride defect confirmed)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -155,3 +155,15 @@ L'utente segnala che **le bank MIDAS** dovrebbero riportare **l'ultima misura VN
 - **§5.2, pp. 94–99:** coefficiente di correzione della risposta in frequenza della down-conversion `k_z(f)` per modo, distinto dal guadagno complessivo della catena RF. Per correzioni fisiche evitare confusione tra queste calibrazioni.
 
 **Azione:** usare la tesi come riferimento per definizioni e metodo; indagare l'ordine degli array ODB nei frontend/parser. Nessuna correzione applicata a PSD o dati pubblicati.
+
+## 13. Anomalia VNA ODB confermata — diagnosi Codex (22/11/2026)
+
+**Fonte:** rapporto Codex inoltrato dall'utente; diagnosi locale `comparison/root-pilot/VNA_LAYOUT_DIAGNOSIS.md` e campioni `comparison/root-pilot/tables/vna_indexed_samples.csv` nel worktree `run2-run3-pilot`, non letti direttamente da ChatGPT.
+
+- Il difetto si presenta in **tutti e tre i run 680, 1148 e 1429**, non soltanto nei Run3.
+- Con vettore dei file VNA interlacciato `F=[Re0, Im0, Re1, Im1, …]`, Codex ha verificato `ODB Real[k]=F[k]` e `ODB Imag[k]=F[k+1]`. Soltanto il primo punto corrisponde alle coppie corrette; gli altri mescolano componenti e frequenze.
+- Ipotesi tecnica molto forte (non ancora prova sulla versione storica installata): il binding MIDAS Python su CVMFS converte ndarray tramite puntatore `ctypes` **ignorando gli stride NumPy**, quindi viste `buffer[::2]` e `buffer[1::2]` sarebbero serializzate come sequenze contigue sfalsate.
+- Il frontend `Calibration.py` scrive `freq,y1,y2` nel file e passa `y1,y2` a `odb_set`; non applica esplicitamente sfalsamenti. Il parser `FitCall.py` costruisce i moduli `sqrt(Re²+Im²)` dalle colonne della stessa riga **del file originale**, non dagli array ODB sospetti: i fit eseguiti per questo percorso **non sono affetti**. La validità di ogni fit storico resta da verificare rispetto alle versioni e sorgenti realmente usate.
+- **RMS/PSD e altri prodotti del pilota ROOT rimangono invariati**: nessuna calibrazione VNA era stata applicata.
+- **Rimedio proposto ma non applicato:** validare driver e versione effettiva; materializzare array contigui prima dell'ODB write (oppure correggere il binding); eseguire un test round-trip in ODB *isolato*, mai in produzione. Conservare gli array storici originali e documentarne i limiti; per misure VNA complesse usare i file sorgente attendibili.
+- **Incidente di sicurezza separato:** Codex ha segnalato che materiale contenente una credenziale SSH è apparso nell'output di uno strumento; considerare la credenziale potenzialmente esposta, sostituirla e rimuovere la chiave pubblica precedente dai sistemi autorizzati. **Non archiviare contenuto, posizione o fingerprint della credenziale nel repository.**
