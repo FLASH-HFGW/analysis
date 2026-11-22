@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 4 (storage policy)
+**Aggiornamento:** 2026-11-22 · baseline 5 (three-ROOT pilot)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -84,3 +84,25 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 **B:** discutere la nuova autoreco leggera, una volta chiuso il controllo documentale: specificare HDF5, FFT 1 s, semantica statistiche/anomalie, prestazioni della lettura MIDAS e distinzione delle convenzioni tra `SPEC` e Run3. Non anticipare implementazione senza piano.
 
 **Procedura di handover:** dopo nuovi risultati scientifici aggiornare data, provenienza, branch/commit, percorsi, numeri, osservabili, incertezze e prossima azione su questo file, con nuovo commit sul branch documentale. Non presentare risultati solo riferiti da Codex come verificati direttamente da ChatGPT.
+
+## 7. Pilota comparativo Run2–Run3 — completato secondo Codex (22/11/2026)
+
+**Fonte:** rapporto sintetico di Codex inoltrato dall'utente; i prodotti locali indicati non sono stati aperti direttamente da ChatGPT. **Run analizzati esclusivamente:** 680 (Run2), 1148 (Run3-A 1148–1422), 1429 (Run3-B dal 1429). Sono *casi pilota*, non campioni dimostrati rappresentativi delle campagne.
+
+**Worktree:** `/home/mazzitel/HFGW/worktrees/run2-run3-pilot`; branch `run2-run3-pilot-design-20261122`. Rapporto `comparison/root-pilot/REPORT.md`, figure in `comparison/root-pilot/figures/`, tabelle `comparison/root-pilot/tables/{statistics,line_candidates}.csv`, manifest `comparison/root-pilot/manifest.json`. Tutti i percorsi sono locali: non assumere che i file siano già su GitHub.
+
+**RMS totale, mV, calcolato su 209 finestre complete:**
+
+| Modo | Run 680 | Run 1148 | Run 1429 |
+|---|---:|---:|---:|
+| TM010 | 32,2627 | 22,7850 | 22,7870 |
+| TM011 | 20,7839 | 14,7795 | 14,7899 |
+| TM012 | 13,7333 | 8,0356 | 9,1010 |
+
+**Variazione della potenza integrata Run 1429 vs 1148**, dichiarata da Codex: TM010 **+0,0175%**, TM011 **+0,1408%**, TM012 **+28,2746%**. Spettralmente: in TM010, 1148 presenta strutture strette fortemente ridotte in 1429, con fondo simile; in TM012, 1429 presenta un livello broadband maggiore. Sono osservazioni **al piano ADC**, non conclusioni sull'origine fisica del rumore.
+
+**Qualità e risorse dichiarate:** schema/convenzioni e copie SHA-256 verificati da Codex; Parseval max circa `1,27e-7`; due comandi scientifici ~15 s, RAM max 660 MiB, file copiati 469,7 MB, spazio finale ~457 MiB. Nessun raw MIDAS, nessun HTCondor, nessuna modifica produzione. Traffico fisico GPFS non direttamente misurato.
+
+**Limitazioni:** ROOT standard non conserva distribuzioni I/Q, fasi per campione, incrementi di fase e ACF lineare. Il benchmark completo v50 su questi osservabili non è ancora replicato; richiede diagnostica raw separata o prodotti storici già esistenti. Non dichiarare completata quella parte del confronto.
+
+**Prossime attività:** esaminare `REPORT.md`, `statistics.csv` e `line_candidates.csv` (eventualmente tramite push sul branch del pilota, senza dati grandi); valutare numericamente le caratteristiche delle righe TM010 e del rumore TM012, le bande e differenze di hardware/guadagno. Solo dopo definire estensione temporale alle campagne e diagnostica di fase/ACF. Applicare sempre la policy GPFS/GFAL/locale.
