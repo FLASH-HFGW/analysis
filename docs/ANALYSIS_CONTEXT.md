@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 5 (three-ROOT pilot)
+**Aggiornamento:** 2026-11-22 · baseline 6 (ADC calibration audit)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -106,3 +106,17 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 **Limitazioni:** ROOT standard non conserva distribuzioni I/Q, fasi per campione, incrementi di fase e ACF lineare. Il benchmark completo v50 su questi osservabili non è ancora replicato; richiede diagnostica raw separata o prodotti storici già esistenti. Non dichiarare completata quella parte del confronto.
 
 **Prossime attività:** esaminare `REPORT.md`, `statistics.csv` e `line_candidates.csv` (eventualmente tramite push sul branch del pilota, senza dati grandi); valutare numericamente le caratteristiche delle righe TM010 e del rumore TM012, le bande e differenze di hardware/guadagno. Solo dopo definire estensione temporale alle campagne e diagnostica di fase/ACF. Applicare sempre la policy GPFS/GFAL/locale.
+
+## 8. Audit calibrazione pilota 680 / 1148 / 1429 — Codex, 22/11/2026
+
+**Fonte:** risposta Codex inoltrata dall'utente; rapporto completo locale `/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/CALIBRATION_AUDIT.md`, **non letto direttamente** da ChatGPT.
+
+- Codex non ha rilevato errori nella conversione ADC: **ogni run usa BOR del proprio input**, con scale I e Q lette separatamente. Il pilota legge i valori in volt già archiviati nel ROOT, **non riapplica** il fattore del run 680 e non applica correzioni RF. La verifica è su codice e metadati, senza nuova conversione dal raw.
+- Tutti e tre i run: TM010 CH0/CH1, TM011 CH2/CH3, TM012 CH4/CH5; intervallo ADC **±2 V per canale**, `4/65535 V/count = 61.0361 µV/count`, campionamento **5 MHz**, convenzione `z=I-iQhardware` (risultato specifico dei tre run verificati, da non generalizzare ad altri run).
+- **Run 680:** pump spento; tracce VNA presenti; nessuna calibrazione end-to-end verificata.
+- **Run 1148:** pump acceso, `With_TWPA=True`; mappa pump e riferimenti VNA Mode3 documentati; non bastano per definire un guadagno end-to-end dei tre modi.
+- **Run 1429:** pump acceso, `With_TWPA=True`; mappa pump documentata; tre riferimenti esterni del fit Mode3 non reperiti nell'evidenza archiviata.
+- **Non** usare il massimo S21 della TWPA come guadagno di calibrazione applicabile automaticamente alla PSD. `Input_Atten=0` della spectrum analyzer **non** equivale ad attenuazione nulla della catena I/Q.
+- Risultati RMS/PSD, istogrammi `|z|` e righe spettrali del pilota confrontabili **solo al piano ADC**, con bande e campioni dichiarati. Non dedurre da essi temperatura di rumore, rumore intrinseco della cavità o sensibilità riferita all'ingresso in assenza di risposta end-to-end per run, modo e frequenza.
+- **Conseguenza essenziale:** differenze tra run 680 (pump OFF) e Run3 (pump ON) sono confondibili con il cambiamento della catena RF. Anche TM012 1148→1429 (+28,2746% potenza ADC) non dimostra da sola un cambiamento del rumore fisico.
+- Nessuna correzione numerica necessaria al confronto **ADC**; nessuna modifica di prodotti originali. Prima dell'interpretazione fisica: recuperare eventuali curve calibrate di trasferimento/guadagno e condizioni RF.
