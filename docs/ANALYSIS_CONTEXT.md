@@ -1,8 +1,8 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 2
+**Aggiornamento:** 2026-11-22 · baseline 3 (review documentale)
 **Repository:** https://github.com/FLASH-HFGW/analysis
-**Fonte dell'ultimo aggiornamento:** risposta finale Codex riportata dall'utente il 22/11/2026. **I file remoti non sono stati ancora verificati indipendentemente da ChatGPT.**
+**Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
 ## 1. Workstream separati
 
@@ -27,7 +27,7 @@
 
 **Ambiente isolato:** worktree `/home/mazzitel/HFGW/worktrees/run680-root31-reference`; branch `run680-root31-reference-20261122`.
 
-Codex dichiara rispettati i vincoli: nessuna modifica alla produzione Run3, a `autoreco_run3.json`, cron, orchestratore, wrapper, logbook, ROOT/HDF5 pubblicati; nessun altro run elaborato. Il job HTCondor isolato `4820.0` non è partito (`NumJobStarts=0`) ed è stato rimosso; elaborazione svolta in altro modo secondo il rapporto, da chiarire soltanto se rilevante alla provenienza.
+Codex dichiara rispettati i vincoli: nessuna modifica alla produzione Run3, a `autoreco_run3.json`, cron, orchestratore, wrapper, logbook, ROOT/HDF5 pubblicati; nessun altro run elaborato. Il job HTCondor isolato `4820.0` non è partito (`NumJobStarts=0`) ed è stato rimosso; `validation.json` indica elaborazione **isolated UI scratch** (wall 326,836 s; CPU 373,699 s; max RSS 739672 KiB).
 
 ## 3. MIDAS SPEC run 680 — convenzioni accertate nel rapporto Codex
 
@@ -70,7 +70,7 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 
 ## 6. Stato e prossime azioni
 
-**A:** produzione run 680 dichiarata completata da Codex; **rimane l'eventuale verifica esterna di esistenza/checksum del ROOT e lettura integrale di validation_report.md e validation.json**. Nessuna ricostruzione ulteriore richiesta.
+**A:** produzione run 680 dichiarata completata da Codex; `validation_report.md` e `validation.json` sono stati esaminati attraverso le trascrizioni fornite dall'utente; **verifiche aritmetiche indipendenti sui valori riportati superate** (conteggi, PPS compatibili, relazioni RMS-varianze, differenze ppm). La review integrale è in [RUN680_VALIDATION_REVIEW_20261122.md](RUN680_VALIDATION_REVIEW_20261122.md). **Rimane facoltativa la verifica read-only di esistenza/checksum del ROOT remoto**. Nessuna ricostruzione ulteriore richiesta.
 
 **B:** discutere la nuova autoreco leggera, una volta chiuso il controllo documentale: specificare HDF5, FFT 1 s, semantica statistiche/anomalie, prestazioni della lettura MIDAS e distinzione delle convenzioni tra `SPEC` e Run3. Non anticipare implementazione senza piano.
 
