@@ -1,6 +1,6 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
-**Aggiornamento:** 2026-11-22 · baseline 8 (VNA provenance check planned)
+**Aggiornamento:** 2026-11-22 · baseline 9 (VNA reference audit)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale](RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
 
@@ -115,7 +115,7 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 - Tutti e tre i run: TM010 CH0/CH1, TM011 CH2/CH3, TM012 CH4/CH5; intervallo ADC **±2 V per canale**, `4/65535 V/count = 61.0361 µV/count`, campionamento **5 MHz**, convenzione `z=I-iQhardware` (risultato specifico dei tre run verificati, da non generalizzare ad altri run).
 - **Run 680:** pump spento; tracce VNA presenti; nessuna calibrazione end-to-end verificata.
 - **Run 1148:** pump acceso, `With_TWPA=True`; mappa pump e riferimenti VNA Mode3 documentati; non bastano per definire un guadagno end-to-end dei tre modi.
-- **Run 1429:** pump acceso, `With_TWPA=True`; mappa pump documentata; tre riferimenti esterni del fit Mode3 non reperiti nell'evidenza archiviata.
+- **Run 1429:** pump acceso, `With_TWPA=True`; mappa pump documentata; tre riferimenti esterni del fit Mode3 precedentemente segnalati come non reperiti; **l'audit successivo li ha ritrovati**.
 - **Non** usare il massimo S21 della TWPA come guadagno di calibrazione applicabile automaticamente alla PSD. `Input_Atten=0` della spectrum analyzer **non** equivale ad attenuazione nulla della catena I/Q.
 - Risultati RMS/PSD, istogrammi `|z|` e righe spettrali del pilota confrontabili **solo al piano ADC**, con bande e campioni dichiarati. Non dedurre da essi temperatura di rumore, rumore intrinseco della cavità o sensibilità riferita all'ingresso in assenza di risposta end-to-end per run, modo e frequenza.
 - **Conseguenza essenziale:** differenze tra run 680 (pump OFF) e Run3 (pump ON) sono confondibili con il cambiamento della catena RF. Anche TM012 1148→1429 (+28,2746% potenza ADC) non dimostra da sola un cambiamento del rumore fisico.
@@ -130,3 +130,16 @@ Gli istogrammi di fase, gli incrementi di fase e l'autocorrelazione **lineare** 
 ## 10. Provenienza delle misure VNA per run — verifica richiesta
 
 L'utente segnala che **le bank MIDAS** dovrebbero riportare **l'ultima misura VNA valida**. Questa informazione è **da verificare** in BOR/ODB/bank e nei metadati ROOT, senza dedurre validità da un semplice riferimento o dalla data del file. Per run 680, 1148 e 1429: risalire per ciascun modo a riferimento VNA (timestamp, file, percorso, configurazione), riconciliarlo con `/home/mazzitel/flash-data/data/LNF/calib/`, e distinguere l'ultimo riferimento archiviato dalla calibrazione effettivamente applicabile (FET/TWPA, pump, piano di misura, frequenze). Verificare in particolare i tre riferimenti esterni Mode3 del 1429 segnalati come non reperiti. Nessuna correzione PSD prima della verifica.
+
+## 11. Risultato audit VNA (Codex, 22/11/2026)
+
+**Fonte:** resoconto Codex fornito dall'utente; rapporto completo locale `/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/VNA_REFERENCE_AUDIT.md`, CSV `tables/vna_references.csv`, inventario `vna_file_inventory.json` — **non letti direttamente in questa sessione ChatGPT**.
+
+- Le misure VNA individuate **coprono la frequenza nominale del rispettivo modo**, ma **nessuna è dimostrata calibrazione end-to-end cavità→ADC**: routing, piano di misura, configurazione FET, condizioni della catena non sono verificati.
+- **Nessuna bank contenente una misura VNA** negli inventari dei tre run; le tracce provengono dagli **snapshot ODB**. La sezione VNA di BOR/EOR è invariata, salvo `Statistics`.
+- **I riferimenti esterni Mode3 del run 1429 risultano ora presenti**; la precedente segnalazione di assenza è superata.
+- **S11** mostra aggiornamento del **16 luglio** in tutti e tre i run: non prova una nuova acquisizione VNA durante Run3.
+- **Anomalia critica da verificare:** nei run 1148 e 1429 gli array ODB denominati `Real/Imag` corrispondono a sequenze **interlacciate e sfalsate** rispetto alle colonne separate dei file calibrazione. Non trattare tali array ODB come risposta complessa prima di aver chiarito schema e ordine dei dati.
+- Non applicare correttivi alle PSD dei ROOT; i confronti esistenti restano soltanto in unità ADC.
+
+**Prossima azione mirata:** chiedere a Codex di indagare il writer/parser della VNA in ODB e confrontare pochi valori indicizzati dai file sorgente, senza nuovi raw o job; determinare se sia un semplice errore di serializzazione/naming, una disposizione prevista o una discrepanza effettiva. Mantenere distinta questa verifica dalla calibrazione RF end-to-end.
