@@ -7,10 +7,10 @@ run,start_utc,end_utc,since_start_s,hourly_targets,control,endpoint,raw_bytes,st
 1513,2026-11-20T22:42:25+00:00,2026-11-20T22:45:55+00:00,17898,[5],False,False,9319882927,raw_validated_longitudinal
 1529,2026-11-20T23:39:14+00:00,2026-11-20T23:42:44+00:00,21307,[],True,False,9317975773,raw_validated_longitudinal
 1530,2026-11-20T23:42:47+00:00,2026-11-20T23:46:17+00:00,21520,[6],False,False,9316509942,raw_validated_longitudinal
-1547,2026-11-21T00:43:08+00:00,2026-11-21T00:46:38+00:00,25141,[7],False,False,9318710166,ROOT metadata validated; raw size and gzip header verified
-1564,2026-11-21T01:43:29+00:00,2026-11-21T01:46:59+00:00,28762,[8],False,False,9319697869,ROOT metadata validated; raw size and gzip header verified
-1581,2026-11-21T02:43:50+00:00,2026-11-21T02:47:20+00:00,32383,[9],False,False,9326061430,ROOT metadata validated; raw size and gzip header verified
-1598,2026-11-21T03:44:12+00:00,2026-11-21T03:47:42+00:00,36005,[10],False,False,9325240336,ROOT metadata validated; raw size and gzip header verified
+1547,2026-11-21T00:43:08+00:00,2026-11-21T00:46:38+00:00,25141,[7],False,False,9318710166,raw_validated_longitudinal
+1564,2026-11-21T01:43:29+00:00,2026-11-21T01:46:59+00:00,28762,[8],False,False,9319697869,raw_validated_longitudinal
+1581,2026-11-21T02:43:50+00:00,2026-11-21T02:47:20+00:00,32383,[9],False,False,9326061430,raw_validated_longitudinal
+1598,2026-11-21T03:44:12+00:00,2026-11-21T03:47:42+00:00,36005,[10],False,False,9325240336,raw_validated_longitudinal
 1615,2026-11-21T04:44:33+00:00,2026-11-21T04:48:03+00:00,39626,[11],False,False,9327364365,ROOT metadata validated; raw size and gzip header verified
 1629,2026-11-21T05:34:15+00:00,2026-11-21T05:37:46+00:00,42608,[],True,False,9331886492,ROOT metadata validated; raw size and gzip header verified
 1632,2026-11-21T05:44:55+00:00,2026-11-21T05:48:25+00:00,43248,[12],False,False,9329106025,ROOT metadata validated; raw size and gzip header verified
