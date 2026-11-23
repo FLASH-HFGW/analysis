@@ -1,5 +1,11 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
+## Approved Dataset 2 completion
+
+The approved 24-run selection is processed in chronological batches. Run 1429 and the initial three validated runs are reused.
+
+- Runs 1497, 1513, 1529, 1530 validated and committed as `2feba817618161f19fa80fb5a2a8308e0f65d7b4`.
+
 
 ## Active checkpoint · Dataset 2 hourly Run3-B sample
 
@@ -7,7 +13,7 @@
 - Run 1429 is reused. Runs 1446, 1463 and 1480 passed the initial batch. The 24-run selection uses actual archived acquisition times through Run 1748. Raw-only 1749–1910 is outside the reconstructed study.
 - Successful raw streams used 27.95 GB, 456.9 s and 571.4 MiB peak RSS. Recorded PPS defects matched archived ROOT validation and timing remains in the received-sample domain.
 - Selection, presentation paths, results and provenance are in [the longitudinal report](../reporting/tail_coincidence_study/validation/LONGITUDINAL_REPORT.md) and the [persistent handover](TAIL_COINCIDENCE_HANDOVER.md).
-- The next batch (1497, 1513, 1529, 1530) is held for review. Preserve completed runs, including the existing 17-slide checkpoint, and keep future changes on the pilot branch.
+- The remaining twenty runs were subsequently approved. Preserve completed runs, including the existing 17-slide checkpoint, and keep future changes on the pilot branch.
 
 The remainder records the earlier scientific context.
 
