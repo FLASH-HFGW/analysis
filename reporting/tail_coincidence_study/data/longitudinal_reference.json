@@ -1,0 +1,22 @@
+{
+  "run": 1429,
+  "source": "reporting/rayleigh_tail_diagnostics/tables/threshold_baseline.csv",
+  "sha256": "c7d441cf0f94fc0e31dd4c48d13f6f8011bde2b91feaeff5ec61fd1e778913d9",
+  "counts": {
+    "TM010": {
+      "T3": 7366588,
+      "T5": 122446,
+      "T7": 1368
+    },
+    "TM011": {
+      "T3": 6932218,
+      "T5": 71664,
+      "T7": 232
+    },
+    "TM012": {
+      "T3": 7688544,
+      "T5": 116456,
+      "T7": 827
+    }
+  }
+}

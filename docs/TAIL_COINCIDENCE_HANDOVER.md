@@ -1,5 +1,15 @@
 # Persistent handover: FLASH tail and coincidence study
 
+## Dataset 2 longitudinal initial batch — 23 November 2026
+
+- Active checkpoint: the hourly selection and validated runs 1446, 1463 and 1480 are in the commit that adds this section. Run 1429 was reused without a new raw pass.
+- Dataset 2 origin is Run 1429 at 2026-11-20 17:44:07 UTC. The available reconstruction ends with Run 1748 at 2026-11-21 13:05:00 UTC. There are 24 selected runs, including the 1529/1629/1729 controls and Run 1748. Live listings show 314 reconstructed runs and raw-only 1749–1910 beyond the cutoff, plus six ROOT gaps before it.
+- Selection, diagnostics, receipts and the separate English PDF/PPTX are documented in `reporting/tail_coincidence_study/validation/LONGITUDINAL_REPORT.md`. The original 17-slide checkpoint remains available. New PDF/PPTX files are under `reporting/tail_coincidence_study/presentation/longitudinal/`.
+- The three successful raw passes used 27,946,454,470 compressed bytes and 456.9 s, with 571.4 MiB peak process RSS. The initial interrupted 1446 pass was retried after handling the archived PPS defect. PPS remains qualified for acquisition-domain timing only.
+- Remaining batch execution is held for review. Recommended next runs are 1497, 1513, 1529 and 1530. Later science should retain the RF epoch boundary at Run 1670 and use stronger correlated-noise nulls before interpreting statistical significance.
+
+The sections below document the preceding Run 1429 checkpoint.
+
 Session closed: 23 November 2026. Worktree: `/home/mazzitel/HFGW/worktrees/run2-run3-pilot`. Branch: `run2-run3-pilot-design-20261122`. Origin: `https://github.com/FLASH-HFGW/analysis.git`. Main and production were not modified. No scientific computation or raw processing was repeated during session closure.
 
 ## Committed milestones and execution state

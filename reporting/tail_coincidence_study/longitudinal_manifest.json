@@ -1,0 +1,432 @@
+{
+  "reference_checkpoint": "30fd84ac09ef1644708e2117041b7b9f0a21c9e3",
+  "processed": [
+    1446,
+    1463,
+    1480
+  ],
+  "selected": [
+    1429,
+    1446,
+    1463,
+    1480,
+    1497,
+    1513,
+    1529,
+    1530,
+    1547,
+    1564,
+    1581,
+    1598,
+    1615,
+    1629,
+    1632,
+    1649,
+    1666,
+    1676,
+    1692,
+    1709,
+    1727,
+    1729,
+    1743,
+    1748
+  ],
+  "files": [
+    {
+      "path": "slide_deck.py",
+      "size": 7352,
+      "sha256": "4a0f88f561b510df7ca961ab320c807c4dd20f4505b5016e9e0196a2a541e4cc",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/algorithms.py",
+      "size": 1406,
+      "sha256": "6e76ff3e42165c99c0c507e688b2dbdfebb532eea848e4151c87fd84bc45f1a1",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/report_longitudinal.py",
+      "size": 11822,
+      "sha256": "39671ca008be8b74b4311efc43532253527321c3f6adfb053cc39b12184a63bf",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/select_longitudinal.py",
+      "size": 6183,
+      "sha256": "2de1fd2725794cd50bfadf42ae829e3d6f80196d115312dc65cfc6aa0a041bf7",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/stream_longitudinal.py",
+      "size": 15686,
+      "sha256": "14e8c37f29bde46b41bcdd420b7f16c6452895d0fa01f4274b1501602394af02",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/test_longitudinal.py",
+      "size": 2216,
+      "sha256": "2ce9cd8cd5783866433648da3a8b2c1964b6a7c18080a3697b85232d36196934",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/code/validate_longitudinal.py",
+      "size": 3038,
+      "sha256": "0720f6206c78ba74850e2408780eb402090cfe8aa36e41cae2b05c42094da3b4",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/data/longitudinal_selection.json",
+      "size": 35943,
+      "sha256": "a6e7959beae0a7b1388f3dcf65100757979d2a422a8775835baea8ac365da78b",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/T7_rate_Hz.png",
+      "size": 96310,
+      "sha256": "e8ad20bb04d9c3a78e006b1fac582ffc090bc6ca458032ee9e64c0c9bf8871f0",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/cluster_rate_Hz.png",
+      "size": 95495,
+      "sha256": "3447c87b9813a15e2a59f46f94438b2f5d5f7d142641193ebd2e52bfbeac6bc0",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/coincidences.png",
+      "size": 83887,
+      "sha256": "579afdaa2b96d44162a38f8e6baad2054d6baa58b2e1822d6be40cdfee5eb806",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/full_band_psd_power_V2.png",
+      "size": 127983,
+      "sha256": "886834b9eddacbdf40e35a3dd6c0d260eae07a4e2e831e8ac44dd33fe26b0b01",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/matched_T7_ratio.png",
+      "size": 105933,
+      "sha256": "89e4cceb8182903390eb2d9724afa9347f8248b325cca703cf11809998a3072c",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/reference_occupancy.png",
+      "size": 54384,
+      "sha256": "acd1734214ba5dce48af33703cf40a4df9b8731d07ff513150295e368d14b0b3",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/rms_V.png",
+      "size": 113941,
+      "sha256": "6855465fd05c18ab0d7702bdbd8006de91ba72dcc8573125bdad7375758a12aa",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/temperature.png",
+      "size": 60770,
+      "sha256": "414e6fc45b7d5f9270cb51ef4cdc1b777149cb98588d9e35ad50b745db40315a",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/figures/longitudinal/within_run.png",
+      "size": 635918,
+      "sha256": "7451df3294559642b914a2230e1d2df7be663b4fc35a68ef25fee5ba4e4edb06",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/contact_sheet.png",
+      "size": 644171,
+      "sha256": "306d39904ea4048d3c6e09636d469826dc3ac22396143f922a03776a56917129",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/iq_noise_summary_tail_coincidence_longitudinal.pdf",
+      "size": 1737420,
+      "sha256": "c875ccd65fd6b32c30f66cf1e521b2ed52c61721a867b5a901fa0fe33cbabf6b",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/iq_noise_summary_tail_coincidence_longitudinal.pptx",
+      "size": 1345197,
+      "sha256": "b6f46cc3b1cfb42c22a8c61e05d097d2c1d953b6ec1acf4593de232cc7ce951c",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_01.png",
+      "size": 114376,
+      "sha256": "f434f269bd8b77d2b7897f6d71ae6e1522c7ef3bfb221d6329675716c0aa783d",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_02.png",
+      "size": 115820,
+      "sha256": "e2f40c95baa2c42896cd3bc12ddf943445d4eeea2531c619142791f08857bc8b",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_03.png",
+      "size": 139502,
+      "sha256": "8f261c48368ec7b4e65766db951442727ba314520697de162512d7e078213782",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_04.png",
+      "size": 110493,
+      "sha256": "cfe6fc1a501d35d72021f6c9b46621f33be2bad5b9bb576eb7ea2fac48c46f49",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_05.png",
+      "size": 128928,
+      "sha256": "65b28537702654e992aa517011d3da2e8dfe54f3f10fc0196ba26d47465620cb",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_06.png",
+      "size": 107404,
+      "sha256": "b937ecd734cff829827c93d8dd3e45daab9b117eed5fcbf8af4e1e90051f7ab5",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_07.png",
+      "size": 91297,
+      "sha256": "a9cd3cd0b51080652654f19f030e10117a9c362306ef516f896876032146db77",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_08.png",
+      "size": 121841,
+      "sha256": "10a0340ad4be159e0749ac9937c50ef24ba533bf17f235b50a8c3723a440fe71",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_09.png",
+      "size": 362525,
+      "sha256": "faa92c2c2f9000dcddca71b1d1e9c7edfef80a53c31b62bbeb5ab1d37613d8f3",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_10.png",
+      "size": 121662,
+      "sha256": "ab5be6c5b65c4fe3d08f9673cd4e5743eafbff980e2090f8df0485ec718aa0ea",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_11.png",
+      "size": 150123,
+      "sha256": "431f93956e8402e9321bdd36e934986d241f237698243b4f59f28ca574b6b8c9",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slide_model.json",
+      "size": 18065,
+      "sha256": "1244c03d73f05bc6359a243c5db9da7d90e6e0d4e4bbe5f98ebedf3580522d54",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal/slides_en.md",
+      "size": 4824,
+      "sha256": "3848227e5417f3a4fff2d395dfd58de7f8a3c45578f4bd64b0a35ad3aaaeac26",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/T7_samples.csv",
+      "size": 89184,
+      "sha256": "6cb90bed9c5a3052ad04be7d1096fa2683378a9356e1d2c56bd6d14aab6587dc",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/clusters.csv",
+      "size": 1067878,
+      "sha256": "093ad1535231a5099fd90ed6ed10e6b86d29607799123354cea3c6f53fc218dd",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/coincidence_summary.csv",
+      "size": 942,
+      "sha256": "b6f49b5b7a41c41295029178d973939fd9314442f8a57bd09a8a63c3a6b12d7e",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/coincidences.csv",
+      "size": 134,
+      "sha256": "8b64694e05a17d1b9aa7b227991378258bbb16bee3141b30150c6c2845d19407",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/seconds.csv",
+      "size": 34950,
+      "sha256": "e8ea883093b6a20106f616f27d878fbe7f5ebd6580a7fd8574ba446a53437a2c",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/spectral_seconds.csv",
+      "size": 43954,
+      "sha256": "198cc1d08b8cf2a621eaeeb1752c71a8528754dc51a365a5323f7a11209d8737",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/temperatures.csv",
+      "size": 3282,
+      "sha256": "38c47a6065b469e14e218b3f4390000cd373597eca3f8b7e9e6006b4594bbcd9",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1446/time_shifts.csv",
+      "size": 11896,
+      "sha256": "5a06d6c0f360233c39d01fdae25c835dfe75f0aeb639458f5dd95ebc70c80b9c",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/T7_samples.csv",
+      "size": 87938,
+      "sha256": "9aaec8b86c01afdd062b4dec34d4e276c1d6f15e055c99e3d4b9bdc75b32dfc9",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/clusters.csv",
+      "size": 1053639,
+      "sha256": "da9e04ef0b0d47453b5682983bd2c941b5ed1e6106d89e210e7a68f015929682",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/coincidence_summary.csv",
+      "size": 927,
+      "sha256": "c5795939a24f6862432fd3ce0e2894299c3d0385812af60b1d56dd9e736925a9",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/coincidences.csv",
+      "size": 86,
+      "sha256": "a4bd662e4e5343d84710e9650b20574720f3c6762c3956891832127147fdd7b0",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/seconds.csv",
+      "size": 34950,
+      "sha256": "3df037d6d7bef0f161032d035492eb50028593986c00f43ded5a38902682e4e3",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/spectral_seconds.csv",
+      "size": 43957,
+      "sha256": "0e2f346b994f97045b15229e12d3da319e245b878ecbc380fd563c9d2c06af3c",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/temperatures.csv",
+      "size": 3303,
+      "sha256": "7c90aad1e201117e6f0ed80ac9d9ec21cdf24a810e05900f3703a6a8e39581e2",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1463/time_shifts.csv",
+      "size": 11896,
+      "sha256": "f22a16d5e21a0e6fb3d64f3a31bd69e83ca0d833c53d772b80c5fadd9264eba3",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/T7_samples.csv",
+      "size": 87356,
+      "sha256": "156ea0d97c8fe9dcb4aad2593781f82b7c3c55a2394a7936490731cb0b1e8974",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/clusters.csv",
+      "size": 1047305,
+      "sha256": "3eb3733ba1a66419035a848b665406907a5e3864fa731ef9c5d2cfee8579e8b4",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/coincidence_summary.csv",
+      "size": 926,
+      "sha256": "11c7095577364a542c735207e067a0cede839c887645b1cf803ae747adbf5f9d",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/coincidences.csv",
+      "size": 86,
+      "sha256": "5120586ce3fb1492d25a9e2a190c5e6980af6054aad31b4365d296cf745da49f",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/seconds.csv",
+      "size": 34944,
+      "sha256": "566b22f60170ad43b076f89401cb59c92245b183a59999c519e46cd506484421",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/spectral_seconds.csv",
+      "size": 43939,
+      "sha256": "2b1041377dce3d630a52701975e6acfd0af1825eab360cdf7f6e604b2c08115f",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/temperatures.csv",
+      "size": 3304,
+      "sha256": "01b992db31b33ef908a6c979abe0ea3e40cf2fe51cdc729836182522f3c15257",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal/1480/time_shifts.csv",
+      "size": 11896,
+      "sha256": "fbfaff661294275e925e5af59c50062cf4364628e6941a3b7124f69d48eea28f",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_candidates.csv",
+      "size": 37145,
+      "sha256": "61a04ea8332898a45eed15ccf2072c58c9ef6d2b84b4327e46162a54ee485abf",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_configuration.csv",
+      "size": 2242,
+      "sha256": "abb36246db2d699b746166843ec39f4bed13cd248b434b1908c61dd2690a8373",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_raw_only.csv",
+      "size": 8046,
+      "sha256": "687266641a2c8167631a26824503b934a1fedc0d1a99b186989838aea5d81f1b",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_selection.csv",
+      "size": 3551,
+      "sha256": "084529a6d771ae48813aaf9f7ced0d4d705e2be8dab743708a0bac30d53c85ca",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_summary.csv",
+      "size": 3307,
+      "sha256": "02dde398164f4dd06c87f73705023e19dc0e7956264a21246adc4b511e0c970c",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/tables/longitudinal_thermal_summary.csv",
+      "size": 1965,
+      "sha256": "aad8d7a2a52b9f77014d3949ebaddfb6136ba44f2d7990c55d8efc8706c96973",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/validation/longitudinal/1446.json",
+      "size": 2915,
+      "sha256": "ea8f5d0f52c282e9a4e030aee246161d8a10832b46867a467c05f6bd954212ec",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/validation/longitudinal/1463.json",
+      "size": 2899,
+      "sha256": "f30a8a186dedc7c74d3d97fceba2a439dd6461e92269e1eb10bc852119072d51",
+      "local_only": false
+    },
+    {
+      "path": "tail_coincidence_study/validation/longitudinal/1480.json",
+      "size": 2912,
+      "sha256": "fa2afc8126ab25257207ac707ab52143e76a32ac047323944c6c94fd8f612ecd",
+      "local_only": false
+    }
+  ]
+}

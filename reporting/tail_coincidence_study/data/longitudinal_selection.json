@@ -1,0 +1,1572 @@
+{
+  "source_sha256": "17b4fd350f0339693a17556c7336b4ff767a403d1044b5bfb235f937cfd0b9c2",
+  "source_snapshot": "2026-11-22T11:50:07.621408+00:00",
+  "selection_basis": "Nearest archived MIDAS BOR timestamp to each hourly target",
+  "dataset_start_utc": "2026-11-20T17:44:07+00:00",
+  "last_eligible": 1748,
+  "reconstructed_count": 314,
+  "raw_count": 482,
+  "reconstructed_end_utc": "2026-11-21T13:05:00+00:00",
+  "compatible_candidates": 314,
+  "raw_only_gaps": [
+    1724,
+    1726,
+    1738,
+    1742,
+    1745,
+    1747
+  ],
+  "later_raw_only": [
+    1749,
+    1750,
+    1751,
+    1752,
+    1753,
+    1754,
+    1755,
+    1756,
+    1757,
+    1758,
+    1759,
+    1760,
+    1761,
+    1762,
+    1763,
+    1764,
+    1765,
+    1766,
+    1767,
+    1768,
+    1769,
+    1770,
+    1771,
+    1772,
+    1773,
+    1774,
+    1775,
+    1776,
+    1777,
+    1778,
+    1779,
+    1780,
+    1781,
+    1782,
+    1783,
+    1784,
+    1785,
+    1786,
+    1787,
+    1788,
+    1789,
+    1790,
+    1791,
+    1792,
+    1793,
+    1794,
+    1795,
+    1796,
+    1797,
+    1798,
+    1799,
+    1800,
+    1801,
+    1802,
+    1803,
+    1804,
+    1805,
+    1806,
+    1807,
+    1808,
+    1809,
+    1810,
+    1811,
+    1812,
+    1813,
+    1814,
+    1815,
+    1816,
+    1817,
+    1818,
+    1819,
+    1820,
+    1821,
+    1822,
+    1823,
+    1824,
+    1825,
+    1826,
+    1827,
+    1828,
+    1829,
+    1830,
+    1831,
+    1832,
+    1833,
+    1834,
+    1835,
+    1836,
+    1837,
+    1838,
+    1839,
+    1840,
+    1841,
+    1842,
+    1843,
+    1844,
+    1845,
+    1846,
+    1847,
+    1848,
+    1849,
+    1850,
+    1851,
+    1852,
+    1853,
+    1854,
+    1855,
+    1856,
+    1857,
+    1858,
+    1859,
+    1860,
+    1861,
+    1862,
+    1863,
+    1864,
+    1865,
+    1866,
+    1867,
+    1868,
+    1869,
+    1870,
+    1871,
+    1872,
+    1873,
+    1874,
+    1875,
+    1876,
+    1877,
+    1878,
+    1879,
+    1880,
+    1881,
+    1882,
+    1883,
+    1884,
+    1885,
+    1886,
+    1887,
+    1888,
+    1889,
+    1890,
+    1891,
+    1892,
+    1893,
+    1894,
+    1895,
+    1896,
+    1897,
+    1898,
+    1899,
+    1900,
+    1901,
+    1902,
+    1903,
+    1904,
+    1905,
+    1906,
+    1907,
+    1908,
+    1909,
+    1910
+  ],
+  "selected_raw_bytes": 223731797692,
+  "pilot_compressed_bytes_per_s": 58276307.18242419,
+  "remaining_raw_bytes": 214421283475,
+  "selected": [
+    {
+      "run": 1429,
+      "start_utc": "2026-11-20T17:44:07+00:00",
+      "end_utc": "2026-11-20T17:47:38+00:00",
+      "since_start_s": 0,
+      "hourly_targets": [
+        0
+      ],
+      "control": false,
+      "endpoint": true,
+      "raw_bytes": 9310514217,
+      "raw_mtime_ns": 1795197146000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01429.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01429_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "raw_validated_checkpoint"
+    },
+    {
+      "run": 1446,
+      "start_utc": "2026-11-20T18:44:32+00:00",
+      "end_utc": "2026-11-20T18:48:02+00:00",
+      "since_start_s": 3625,
+      "hourly_targets": [
+        1
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9312739174,
+      "raw_mtime_ns": 1795201089000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01446.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01446_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "raw_validated_longitudinal"
+    },
+    {
+      "run": 1463,
+      "start_utc": "2026-11-20T19:44:53+00:00",
+      "end_utc": "2026-11-20T19:48:24+00:00",
+      "since_start_s": 7246,
+      "hourly_targets": [
+        2
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9319633172,
+      "raw_mtime_ns": 1795204579000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01463.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01463_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "raw_validated_longitudinal"
+    },
+    {
+      "run": 1480,
+      "start_utc": "2026-11-20T20:45:15+00:00",
+      "end_utc": "2026-11-20T20:48:46+00:00",
+      "since_start_s": 10868,
+      "hourly_targets": [
+        3
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9314082124,
+      "raw_mtime_ns": 1795208343000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01480.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01480_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "raw_validated_longitudinal"
+    },
+    {
+      "run": 1497,
+      "start_utc": "2026-11-20T21:45:37+00:00",
+      "end_utc": "2026-11-20T21:49:07+00:00",
+      "since_start_s": 14490,
+      "hourly_targets": [
+        4
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9321197227,
+      "raw_mtime_ns": 1795211870000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01497.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01497_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1513,
+      "start_utc": "2026-11-20T22:42:25+00:00",
+      "end_utc": "2026-11-20T22:45:55+00:00",
+      "since_start_s": 17898,
+      "hourly_targets": [
+        5
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9319882927,
+      "raw_mtime_ns": 1795215320000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01513.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01513_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1529,
+      "start_utc": "2026-11-20T23:39:14+00:00",
+      "end_utc": "2026-11-20T23:42:44+00:00",
+      "since_start_s": 21307,
+      "hourly_targets": [],
+      "control": true,
+      "endpoint": false,
+      "raw_bytes": 9317975773,
+      "raw_mtime_ns": 1795218527000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01529.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01529_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1530,
+      "start_utc": "2026-11-20T23:42:47+00:00",
+      "end_utc": "2026-11-20T23:46:17+00:00",
+      "since_start_s": 21520,
+      "hourly_targets": [
+        6
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9316509942,
+      "raw_mtime_ns": 1795218953000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01530.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01530_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1547,
+      "start_utc": "2026-11-21T00:43:08+00:00",
+      "end_utc": "2026-11-21T00:46:38+00:00",
+      "since_start_s": 25141,
+      "hourly_targets": [
+        7
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9318710166,
+      "raw_mtime_ns": 1795222359000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01547.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01547_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1564,
+      "start_utc": "2026-11-21T01:43:29+00:00",
+      "end_utc": "2026-11-21T01:46:59+00:00",
+      "since_start_s": 28762,
+      "hourly_targets": [
+        8
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9319697869,
+      "raw_mtime_ns": 1795226207000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01564.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01564_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1581,
+      "start_utc": "2026-11-21T02:43:50+00:00",
+      "end_utc": "2026-11-21T02:47:20+00:00",
+      "since_start_s": 32383,
+      "hourly_targets": [
+        9
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9326061430,
+      "raw_mtime_ns": 1795229619000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01581.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01581_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1598,
+      "start_utc": "2026-11-21T03:44:12+00:00",
+      "end_utc": "2026-11-21T03:47:42+00:00",
+      "since_start_s": 36005,
+      "hourly_targets": [
+        10
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9325240336,
+      "raw_mtime_ns": 1795233409000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01598.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01598_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1615,
+      "start_utc": "2026-11-21T04:44:33+00:00",
+      "end_utc": "2026-11-21T04:48:03+00:00",
+      "since_start_s": 39626,
+      "hourly_targets": [
+        11
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9327364365,
+      "raw_mtime_ns": 1795237023000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01615.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01615_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1629,
+      "start_utc": "2026-11-21T05:34:15+00:00",
+      "end_utc": "2026-11-21T05:37:46+00:00",
+      "since_start_s": 42608,
+      "hourly_targets": [],
+      "control": true,
+      "endpoint": false,
+      "raw_bytes": 9331886492,
+      "raw_mtime_ns": 1795239919000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01629.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01629_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1632,
+      "start_utc": "2026-11-21T05:44:55+00:00",
+      "end_utc": "2026-11-21T05:48:25+00:00",
+      "since_start_s": 43248,
+      "hourly_targets": [
+        12
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9329106025,
+      "raw_mtime_ns": 1795240568000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01632.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01632_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1649,
+      "start_utc": "2026-11-21T06:45:16+00:00",
+      "end_utc": "2026-11-21T06:48:46+00:00",
+      "since_start_s": 46869,
+      "hourly_targets": [
+        13
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9330786863,
+      "raw_mtime_ns": 1795244025000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01649.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01649_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1666,
+      "start_utc": "2026-11-21T07:45:38+00:00",
+      "end_utc": "2026-11-21T07:49:08+00:00",
+      "since_start_s": 50491,
+      "hourly_targets": [
+        14
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9329066044,
+      "raw_mtime_ns": 1795247618000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01666.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01666_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743664000.0,
+        "freq Teled Ch1": 43331000,
+        "freq Teled Ch2": 102179000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1676,
+      "start_utc": "2026-11-21T08:45:50+00:00",
+      "end_utc": "2026-11-21T08:49:20+00:00",
+      "since_start_s": 54103,
+      "hourly_targets": [
+        15
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9320987331,
+      "raw_mtime_ns": 1795251220000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01676.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01676_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1692,
+      "start_utc": "2026-11-21T09:42:38+00:00",
+      "end_utc": "2026-11-21T09:46:08+00:00",
+      "since_start_s": 57511,
+      "hourly_targets": [
+        16
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9314106494,
+      "raw_mtime_ns": 1795254632000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01692.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01692_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1709,
+      "start_utc": "2026-11-21T10:43:00+00:00",
+      "end_utc": "2026-11-21T10:46:30+00:00",
+      "since_start_s": 61133,
+      "hourly_targets": [
+        17
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9311128826,
+      "raw_mtime_ns": 1795258264000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01709.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01709_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1727,
+      "start_utc": "2026-11-21T11:46:55+00:00",
+      "end_utc": "2026-11-21T11:50:25+00:00",
+      "since_start_s": 64968,
+      "hourly_targets": [
+        18
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9328086624,
+      "raw_mtime_ns": 1795262086000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01727.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01727_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1729,
+      "start_utc": "2026-11-21T11:54:01+00:00",
+      "end_utc": "2026-11-21T11:57:31+00:00",
+      "since_start_s": 65394,
+      "hourly_targets": [],
+      "control": true,
+      "endpoint": false,
+      "raw_bytes": 9330352671,
+      "raw_mtime_ns": 1795262527000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01729.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01729_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1743,
+      "start_utc": "2026-11-21T12:43:44+00:00",
+      "end_utc": "2026-11-21T12:47:14+00:00",
+      "since_start_s": 68377,
+      "hourly_targets": [
+        19
+      ],
+      "control": false,
+      "endpoint": false,
+      "raw_bytes": 9327904806,
+      "raw_mtime_ns": 1795265501000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01743.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01743_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    },
+    {
+      "run": 1748,
+      "start_utc": "2026-11-21T13:01:29+00:00",
+      "end_utc": "2026-11-21T13:05:00+00:00",
+      "since_start_s": 69442,
+      "hourly_targets": [],
+      "control": false,
+      "endpoint": true,
+      "raw_bytes": 9328776794,
+      "raw_mtime_ns": 1795266565000000000,
+      "raw_path": "/home/mazzitel/flash-data/data/LNF/run01748.mid.gz",
+      "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01748_iq_v3.1.root",
+      "samples": 1048576000,
+      "daq": {
+        "layout": "SPE",
+        "fs_hz": 5000000.0,
+        "ranges_mV": [
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          2000,
+          5000,
+          5000
+        ],
+        "pairs": {
+          "TM010": [
+            0,
+            1
+          ],
+          "TM011": [
+            2,
+            3
+          ],
+          "TM012": [
+            4,
+            5
+          ]
+        },
+        "iq": "I-iQhardware",
+        "with_twpa": true,
+        "pump_on": 1,
+        "pump_hz": 7891000000.0,
+        "pump_power_setting": -6.1
+      },
+      "lo": {
+        "freq RS": 8743655000.0,
+        "freq Teled Ch1": 43330000,
+        "freq Teled Ch2": 102199000,
+        "onoff RS": 0,
+        "onoff Teled Ch1": 0,
+        "onoff Teled Ch2": 0
+      },
+      "status": "ROOT metadata validated; raw size and gzip header verified"
+    }
+  ]
+}

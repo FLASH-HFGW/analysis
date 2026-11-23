@@ -1,0 +1,25 @@
+run,start_utc,end_utc,since_start_s,hourly_targets,control,endpoint,raw_bytes,status
+1429,2026-11-20T17:44:07+00:00,2026-11-20T17:47:38+00:00,0,[0],False,True,9310514217,raw_validated_checkpoint
+1446,2026-11-20T18:44:32+00:00,2026-11-20T18:48:02+00:00,3625,[1],False,False,9312739174,raw_validated_longitudinal
+1463,2026-11-20T19:44:53+00:00,2026-11-20T19:48:24+00:00,7246,[2],False,False,9319633172,raw_validated_longitudinal
+1480,2026-11-20T20:45:15+00:00,2026-11-20T20:48:46+00:00,10868,[3],False,False,9314082124,raw_validated_longitudinal
+1497,2026-11-20T21:45:37+00:00,2026-11-20T21:49:07+00:00,14490,[4],False,False,9321197227,ROOT metadata validated; raw size and gzip header verified
+1513,2026-11-20T22:42:25+00:00,2026-11-20T22:45:55+00:00,17898,[5],False,False,9319882927,ROOT metadata validated; raw size and gzip header verified
+1529,2026-11-20T23:39:14+00:00,2026-11-20T23:42:44+00:00,21307,[],True,False,9317975773,ROOT metadata validated; raw size and gzip header verified
+1530,2026-11-20T23:42:47+00:00,2026-11-20T23:46:17+00:00,21520,[6],False,False,9316509942,ROOT metadata validated; raw size and gzip header verified
+1547,2026-11-21T00:43:08+00:00,2026-11-21T00:46:38+00:00,25141,[7],False,False,9318710166,ROOT metadata validated; raw size and gzip header verified
+1564,2026-11-21T01:43:29+00:00,2026-11-21T01:46:59+00:00,28762,[8],False,False,9319697869,ROOT metadata validated; raw size and gzip header verified
+1581,2026-11-21T02:43:50+00:00,2026-11-21T02:47:20+00:00,32383,[9],False,False,9326061430,ROOT metadata validated; raw size and gzip header verified
+1598,2026-11-21T03:44:12+00:00,2026-11-21T03:47:42+00:00,36005,[10],False,False,9325240336,ROOT metadata validated; raw size and gzip header verified
+1615,2026-11-21T04:44:33+00:00,2026-11-21T04:48:03+00:00,39626,[11],False,False,9327364365,ROOT metadata validated; raw size and gzip header verified
+1629,2026-11-21T05:34:15+00:00,2026-11-21T05:37:46+00:00,42608,[],True,False,9331886492,ROOT metadata validated; raw size and gzip header verified
+1632,2026-11-21T05:44:55+00:00,2026-11-21T05:48:25+00:00,43248,[12],False,False,9329106025,ROOT metadata validated; raw size and gzip header verified
+1649,2026-11-21T06:45:16+00:00,2026-11-21T06:48:46+00:00,46869,[13],False,False,9330786863,ROOT metadata validated; raw size and gzip header verified
+1666,2026-11-21T07:45:38+00:00,2026-11-21T07:49:08+00:00,50491,[14],False,False,9329066044,ROOT metadata validated; raw size and gzip header verified
+1676,2026-11-21T08:45:50+00:00,2026-11-21T08:49:20+00:00,54103,[15],False,False,9320987331,ROOT metadata validated; raw size and gzip header verified
+1692,2026-11-21T09:42:38+00:00,2026-11-21T09:46:08+00:00,57511,[16],False,False,9314106494,ROOT metadata validated; raw size and gzip header verified
+1709,2026-11-21T10:43:00+00:00,2026-11-21T10:46:30+00:00,61133,[17],False,False,9311128826,ROOT metadata validated; raw size and gzip header verified
+1727,2026-11-21T11:46:55+00:00,2026-11-21T11:50:25+00:00,64968,[18],False,False,9328086624,ROOT metadata validated; raw size and gzip header verified
+1729,2026-11-21T11:54:01+00:00,2026-11-21T11:57:31+00:00,65394,[],True,False,9330352671,ROOT metadata validated; raw size and gzip header verified
+1743,2026-11-21T12:43:44+00:00,2026-11-21T12:47:14+00:00,68377,[19],False,False,9327904806,ROOT metadata validated; raw size and gzip header verified
+1748,2026-11-21T13:01:29+00:00,2026-11-21T13:05:00+00:00,69442,[],False,True,9328776794,ROOT metadata validated; raw size and gzip header verified

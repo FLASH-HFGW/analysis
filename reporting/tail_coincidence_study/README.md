@@ -13,3 +13,27 @@ Temperature roles follow docs/v47/temperature_mapping.md where archived channel 
 The tracked reporting/slide_deck.py is byte-identical to the v50 renderer. Plots will use observable-oriented panels with three modes side by side. The specific status-meeting-v10 source was not located; that layout convention follows the user's instruction, not a claim to have read an unavailable template.
 
 Completed checkpoint: run1429 streaming extraction, exact-count/RMS validation, gap and coincidence controls, five-run ordered-PSD screen, temperatures and small proper Gaussian pilot. See validation/REPORT.md. Rebuild compact validation with code/validate.py (requires the local detailed-bin CSV), figures/presentation with code/report.py (no raw reads). The inventory and existing_spectra scripts access archived ROOT metadata/PSD only; pilot1429.py is the sole raw reader and should not be rerun unnecessarily. Postprocess uses local detailed bins. A fresh reproduction of those local-only intermediate bins requires the explicitly documented raw pass.
+
+## Dataset 2 longitudinal extension
+
+The longitudinal study reuses Run 1429 and writes separate products under
+`tables/longitudinal/`, `figures/longitudinal/`, `validation/longitudinal/` and
+`presentation/longitudinal/`. See [the longitudinal validation report](validation/LONGITUDINAL_REPORT.md)
+for the acquisition-time selection, validation, I/O estimate and results. The original
+checkpoint deck and manifest are retained.
+
+From the study's `code/` directory, with NumPy, SciPy, h5py, Uproot, MIDAS, Matplotlib
+and python-pptx available:
+
+- `python select_longitudinal.py` cross-checks the live archive listings and selected gzip headers
+  against the saved Run3-B B1 inventory at `reporting/run3b_longitudinal/data/inventory.json`.
+  The compact candidate and selection tables retain the audited timestamps.
+- `python stream_longitudinal.py RUN [RUN ...]` processes an approved batch of at most
+  five selected runs sequentially, skipping Run 1429 and runs with a completed receipt.
+- `python test_algorithms.py`, `python test_longitudinal.py` and
+  `python validate_longitudinal.py` check the saved pilot behavior and the new batch.
+- `python report_longitudinal.py` rebuilds the presentation and its manifest from
+  saved compact products. The PDF and PPTX remain local under `presentation/longitudinal/`.
+
+The raw and archived ROOT inputs are read through the existing archive mount. No
+full waveform, raw cache or new ROOT copy is needed.
