@@ -15,6 +15,7 @@ from scipy.ndimage import median_filter
 
 from algorithms import clusters, coincidences
 from select_longitudinal import STUDY
+from retune_spectra import screen
 
 sys.path.insert(0, str(STUDY.parents[1] / 'examples'))
 from analyze_midas_iq_v3 import bank, decode
@@ -78,6 +79,7 @@ def archived_inputs(row):
         pps = root['timing/pps'][:]
         archived_breaks = root['quality/breaks'][:]
         thresholds, diagnostics, spectra, temperatures = [], [], [], []
+        full_band = []
         freq = product.edges[:-1] + product.widths/2
         for mode, focus in zip(MODES, (-28000, 1250000, -492750)):
             moments = dict(root[f'statistics/{mode}'].attrs)
@@ -92,6 +94,7 @@ def archived_inputs(row):
             bg = np.maximum(median_filter(mean, size=201, mode='nearest'), 1e-30)
             broadband = abs(freq) >= 100000
             scale = np.median(wp[:, broadband]/bg[broadband], axis=1)
+            full_band.extend(screen(mode, freq, wp, bg, scale))
             nearby = np.flatnonzero(abs(freq-focus) <= 1000)
             best = nearby[np.argmax((mean/bg)[nearby])]
             ref = np.argmin(abs(freq-focus))
@@ -117,7 +120,7 @@ def archived_inputs(row):
                                                  product.time_start <= t < product.time_stop))
                                 for t, v in zip(timestamps, values))
         requested = root.file.file.source.num_requested_bytes
-    return np.array(thresholds), diagnostics, spectra, temperatures, adc, pps, archived_breaks, requested, time.monotonic()-started
+    return np.array(thresholds), diagnostics, spectra, temperatures, adc, pps, archived_breaks, requested, time.monotonic()-started, full_band
 
 
 def stream(row, thresholds, adc, pps, archived_breaks):
@@ -252,7 +255,7 @@ def process(row):
     receipt_file = STUDY/'validation'/'longitudinal'/f'{run}.json'
     if run == 1429 or receipt_file.exists():
         return
-    thresholds, diagnostics, spectra, temps, adc, pps, archived_breaks, requested, root_wall = archived_inputs(row)
+    thresholds, diagnostics, spectra, temps, adc, pps, archived_breaks, requested, root_wall, full_band = archived_inputs(row)
     counts, powers, exposure, indices, amps, receipt = stream(row, thresholds, adc, pps, archived_breaks)
     totals = counts.sum(axis=2)
     peaks, groups, tuples, controls, coincidence_summary = group_products(indices, amps, row['samples'])
@@ -281,6 +284,7 @@ def process(row):
         ('coincidences', ['window_us','kind','indices','separation_us'], tuples),
         ('time_shifts', list(controls[0]), controls),
         ('coincidence_summary', list(coincidence_summary[0]), coincidence_summary),
+        ('full_band_lines', list(full_band[0]), full_band),
         ('spectral_seconds', list(spectra[0]), spectra),
         ('temperatures', ['channel','time_unix','value_K','usable'], temps),
     ):

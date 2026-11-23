@@ -472,7 +472,7 @@
         "onoff Teled Ch1": 0,
         "onoff Teled Ch2": 0
       },
-      "status": "ROOT metadata validated; raw size and gzip header verified"
+      "status": "raw_validated_longitudinal"
     },
     {
       "run": 1513,
@@ -530,7 +530,7 @@
         "onoff Teled Ch1": 0,
         "onoff Teled Ch2": 0
       },
-      "status": "ROOT metadata validated; raw size and gzip header verified"
+      "status": "raw_validated_longitudinal"
     },
     {
       "run": 1529,
@@ -586,7 +586,7 @@
         "onoff Teled Ch1": 0,
         "onoff Teled Ch2": 0
       },
-      "status": "ROOT metadata validated; raw size and gzip header verified"
+      "status": "raw_validated_longitudinal"
     },
     {
       "run": 1530,
@@ -644,7 +644,7 @@
         "onoff Teled Ch1": 0,
         "onoff Teled Ch2": 0
       },
-      "status": "ROOT metadata validated; raw size and gzip header verified"
+      "status": "raw_validated_longitudinal"
     },
     {
       "run": 1547,
