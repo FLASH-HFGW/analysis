@@ -1,5 +1,15 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
+## Run 1670 targeted diagnostic · 23 November 2026
+
+- Scientific milestone `3409be09bee5fc085d759a64c0f2139ad5c0ceb5` on the pilot branch. Run 1670 is a separate targeted analysis. Existing Run 1429 and the completed 24-run sample remain intact.
+- SHA256-verified ODB and LOSC evidence dates the retune before BOR. On 21 November 2026 UTC the primary RS changed 8,743,664,000 → 8,743,655,000 Hz at 08:21:56, Teledyne CH1 43,331,000 → 43,330,000 Hz at 08:21:59, and CH2 102,179,000 → 102,199,000 Hz at 08:22:02. Run 1670 BOR was 08:24:31. VNA nominal setpoints were written at 08:21:26. The LocalOscill device control path is identifiable from the reference source. Operator versus automatic attribution and the physical application timestamps remain unresolved.
+- The validated raw pass produced T7 totals 1244 / 221 / 766 for TM010/TM011/TM012. Full-run moments and 100 ms/1 s exact rates, histograms, sparse tuples and shifted controls are archived. The v50 centered complex ACF and Hann PSD use the first 1.048576 s only.
+- The TM012 peak tracked +29 kHz at the boundary, consistent with the image-coordinate displacement. The within-run joint block screen found 18 candidate observable/scan combinations at both block sizes. A common change near 117–119 s lowered mean RMS by about 0.46–0.53% and integrated PSD by about 0.91–1.06%. Neither T7 rate nor the TM012 tracked line ratio passed both exploratory screens. This is a descriptive diagnostic. The archive has a single LOSC snapshot per run and no continuous LO readback.
+- One full pass used 9.326 GB and 716.3 s raw wall time. A bounded five-event read supplied the finer prefix constellation. No adjacent raws were processed. Adjacent ROOT data bracket the retune. No full waveforms were retained.
+- Separate report under `reporting/tail_coincidence_study/presentation/run1670/` and scientific summary at `reporting/tail_coincidence_study/validation/run1670/REPORT.md`. Open issues are retune attribution, image response versus internal mixing and calibrated channel delays.
+
+
 ## Completed Dataset 2 study · 24 validated Run3-B acquisitions
 
 - Final scientific report commit `93074e1a72a8d1a842267572554b217410c578fb` on `run2-run3-pilot-design-20261122`. All 24 selected runs passed CRC, EOR, raw/ROOT timing, serial, ADC, counts, RMS and sparse clustering checks. The four earlier passes were reused. PPS timing remains acquisition-domain only, with absolute UTC and channel delays unresolved.

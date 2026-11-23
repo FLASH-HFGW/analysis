@@ -48,3 +48,13 @@ Run `code/final_longitudinal.py` followed by `code/report_final_longitudinal.py`
 with the dependencies above to rebuild the final report from the saved tables.
 The earlier longitudinal manifest belongs to the initial scientific checkpoint
 `fc07e65b`, where its initial coverage statuses and cumulative validation are pinned.
+
+## Run 1670 targeted diagnostic
+
+The [Run 1670 scientific report](validation/run1670/REPORT.md), compact tables,
+figures and manifest document the retune timing and separately validated raw pass.
+The PDF and PPTX are local under `presentation/run1670/`. Rebuild from the
+completed compact outputs with `code/validate1670.py`, `code/change1670.py`
+and `code/report1670.py`. The earlier complete longitudinal manifest refers
+to the longitudinal checkpoint at `d81a13c`. Its outputs and selection are
+retained. The shared reader's optional observers preserve its default behavior.
