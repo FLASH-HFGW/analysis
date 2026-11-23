@@ -14,6 +14,7 @@ The approved 24-run selection is processed in chronological batches. Run 1429 an
 - Successful raw streams used 27.95 GB, 456.9 s and 571.4 MiB peak RSS. Recorded PPS defects matched archived ROOT validation and timing remains in the received-sample domain.
 - Selection, presentation paths, results and provenance are in [the longitudinal report](../reporting/tail_coincidence_study/validation/LONGITUDINAL_REPORT.md) and the [persistent handover](TAIL_COINCIDENCE_HANDOVER.md).
 - The remaining twenty runs were subsequently approved. Preserve completed runs, including the existing 17-slide checkpoint, and keep future changes on the pilot branch.
+- Runs 1547, 1564, 1581, 1598 validated and committed as `77c5984c41f6df2dfdb15378e770741742d124ce`.
 
 The remainder records the earlier scientific context.
 
