@@ -1,0 +1,110 @@
+{
+  "run": 1632,
+  "compressed_bytes": 9329106025,
+  "raw_wall_s": 148.78898747698986,
+  "events": 1000,
+  "samples": 1048576000,
+  "EOR": true,
+  "gzip_CRC": true,
+  "serial_gaps": 0,
+  "ADC_V_per_count": 6.103608758678569e-05,
+  "PPS_intervals": {
+    "5000000": 73,
+    "4999999": 134,
+    "9999999": 1
+  },
+  "PPS_matches_ROOT": true,
+  "PPS_rejected_records": [
+    [
+      452,
+      "invalid SPGP index/width pairs"
+    ]
+  ],
+  "utc_anchored": false,
+  "channel_delay_calibrated": false,
+  "process_io": {
+    "rchar": 9329106135,
+    "wchar": 73,
+    "syscr": 2277621,
+    "syscw": 30,
+    "read_bytes": 0,
+    "write_bytes": 0,
+    "cancelled_write_bytes": 0
+  },
+  "peak_RSS_KiB": 518636,
+  "root_requested_bytes": 106007012,
+  "root_wall_s": 4.920638127019629,
+  "modes": [
+    {
+      "mode": "TM010",
+      "sigma": 0.01645999632978547,
+      "rms_V": 0.023277642642225135,
+      "full_band_psd_power_V2": 0.0005418487939228932,
+      "reference_bin_hz": -27950.5,
+      "reference_occupancy": 0.0,
+      "strongest_bin_hz": -27950.5,
+      "strongest_occupancy": 0.0,
+      "T3": 7423070,
+      "T5": 124973,
+      "T7": 1353,
+      "T7_rate_Hz": 6.451606750488281,
+      "matched_expected_T7": 104.21173783677602,
+      "matched_T7_ratio": 12.9831823946662,
+      "cluster_count": 1353,
+      "cluster_rate_Hz": 6.451606750488281,
+      "thresholds_V": [
+        0.05298017321082144,
+        0.07454725795118149,
+        0.09611434269154151
+      ]
+    },
+    {
+      "mode": "TM011",
+      "sigma": 0.01066620108838817,
+      "rms_V": 0.015082200473330268,
+      "full_band_psd_power_V2": 0.00022747417682754008,
+      "reference_bin_hz": 1250049.5,
+      "reference_occupancy": 0.0,
+      "strongest_bin_hz": 1250249.5,
+      "strongest_occupancy": 0.0,
+      "T3": 6938440,
+      "T5": 72507,
+      "T7": 256,
+      "T7_rate_Hz": 1.220703125,
+      "matched_expected_T7": 77.38821710824716,
+      "matched_T7_ratio": 3.307997128838344,
+      "cluster_count": 256,
+      "cluster_rate_Hz": 1.220703125,
+      "thresholds_V": [
+        0.034331549645711404,
+        0.0483071823325011,
+        0.06228281501929078
+      ]
+    },
+    {
+      "mode": "TM012",
+      "sigma": 0.006583982152475541,
+      "rms_V": 0.009310827320014935,
+      "full_band_psd_power_V2": 8.669135987930686e-05,
+      "reference_bin_hz": -492750.5,
+      "reference_occupancy": 0.9952153110047847,
+      "strongest_bin_hz": -492750.5,
+      "strongest_occupancy": 0.9952153110047847,
+      "T3": 7641784,
+      "T5": 113451,
+      "T7": 780,
+      "T7_rate_Hz": 3.719329833984375,
+      "matched_expected_T7": 51.524602550837756,
+      "matched_T7_ratio": 15.138399160486445,
+      "cluster_count": 780,
+      "cluster_rate_Hz": 3.719329833984375,
+      "thresholds_V": [
+        0.021192016563448254,
+        0.029818828998060067,
+        0.03844564143267188
+      ]
+    }
+  ],
+  "checks_passed": true,
+  "waveforms_retained": false
+}
