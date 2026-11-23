@@ -1,5 +1,16 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
+## Completed Dataset 2 study · 24 validated Run3-B acquisitions
+
+- Final scientific report commit `93074e1a72a8d1a842267572554b217410c578fb` on `run2-run3-pilot-design-20261122`. All 24 selected runs passed CRC, EOR, raw/ROOT timing, serial, ADC, counts, RMS and sparse clustering checks. The four earlier passes were reused. PPS timing remains acquisition-domain only, with absolute UTC and channel delays unresolved.
+- The TM012 leading non-DC feature moved from -492.7505 to -463.7505 kHz at Run 1670, with high occupancy on both sides. The +29 kHz shift matches the image-coordinate prediction under the −9/+20 kHz primary/secondary LO changes. The main-branch fixed-RF prediction is −11 kHz. Source identity, image conversion gain and the separation of independent intensity effects remain unresolved.
+- Median T7/Gaussian before → after: TM010 12.90 → 12.62, TM011 3.23 → 3.27, TM012 14.86 → 14.57. These are marginal count comparisons on correlated samples. They do not establish retune, line or thermal causation, or independent-event significance.
+- The 20-run continuation used 186.47 GB compressed raw, 52.0 min process wall, 49.9 min CPU and 571.4 MiB peak RSS. Scope and transfer-counter limitations are in the validation report.
+- Final English deck: `reporting/tail_coincidence_study/presentation/longitudinal_final/`. See `reporting/tail_coincidence_study/validation/LONGITUDINAL_FINAL_REPORT.md` for plots, tables, manifest and method. Earlier reports and Run 1429 products are preserved.
+- Next scientific work: test independent LO motion with both sidebands and develop a time-dependent joint correlated-noise null before interpreting tails or coincidences physically.
+
+The following checkpoints are historical.
+
 ## Approved Dataset 2 completion
 
 The approved 24-run selection is processed in chronological batches. Run 1429 and the initial three validated runs are reused.
