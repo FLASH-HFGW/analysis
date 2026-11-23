@@ -1,0 +1,20 @@
+{
+  "samples": 5242880,
+  "events": 5,
+  "raw_scope": "first five ADC events, no full pass",
+  "process_io": {
+    "rchar": 46825581,
+    "wchar": 529255,
+    "syscr": 11434,
+    "syscw": 65,
+    "read_bytes": 0,
+    "write_bytes": 532480,
+    "cancelled_write_bytes": 0
+  },
+  "wall_s": 1.5272641949995887,
+  "outside_128mV": [
+    0,
+    0,
+    0
+  ]
+}

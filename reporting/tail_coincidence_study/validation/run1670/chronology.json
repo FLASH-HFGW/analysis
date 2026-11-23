@@ -1,0 +1,63 @@
+{
+  "snapshots": [
+    {
+      "run": 1429,
+      "snapshot": "BOR",
+      "sha256": "03d34aabbb0731a367eeea112da6fb23e2f4fe7892c4327f42a1a255c23b3e9c",
+      "event_utc": "2026-11-20T17:44:07+00:00"
+    },
+    {
+      "run": 1429,
+      "snapshot": "EOR",
+      "sha256": "fa701e4d232b8eaabbd90b7bc9232d70a214475b95a9f39b59e9e8afb07dc906",
+      "event_utc": "2026-11-20T17:47:40+00:00"
+    },
+    {
+      "run": 1669,
+      "snapshot": "BOR",
+      "sha256": "2cf9605d09645a7995584af65d8db8b32f092f52f026023cbf5dfc0fcadcb6f8",
+      "event_utc": "2026-11-21T07:56:17+00:00"
+    },
+    {
+      "run": 1669,
+      "snapshot": "EOR",
+      "sha256": "6fa25cb57076a037dd354a83ccbc8a95cdbc4d10690c73127522c9f9ab087081",
+      "event_utc": "2026-11-21T07:59:49+00:00"
+    },
+    {
+      "run": 1670,
+      "snapshot": "BOR",
+      "sha256": "79f1d6e46a30ce45a28bb8dda273564a6b8f239cf423aafae0e7c3b630bffc6f",
+      "event_utc": "2026-11-21T08:24:31+00:00"
+    },
+    {
+      "run": 1670,
+      "snapshot": "EOR",
+      "sha256": "ac1c231adb66648876e33ae4530bb9471e14fe44dfc1eb1a93cd53755cd2404a",
+      "event_utc": "2026-11-21T08:28:04+00:00"
+    },
+    {
+      "run": 1671,
+      "snapshot": "BOR",
+      "sha256": "0bf5e373f7d3e86a8a61839785e2932bfa32c7a70780632dc0bee86f154f80de",
+      "event_utc": "2026-11-21T08:28:05+00:00"
+    },
+    {
+      "run": 1671,
+      "snapshot": "EOR",
+      "sha256": "f8fee5629f28ed1595555cce44d7ef02054a77108d37d968141d85cde17a632c",
+      "event_utc": "2026-11-21T08:31:37+00:00"
+    }
+  ],
+  "frequency_write_order": [
+    "freq RS",
+    "freq Teled Ch1",
+    "freq Teled Ch2"
+  ],
+  "evidence": "SHA256-verified archived BOR/EOR snapshots, one LOSC TID_DOUBLE record/run with the same frequencies",
+  "controller_reference": "reporting/run3b_longitudinal/data/LocalOscill_reference.py",
+  "controller_SHA256": "84c75637295ea856b64bb3f411212c6124ae49d10cb553135a90e218f8af7f05",
+  "actor_identified": false,
+  "in_run_frequency_monitor": false,
+  "digitizer_or_selected_flag_changes": []
+}

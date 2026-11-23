@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "gzip_CRC": true,
+  "EOR": true,
+  "PPS_matches_ROOT": true,
+  "sample_count_and_serials": true,
+  "TM010_complete_populations": true,
+  "TM011_complete_populations": true,
+  "TM012_complete_populations": true,
+  "sparse_coincidences_and_controls": true
+}

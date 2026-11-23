@@ -1,0 +1,13 @@
+{
+  "seconds": 209,
+  "TM012_line_T7_spearman": -0.15743787034701845,
+  "TM012_line_RMS_spearman": -0.04742888690257112,
+  "method": "Exploratory rank coefficients; no iid inference. Block permutations preserve short-range dependence within blocks only.",
+  "tested_series": 36,
+  "permutations": 999,
+  "blocks_s": [
+    5,
+    10
+  ],
+  "test_family": "maximum over standardized abrupt splits (20 seconds per side), linear trend, and all retained observables/modes"
+}

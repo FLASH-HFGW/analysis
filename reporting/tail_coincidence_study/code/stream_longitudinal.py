@@ -70,7 +70,7 @@ def csv_write(path, fields, rows):
         writer.writerows(rows)
 
 
-def archived_inputs(row):
+def archived_inputs(row, spectral_observer=None):
     started = time.monotonic()
     with open_product(row['root_path']) as product:
         root = product.file
@@ -94,6 +94,8 @@ def archived_inputs(row):
             bg = np.maximum(median_filter(mean, size=201, mode='nearest'), 1e-30)
             broadband = abs(freq) >= 100000
             scale = np.median(wp[:, broadband]/bg[broadband], axis=1)
+            if spectral_observer is not None:
+                spectral_observer(mode, freq, wp, bg, scale)
             full_band.extend(screen(mode, freq, wp, bg, scale))
             nearby = np.flatnonzero(abs(freq-focus) <= 1000)
             best = nearby[np.argmax((mean/bg)[nearby])]
@@ -123,9 +125,9 @@ def archived_inputs(row):
     return np.array(thresholds), diagnostics, spectra, temperatures, adc, pps, archived_breaks, requested, time.monotonic()-started, full_band
 
 
-def stream(row, thresholds, adc, pps, archived_breaks):
+def stream(row, thresholds, adc, pps, archived_breaks, *, bin_samples=FS, observer=None):
     n = row['samples']
-    bins = (n + FS - 1)//FS
+    bins = (n + bin_samples - 1)//bin_samples
     counts = np.zeros((3, 3, bins), dtype=np.int64)
     powers = np.zeros((3, bins))
     exposure = np.zeros(bins, dtype=np.int64)
@@ -169,8 +171,8 @@ def stream(row, thresholds, adc, pps, archived_breaks):
                 pps_breaks.append((header.serial_number, str(error)))
             else:
                 pulses.extend((received+int(i), int(w)) for i, w in words.reshape(-1, 2))
-            cuts = np.unique(np.r_[0, np.arange(FS-received%FS, size, FS), size])
-            positions = (received + cuts[:-1])//FS
+            cuts = np.unique(np.r_[0, np.arange(bin_samples-received%bin_samples, size, bin_samples), size])
+            positions = (received + cuts[:-1])//bin_samples
             exposure[positions] += np.diff(cuts)
             for j in range(3):
                 amplitude = np.hypot(channels[2*j].astype(float)*SCALE,
@@ -181,7 +183,9 @@ def stream(row, thresholds, adc, pps, archived_breaks):
                 hits = np.flatnonzero(amplitude > thresholds[j,2])
                 indices[j].append(received + hits)
                 amplitudes[j].append(amplitude[hits])
-                counts[j,2] += np.bincount((received+hits)//FS, minlength=bins)
+                counts[j,2] += np.bincount((received+hits)//bin_samples, minlength=bins)
+                if observer is not None:
+                    observer(j, received, channels[2*j], channels[2*j+1], amplitude, cuts, positions)
             received += size
             event_count += 1
             last_serial = header.serial_number

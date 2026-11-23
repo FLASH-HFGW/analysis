@@ -1,0 +1,244 @@
+{
+  "run": 1670,
+  "compressed_bytes": 9325942886,
+  "raw_wall_s": 716.3028306479973,
+  "events": 1000,
+  "samples": 1048576000,
+  "EOR": true,
+  "gzip_CRC": true,
+  "serial_gaps": 0,
+  "ADC_V_per_count": 6.103608758678569e-05,
+  "PPS_intervals": {
+    "4999999": 134,
+    "5000000": 73,
+    "9999999": 1
+  },
+  "PPS_matches_ROOT": true,
+  "PPS_rejected_records": [
+    [
+      452,
+      "invalid SPGP index/width pairs"
+    ]
+  ],
+  "utc_anchored": false,
+  "channel_delay_calibrated": false,
+  "process_io": {
+    "rchar": 9325943004,
+    "wchar": 76,
+    "syscr": 2276849,
+    "syscw": 30,
+    "read_bytes": 0,
+    "write_bytes": 0,
+    "cancelled_write_bytes": 0
+  },
+  "peak_RSS_KiB": 1266644,
+  "complete": true,
+  "raw_path": "/home/mazzitel/flash-data/data/LNF/run01670.mid.gz",
+  "root_path": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01670_iq_v3.1.root",
+  "root_requested_bytes": 105979749,
+  "root_wall_s": 4.185594173002755,
+  "prefix_samples": 5242880,
+  "prefix_wall_s": 1.048576,
+  "phase_valid_counts": [
+    [
+      1048573778,
+      1048571555,
+      1048571546,
+      1048571456
+    ],
+    [
+      1048570739,
+      1048565477,
+      1048565468,
+      1048565378
+    ],
+    [
+      1048560477,
+      1048544954,
+      1048544944,
+      1048544855
+    ]
+  ],
+  "correlation": [
+    {
+      "mode": "TM010",
+      "upper_envelope": {
+        "model": "upper-envelope local maxima: C + A exp(-lag/tau)",
+        "amplitude": 0.06576078270004271,
+        "tau_us": 0.7526992278345431,
+        "offset": -0.005602300873826874,
+        "r_squared_on_selected_peaks": 0.9904776213960196,
+        "peak_indices": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20
+        ],
+        "peak_lag_us": [
+          0.39999999999999997,
+          0.7999999999999999,
+          1.2,
+          1.5999999999999999,
+          2.0,
+          2.4,
+          2.8,
+          3.1999999999999997,
+          3.5999999999999996,
+          4.0
+        ],
+        "peak_covariance": [
+          0.03370304925459044,
+          0.01460830465562096,
+          0.010163391594660785,
+          0.0026713329900341955,
+          -0.0013379326411109916,
+          -0.0035781321135633388,
+          -0.004359383261707024,
+          -0.004499889708745523,
+          -0.005138041859514808,
+          -0.004953694789884474
+        ],
+        "selected_range_us": [
+          0.39999999999999997,
+          4.0
+        ],
+        "search_window_us": [
+          0.3,
+          4.0
+        ],
+        "plot_range_us": [
+          0.39999999999999997,
+          4.0
+        ],
+        "peak_selection": "all local maxima in window, including weak and negative upper maxima; lag zero excluded; no positive-value censoring",
+        "limitations": "descriptive finite-window 1/e decay of the exponential component relative to fitted C; C is not an inferred infinite-lag covariance; no independent-sample confidence interval; not an oscillation period or stationarity time"
+      },
+      "first_five_below_0p01_us": 2.0
+    },
+    {
+      "mode": "TM011",
+      "upper_envelope": {
+        "model": "upper-envelope local maxima: C + A exp(-lag/tau)",
+        "amplitude": 0.03808708782123662,
+        "tau_us": 1.4380839773033558,
+        "offset": -0.0041399165165966305,
+        "r_squared_on_selected_peaks": 0.9548645557346228,
+        "peak_indices": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          19
+        ],
+        "peak_lag_us": [
+          0.39999999999999997,
+          0.7999999999999999,
+          1.2,
+          1.5999999999999999,
+          2.0,
+          2.4,
+          2.8,
+          3.1999999999999997,
+          3.8
+        ],
+        "peak_covariance": [
+          0.022891147109589997,
+          0.019610057347049233,
+          0.01570403355313191,
+          0.006982156741356655,
+          0.0031929457236411093,
+          0.0017519520943197462,
+          0.0007756968383694897,
+          0.00017599043575092284,
+          0.00030466937873261323
+        ],
+        "selected_range_us": [
+          0.39999999999999997,
+          3.8
+        ],
+        "search_window_us": [
+          0.3,
+          4.0
+        ],
+        "plot_range_us": [
+          0.39999999999999997,
+          4.0
+        ],
+        "peak_selection": "all local maxima in window, including weak and negative upper maxima; lag zero excluded; no positive-value censoring",
+        "limitations": "descriptive finite-window 1/e decay of the exponential component relative to fitted C; C is not an inferred infinite-lag covariance; no independent-sample confidence interval; not an oscillation period or stationarity time"
+      },
+      "first_five_below_0p01_us": 1.5999999999999999
+    },
+    {
+      "mode": "TM012",
+      "upper_envelope": {
+        "model": "upper-envelope local maxima: C + A exp(-lag/tau)",
+        "amplitude": 0.03771225062455138,
+        "tau_us": 1.4109582625229198,
+        "offset": -0.004222888567224984,
+        "r_squared_on_selected_peaks": 0.9558756393659471,
+        "peak_indices": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18
+        ],
+        "peak_lag_us": [
+          0.39999999999999997,
+          0.7999999999999999,
+          1.2,
+          1.5999999999999999,
+          2.0,
+          2.4,
+          2.8,
+          3.1999999999999997,
+          3.5999999999999996
+        ],
+        "peak_covariance": [
+          0.022572342519513868,
+          0.01891199759106003,
+          0.015211956233645508,
+          0.005807947872459566,
+          0.003084652435230314,
+          0.0017085334962596295,
+          0.0005199906977094877,
+          0.0001094537936469967,
+          0.00015581355004026234
+        ],
+        "selected_range_us": [
+          0.39999999999999997,
+          3.5999999999999996
+        ],
+        "search_window_us": [
+          0.3,
+          4.0
+        ],
+        "plot_range_us": [
+          0.39999999999999997,
+          4.0
+        ],
+        "peak_selection": "all local maxima in window, including weak and negative upper maxima; lag zero excluded; no positive-value censoring",
+        "limitations": "descriptive finite-window 1/e decay of the exponential component relative to fitted C; C is not an inferred infinite-lag covariance; no independent-sample confidence interval; not an oscillation period or stationarity time"
+      },
+      "first_five_below_0p01_us": 1.5999999999999999
+    }
+  ],
+  "raw_waveforms_retained": false,
+  "total_wall_s": 725.0210851489974,
+  "cpu_s": 714.722358
+}
