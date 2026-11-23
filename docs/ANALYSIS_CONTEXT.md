@@ -15,6 +15,7 @@ The approved 24-run selection is processed in chronological batches. Run 1429 an
 - Selection, presentation paths, results and provenance are in [the longitudinal report](../reporting/tail_coincidence_study/validation/LONGITUDINAL_REPORT.md) and the [persistent handover](TAIL_COINCIDENCE_HANDOVER.md).
 - The remaining twenty runs were subsequently approved. Preserve completed runs, including the existing 17-slide checkpoint, and keep future changes on the pilot branch.
 - Runs 1547, 1564, 1581, 1598 validated and committed as `77c5984c41f6df2dfdb15378e770741742d124ce`.
+- Runs 1615, 1629, 1632, 1649 validated and committed as `312338442e010b208723e098e678a9f2622dabfd`.
 
 The remainder records the earlier scientific context.
 
