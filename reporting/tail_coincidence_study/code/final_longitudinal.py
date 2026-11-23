@@ -56,6 +56,7 @@ def run_rows(selection):
             groups = read_csv(TABLES/'pilot1429_clusters.csv')
             pairs = read_csv(TABLES/'pilot1429_coincidence_summary.csv')
             shifts = read_csv(TABLES/'pilot1429_time_shift_controls.csv')
+            coincidences = read_csv(TABLES/'pilot1429_coincidences.csv')
             thermo = [dict(t, usable=str(t['sensor_value_valid']==t['within_ADC_header_coverage']=='True'))
                       for t in read_csv(TABLES/'temperatures.csv') if t['run']=='1429']
         else:
@@ -67,6 +68,7 @@ def run_rows(selection):
             groups = read_csv(folder/'clusters.csv')
             pairs = read_csv(folder/'coincidence_summary.csv')
             shifts = read_csv(folder/'time_shifts.csv')
+            coincidences = read_csv(folder/'coincidences.csv')
             thermo = read_csv(folder/'temperatures.csv')
         mode_settings = row['lo']
         for j, d in enumerate(diagnostics):
@@ -128,6 +130,13 @@ def run_rows(selection):
                 shifted_mean=float(pair['time_shift_mean' if ref else 'shifted_mean']),
                 shifted_min=int(pair['time_shift_min' if ref else 'shifted_min']),
                 shifted_max=int(pair['time_shift_max' if ref else 'shifted_max'])))
+        for hit in coincidences:
+            if int(hit['window_us']) != 1:
+                continue
+            indices = ([int(hit[k]) for k in ('peak_a','peak_b','peak_c') if hit[k]]
+                       if ref else json.loads(hit['indices']))
+            data['close_pairs'].append(dict(**context, kind=normalize_kind(hit['kind']),
+                indices=json.dumps(indices), separation_us=(max(indices)-min(indices))/5))
         for shift in shifts:
             data['shifts'].append(dict(**context, kind=normalize_kind(shift['kind']),
                 window_us=int(shift['window_us']), shift_samples=int(shift['shift_samples']),

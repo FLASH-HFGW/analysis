@@ -41,14 +41,14 @@
     },
     {
       "path": "tail_coincidence_study/code/final_longitudinal.py",
-      "bytes": 12694,
-      "sha256": "ce3bd32bc7ebedb291268c5b9a49d075d8bf54ef2e3af02b5b948f66a8d3254b",
+      "bytes": 13259,
+      "sha256": "13ff1e38d8f8d77f3072ac069e0bbb8ad37c763599cc343377631e5a6c47e8f6",
       "local_only": false
     },
     {
       "path": "tail_coincidence_study/code/report_final_longitudinal.py",
-      "bytes": 27370,
-      "sha256": "72bb7332449013a3cfa424afe3ecdb41dc5924d84a70decb21c9ea4146334d42",
+      "bytes": 28649,
+      "sha256": "9525e9865c1259620aa5eb9f8d65b6b41a6a9628c1f82040205f814a82ef40af",
       "local_only": false
     },
     {
@@ -203,140 +203,146 @@
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/contact_sheet.png",
-      "bytes": 1122426,
-      "sha256": "be2d185621679164eabd5284cbbb806c10dba4a87785178e1da8231e3c22843b",
+      "bytes": 1202249,
+      "sha256": "56bc2e396d376f839d375db4fd056c63acbf331a0549cfca2b08b9e51b6a99b0",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/iq_noise_summary_tail_coincidence_longitudinal_final.pdf",
-      "bytes": 2453969,
-      "sha256": "5a9ecf9fc68881a3eef85700604bd249b48dff656138ca25f03bd7bd5e21a68a",
+      "bytes": 2455566,
+      "sha256": "2747f67cc6027a4e8aa59dd31a9a957f4cf45df1b51d35db68055bafd8e623c2",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/iq_noise_summary_tail_coincidence_longitudinal_final.pptx",
-      "bytes": 1198158,
-      "sha256": "8e9517fcd2db0680be5899cd0b1b48c525aba876a339aba746a0639ef5af0f31",
+      "bytes": 1201374,
+      "sha256": "95c2900a315f3aebb45d10ccd09622ed2ae7a8b064b066f26b4c93d658533b62",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_01.png",
-      "bytes": 118387,
-      "sha256": "8804247c12e022d3f4edd5b60cf9f9bebf730f5c19b57089a3183fd7f8118f62",
+      "bytes": 118368,
+      "sha256": "4241e2c6dad8e7ac70ea3767533652ee411d1cbf112c2379be76fa1458859ecd",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_02.png",
-      "bytes": 109071,
-      "sha256": "0e8395a582a3316144dda7f312420c2a7d2b917694ffccabe4b335c11b3a7daf",
+      "bytes": 109052,
+      "sha256": "1e9006ca087a75676f938c4224c07581ffa71e8c891bde33ffccec6195b7c063",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_03.png",
-      "bytes": 173548,
-      "sha256": "176071c48af0cc85569d7f1051836286868760e93602020d4f3cf7ff39fa4d90",
+      "bytes": 173521,
+      "sha256": "9c32772fea6d3b41696b92cb68f551ba9b471c506fd77b0eb057f49676019752",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_04.png",
-      "bytes": 177850,
-      "sha256": "7cfeb449f35d66fd50abb38613237f9bc9a64984507933e01efe5c3551bbf136",
+      "bytes": 177836,
+      "sha256": "73d23c4087b20f449226f8646f72da6b6101616c75a8c7f895bc788894d31553",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_05.png",
-      "bytes": 135742,
-      "sha256": "e8d2165f9fdd62d9cab9eeea54db84e83a3c2627adc6f9695edb1ed1990f9c2e",
+      "bytes": 135723,
+      "sha256": "b04364404d9b3555024dd46638eef76684c7e647d7651c5ad6784d9e3f7e3e71",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_06.png",
-      "bytes": 186130,
-      "sha256": "c08f57a701cb1b703ff2de1cc038b726cddf5ef9f75e059d7b71473cb4881d78",
+      "bytes": 186109,
+      "sha256": "7ce20080893c89c74a6dffc5f5a510966968b9349abb30d74325c2b2d68b93bb",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_07.png",
-      "bytes": 136693,
-      "sha256": "848e4c1c4fddf6a69e2abb47c9e62311da81e11f1ef72eac52205e7da0c83752",
+      "bytes": 136680,
+      "sha256": "412b9a49ccd7693348751cdc70cd2e94ade29aa882887fe6d16d92eac50ef3b8",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_08.png",
-      "bytes": 133271,
-      "sha256": "3b188c7c25a69341024c4bbc9c795f0947374e304c2002084f2de0b98fe2c75e",
+      "bytes": 133262,
+      "sha256": "67d617db831907c597be18d0d0c9dd96aeeeee985d9c339d5115c339659e896d",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_09.png",
-      "bytes": 108251,
-      "sha256": "524f447e50698c824476176a9829fe4b10387d1dee8a0365948700c04cdf8083",
+      "bytes": 108231,
+      "sha256": "e449399d7d136e9c2caaa8c6da3c9590b90a82d98e55bf84f63be43d478cd39f",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_10.png",
-      "bytes": 190537,
-      "sha256": "a05e3121db884f9eb212a7f9a8b6fdcb799d651e3a091a89b15b56e3fcbdcc5b",
+      "bytes": 190519,
+      "sha256": "73ce36a37a08dde80be295a6c1587946fc222a38c1fd5b7e0dd83384efaca95e",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_11.png",
-      "bytes": 103190,
-      "sha256": "8bfbf1834aee7445632d33fe90441f7cd8d477b4676f0e63bc7a7c4c92f1c1e3",
+      "bytes": 105178,
+      "sha256": "ef67f4b84b7ef321c3b121164c2ec61188c98240340e705f93aaf4724767f25e",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_12.png",
-      "bytes": 122995,
-      "sha256": "ce32069251f47f7b5ab08be6fd5618d3e666433e53f9867cf94b513b10a3aa87",
+      "bytes": 103303,
+      "sha256": "af329c0749656aad32ebf50b050ba629399c623ac42a41ce87d71aeb3f6344bf",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_13.png",
-      "bytes": 139265,
-      "sha256": "7a5edd2785057b5bd8c9b7961aaeb2257a9942ef0150d95a71b7492ee1c7ebfc",
+      "bytes": 122963,
+      "sha256": "e3ea5d22271c1c1302c224e048862f1f8945908f3a57dfca2d975066d0f384a5",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_14.png",
-      "bytes": 125506,
-      "sha256": "d35ef248dc092ad3db6d3b3804c2321968142396a5f39b8f8884b1fc87c06426",
+      "bytes": 139234,
+      "sha256": "764a5a6353433b49c89bf4b7459b09076bb5fb13b0b6ff24eb4caefd00aca20c",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_15.png",
-      "bytes": 151996,
-      "sha256": "4a03d085b8d60d93bc94f3d0da55910ab945abb78b81a8b3f99e33df812ce65a",
+      "bytes": 125482,
+      "sha256": "e26d703a99d04809f7744c7e89a2340ac17b0ce5a8635ab8dd1620d73c5f8ac2",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_16.png",
-      "bytes": 124022,
-      "sha256": "4349cea15d40881c7cc90cea822389bf992771554d05b59fd129f69da85454c1",
+      "bytes": 152050,
+      "sha256": "a19323d450515e00f2665252523ba74d99a8111a6c4268b8130b5286c5749b41",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_17.png",
-      "bytes": 137668,
-      "sha256": "d6013ebc9dc4e6f46f546afc7b8b9647da3df3378fb5fd8d0d6cc656e7b906af",
+      "bytes": 123939,
+      "sha256": "9933407d0c1a4f818165dabe64a135c903d4345215ec6728d358a2cc0a640125",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_18.png",
-      "bytes": 116678,
-      "sha256": "0792e048af333e17f9ecd22bcb8000c440ba5840b38040facdacae7168b9e1f5",
+      "bytes": 137733,
+      "sha256": "5c5bd87e94fa325b73e6368635928acf42dcbbac8474e3c7f969708f46a31771",
+      "local_only": true
+    },
+    {
+      "path": "tail_coincidence_study/presentation/longitudinal_final/slide_19.png",
+      "bytes": 116655,
+      "sha256": "be4e8842128a7311bb4d7be9473df7fed7024c90706a46ff8912678beb84ab01",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slide_model.json",
-      "bytes": 34327,
-      "sha256": "d5ea7f1ecda7ea8ae4f8a81e535944d552450d901ad62d5aa072fec4cbfdc3e8",
+      "bytes": 37725,
+      "sha256": "dff786d578ace8c0d2f086477c26aafcf2046251085cec27e323f3db40f27612",
       "local_only": true
     },
     {
       "path": "tail_coincidence_study/presentation/longitudinal_final/slides_en.md",
-      "bytes": 9073,
-      "sha256": "d5d271114227d8af735da26415851288ba914eee3162305c481052c23565a198",
+      "bytes": 9939,
+      "sha256": "bc398179fd20458f1f01af9407db547f885f85312e9203e23333b973382db0e5",
       "local_only": true
     },
     {
@@ -1564,6 +1570,12 @@
       "local_only": false
     },
     {
+      "path": "tail_coincidence_study/tables/longitudinal_final/close_pairs.csv",
+      "bytes": 510,
+      "sha256": "88d9fcb502c6387300d58734995c2d0cb97fdb0b899e890237f36694cab9aa31",
+      "local_only": false
+    },
+    {
       "path": "tail_coincidence_study/tables/longitudinal_final/clusters.csv",
       "bytes": 466559,
       "sha256": "658ccd84e11e7f589e6f7ae265f1b025eaa9ea52bafa92ceecced3d0e0487b6c",
@@ -1667,8 +1679,8 @@
     },
     {
       "path": "tail_coincidence_study/validation/LONGITUDINAL_FINAL_REPORT.md",
-      "bytes": 7127,
-      "sha256": "e3e9022ac4c0a2e72c015843021ed649093e066f97ce3400d0f52dae759fd7fc",
+      "bytes": 7523,
+      "sha256": "f93e70be19da677a6428d482db6a38d1aa6b7b2fc8702794b459e0f3da4950d2",
       "local_only": false
     },
     {

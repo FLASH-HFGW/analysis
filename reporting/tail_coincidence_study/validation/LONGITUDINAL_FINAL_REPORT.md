@@ -48,6 +48,8 @@ For the local RMS diagnostic, the original threshold is multiplied by the RMS of
 | 100 | TM011--TM012 | 7 | 5.35 | 1–11 |
 | 100 | triple | 0 | 0.00 | 0–0 |
 
+Five TM010–TM011 pairs within 1 µs were at the exact same received index, in runs 1497, 1547, 1581, 1629 and 1676. Corresponding pooled shift controls ranged from zero to one (mean 0.05). This motivates checking shared digitizer/readout disturbances and acquisition boundaries. The uncalibrated channel timing and descriptive control ensemble preclude a physical-event or significance claim.
+
 All twenty circular shifts use identical offsets across runs; the pooled control table sums corresponding offsets. The results describe accidental-background scale and preserve the protected exposure, with tuples allowed to share clusters.
 
 ## The TM012 line across the Run 1670 LO retune

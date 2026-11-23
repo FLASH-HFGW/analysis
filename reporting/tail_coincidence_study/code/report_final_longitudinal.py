@@ -50,7 +50,7 @@ def build():
 
     data = {name:table(name) for name in ('modes','seconds','clusters','coincidences',
             'temperature','tm012_retune_track','spectral_candidates','mode_epoch_summary',
-            'pooled_coincidences')}
+            'pooled_coincidences','close_pairs')}
     result = read_json(VALIDATION/'longitudinal_final.json')
     resources = resource_summary()
     (VALIDATION/'longitudinal_resources.json').write_text(json.dumps(resources,indent=2)+'\n')
@@ -186,6 +186,17 @@ def build():
          '100 µs inclusive peak window · measured dots and shifted means as dotted traces',
          'Tuples/s',pairs,'The same triple counts appear in each panel. Counts at 1, 2, 5, 10 and 100 µs and all 20 shifts are in the tables. Channel/group delay and absolute UTC remain uncalibrated.')
 
+    narrow = [r for r in data['close_pairs'] if r['kind']=='TM010--TM011'
+              and float(r['separation_us'])==0]
+    observed = next(r for r in data['pooled_coincidences']
+                    if r['kind']=='TM010--TM011' and r['window_us']=='1')
+    text('Same-sample TM010–TM011 pairs','Acquisition-domain timing at the 1 µs window',
+         [f'{len(narrow)} pairs hit the same recorded sample index in runs '+
+          ', '.join(r['run'] for r in narrow)+'.',
+          f'Pooled shifted controls contain {observed["shifted_min"]}–{observed["shifted_max"]} pairs, mean {float(observed["shifted_mean"]):.2f}.',
+          'A shared digitizer or readout disturbance is a testable possibility.',
+          'Check proximity to event and PPS boundaries and review channel-delay calibration before assigning a physical interpretation.'])
+
     def candidates(mode,ax):
         for epoch,color in zip(('pre','post'),COLOR):
             q=[r for r in mode_rows(mode,'spectral_candidates') if r['epoch']==epoch
@@ -318,7 +329,8 @@ def narrative(result, resources, t7_pairs, data):
               '| Window (µs) | Tuple | Observed | Shifted mean | Shifted range |', '|---:|---|---:|---:|---:|']
     for r in data['pooled_coincidences']:
         lines.append(f"| {r['window_us']} | {r['kind']} | {r['count']} | {float(r['shifted_mean']):.2f} | {r['shifted_min']}–{r['shifted_max']} |")
-    lines += ['', 'All twenty circular shifts use identical offsets across runs; the pooled control table sums corresponding offsets. The results describe accidental-background scale and preserve the protected exposure, with tuples allowed to share clusters.', '',
+    lines += ['', 'Five TM010–TM011 pairs within 1 µs were at the exact same received index, in runs 1497, 1547, 1581, 1629 and 1676. Corresponding pooled shift controls ranged from zero to one (mean 0.05). This motivates checking shared digitizer/readout disturbances and acquisition boundaries. The uncalibrated channel timing and descriptive control ensemble preclude a physical-event or significance claim.', '',
+              'All twenty circular shifts use identical offsets across runs; the pooled control table sums corresponding offsets. The results describe accidental-background scale and preserve the protected exposure, with tuples allowed to share clusters.', '',
               '## The TM012 line across the Run 1670 LO retune', '',
               f"The leading non-DC spectral bin is at {pre['IF_Hz'][1]:,.1f} Hz before and {post['IF_Hz'][1]:,.1f} Hz after the retune. ROOT-only controls show the transition between 1669 and 1670 and persistence at 1671. The full 5 MHz screen used the native 100 Hz ordered PSD, ranked local maxima against a 201-bin median, and measured occupancy using the checkpoint's per-window normalization.", '',
               f"Pre-retune versus post-retune occupancy ranges are {pre['occupancy'][0]:.0f}–{pre['occupancy'][2]:.0f} / 209 and {post['occupancy'][0]:.0f}–{post['occupancy'][2]:.0f} / 209. Local ratio min / median / max is {span(pre,'local_ratio')} before and {span(post,'local_ratio')} after. Mean excess power of the selected 100 Hz bin, in V² at the ADC, has min / median / max {span(pre,'excess_bin_power_V2')} before and {span(post,'excess_bin_power_V2')} after. This bin-level comparison retains the local background and does not estimate calibrated RF power.", '',
