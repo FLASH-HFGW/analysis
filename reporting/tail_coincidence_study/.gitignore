@@ -1,0 +1,4 @@
+__pycache__/
+presentation/
+data/pilot_*.npz
+validation/*.log

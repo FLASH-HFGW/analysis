@@ -1,0 +1,6 @@
+run,status,raw_available,ROOT_available,raw_bytes,ROOT_bytes,samples,duration_s,serial_gaps,PPS_source,PPS_count,utc_quality,pump_on,pump_frequency_hz,TWPA_flag,positive_finite_temperature_readings
+680,metadata_valid,True,True,12130819273,155913555,1048576000,209.7152,0,SPEC channel 6,210,unanchored,0,998000000,,132
+1429,metadata_valid,True,True,9310514217,156578100,1048576000,209.7152,0,SPGP,209,unanchored,1,7891000000.0,True,132
+1529,metadata_valid,True,True,9317975773,156746859,1048576000,209.7152,0,SPGP,209,unanchored,1,7891000000.0,True,132
+1629,metadata_valid,True,True,9331886492,157088940,1048576000,209.7152,0,SPGP,209,unanchored,1,7891000000.0,True,132
+1729,metadata_valid,True,True,9330352671,157122033,1048576000,209.7152,0,SPGP,209,unanchored,1,7891000000.0,True,132
