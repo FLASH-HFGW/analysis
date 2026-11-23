@@ -1,0 +1,94 @@
+{
+  "runs": [
+    1666,
+    1676,
+    1692,
+    1709
+  ],
+  "all_passed": true,
+  "raw_reader": "v50 Run1429 streaming rules",
+  "psd_screen": "in-memory full 5 MHz native 100 Hz PSD band",
+  "input_mode": "read-only fuse.rclone mount; physical bytes unavailable",
+  "resources": [
+    {
+      "run": 1666,
+      "cpu_user_s": 140.493,
+      "cpu_system_s": 9.063,
+      "process_wall_s": 156.469,
+      "raw_wall_s": 150.4385316639964,
+      "raw_bytes": 9329066044,
+      "root_wall_s": 4.26284377000411,
+      "root_bytes": 106012932,
+      "peak_RSS_KiB": 519124,
+      "process_io": {
+        "rchar": 9329066154,
+        "wchar": 73,
+        "syscr": 2277612,
+        "syscw": 30,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "cancelled_write_bytes": 0
+      }
+    },
+    {
+      "run": 1676,
+      "cpu_user_s": 144.125,
+      "cpu_system_s": 10.065,
+      "process_wall_s": 160.582,
+      "raw_wall_s": 154.87745932198595,
+      "raw_bytes": 9320987331,
+      "root_wall_s": 3.9312429710116703,
+      "root_bytes": 105911699,
+      "peak_RSS_KiB": 518888,
+      "process_io": {
+        "rchar": 9320987441,
+        "wchar": 73,
+        "syscr": 2275639,
+        "syscw": 30,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "cancelled_write_bytes": 0
+      }
+    },
+    {
+      "run": 1692,
+      "cpu_user_s": 142.924,
+      "cpu_system_s": 10.283,
+      "process_wall_s": 163.494,
+      "raw_wall_s": 157.08506208099425,
+      "raw_bytes": 9314106494,
+      "root_wall_s": 4.614761634991737,
+      "root_bytes": 105796661,
+      "peak_RSS_KiB": 518928,
+      "process_io": {
+        "rchar": 9314106604,
+        "wchar": 73,
+        "syscr": 2273959,
+        "syscw": 30,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "cancelled_write_bytes": 0
+      }
+    },
+    {
+      "run": 1709,
+      "cpu_user_s": 142.089,
+      "cpu_system_s": 9.827,
+      "process_wall_s": 160.236,
+      "raw_wall_s": 152.7008636870014,
+      "raw_bytes": 9311128826,
+      "root_wall_s": 5.769079498015344,
+      "root_bytes": 105765654,
+      "peak_RSS_KiB": 518748,
+      "process_io": {
+        "rchar": 9311128936,
+        "wchar": 73,
+        "syscr": 2273232,
+        "syscw": 30,
+        "read_bytes": 0,
+        "write_bytes": 0,
+        "cancelled_write_bytes": 0
+      }
+    }
+  ]
+}
