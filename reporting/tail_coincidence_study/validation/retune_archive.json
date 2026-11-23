@@ -1,0 +1,101 @@
+[
+  {
+    "run": 1429,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01429_iq_v3.1.root",
+    "modes": [
+      "TM010",
+      "TM011",
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 105665657,
+    "wall_s": 3.407258594990708,
+    "LO_TM012_total_Hz": 8845843000.0,
+    "LO_primary_Hz": 8743664000,
+    "LO_secondary_TM012_Hz": 102179000.0
+  },
+  {
+    "run": 1446,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01446_iq_v3.1.root",
+    "modes": [
+      "TM010",
+      "TM011",
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 105700903,
+    "wall_s": 2.7566791959980037,
+    "LO_TM012_total_Hz": 8845843000.0,
+    "LO_primary_Hz": 8743664000,
+    "LO_secondary_TM012_Hz": 102179000.0
+  },
+  {
+    "run": 1463,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01463_iq_v3.1.root",
+    "modes": [
+      "TM010",
+      "TM011",
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 105808172,
+    "wall_s": 2.7753066919976845,
+    "LO_TM012_total_Hz": 8845843000.0,
+    "LO_primary_Hz": 8743664000,
+    "LO_secondary_TM012_Hz": 102179000.0
+  },
+  {
+    "run": 1480,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01480_iq_v3.1.root",
+    "modes": [
+      "TM010",
+      "TM011",
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 105710080,
+    "wall_s": 3.2397112929902505,
+    "LO_TM012_total_Hz": 8845843000.0,
+    "LO_primary_Hz": 8743664000,
+    "LO_secondary_TM012_Hz": 102179000.0
+  },
+  {
+    "run": 1669,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01669_iq_v3.1.root",
+    "modes": [
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 34975611,
+    "wall_s": 1.520430792006664,
+    "LO_TM012_total_Hz": 8845843000.0,
+    "LO_primary_Hz": 8743664000,
+    "LO_secondary_TM012_Hz": 102179000.0
+  },
+  {
+    "run": 1670,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01670_iq_v3.1.root",
+    "modes": [
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 34975175,
+    "wall_s": 1.7172612000140361,
+    "LO_TM012_total_Hz": 8845854000.0,
+    "LO_primary_Hz": 8743655000,
+    "LO_secondary_TM012_Hz": 102199000.0
+  },
+  {
+    "run": 1671,
+    "source": "/home/mazzitel/flash-data/analysis/autoreco/Run3/run01671_iq_v3.1.root",
+    "modes": [
+      "TM012"
+    ],
+    "raw_streamed": false,
+    "root_requested_bytes": 34973235,
+    "wall_s": 1.464345891989069,
+    "LO_TM012_total_Hz": 8845854000.0,
+    "LO_primary_Hz": 8743655000,
+    "LO_secondary_TM012_Hz": 102199000.0
+  }
+]

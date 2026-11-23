@@ -37,3 +37,14 @@ and python-pptx available:
 
 The raw and archived ROOT inputs are read through the existing archive mount. No
 full waveform, raw cache or new ROOT copy is needed.
+
+## Completed Dataset 2 sample
+
+The complete 24-run analysis, including the Run 1670 retune comparison, is
+documented in [the final validation report](validation/LONGITUDINAL_FINAL_REPORT.md).
+The compact final tables and figures use the `longitudinal_final/` subdirectories.
+The final PDF and PPTX remain local under `presentation/longitudinal_final/`.
+Run `code/final_longitudinal.py` followed by `code/report_final_longitudinal.py`
+with the dependencies above to rebuild the final report from the saved tables.
+The earlier longitudinal manifest belongs to the initial scientific checkpoint
+`fc07e65b`, where its initial coverage statuses and cumulative validation are pinned.
