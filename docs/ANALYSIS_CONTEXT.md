@@ -1,5 +1,16 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
+
+## Active checkpoint · Dataset 2 hourly Run3-B sample
+
+- Scientific checkpoint `fc07e65b7190bdee1f8222bfa897bd9a8caca000` was pushed and independently verified on `run2-run3-pilot-design-20261122`.
+- Run 1429 is reused. Runs 1446, 1463 and 1480 passed the initial batch. The 24-run selection uses actual archived acquisition times through Run 1748. Raw-only 1749–1910 is outside the reconstructed study.
+- Successful raw streams used 27.95 GB, 456.9 s and 571.4 MiB peak RSS. Recorded PPS defects matched archived ROOT validation and timing remains in the received-sample domain.
+- Selection, presentation paths, results and provenance are in [the longitudinal report](../reporting/tail_coincidence_study/validation/LONGITUDINAL_REPORT.md) and the [persistent handover](TAIL_COINCIDENCE_HANDOVER.md).
+- The next batch (1497, 1513, 1529, 1530) is held for review. Preserve completed runs, including the existing 17-slide checkpoint, and keep future changes on the pilot branch.
+
+The remainder records the earlier scientific context.
+
 **Aggiornamento:** 2026-11-23 · baseline 13 (consolidamento in branch operativo e checkpoint T7/cross-mode 1429)
 **Repository:** https://github.com/FLASH-HFGW/analysis
 **Fonti:** risposta finale Codex e trascrizione completa di `validation_report.md` e `validation.json` fornita dall'utente il 22/11/2026. [Review documentale (branch archivio)](https://github.com/FLASH-HFGW/analysis/blob/docs/flash-analysis-context-20261122/docs/RUN680_VALIDATION_REVIEW_20261122.md). **I file raw e ROOT remoti non sono stati verificati direttamente da ChatGPT.**
