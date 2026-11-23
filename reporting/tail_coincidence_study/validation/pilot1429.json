@@ -1,0 +1,43 @@
+{
+  "run": 1429,
+  "raw_path": "/home/mazzitel/flash-data/data/LNF/run01429.mid.gz",
+  "compressed_bytes": 9310514217,
+  "raw_CRC": "Python gzip reader reached normal EOF; member CRC checked",
+  "EOR": true,
+  "events": 1000,
+  "samples": 1048576000,
+  "T7_totals": [
+    1368,
+    232,
+    827
+  ],
+  "matches_saved_totals": true,
+  "main_cluster_counts": [
+    1368,
+    232,
+    827
+  ],
+  "group_gap_nonexceeding_samples": [
+    10,
+    8,
+    8
+  ],
+  "coincidence_windows_us": [
+    1,
+    2,
+    5,
+    10,
+    100
+  ],
+  "coincidence_semantics": "all peak tuples satisfying inclusive max-minus-min window; tuples may share clusters",
+  "channel_delay_calibrated": false,
+  "UTC_precision_validated": false,
+  "time_shift_controls": 20,
+  "edge_margin_samples": 5000,
+  "context_halfwidth_samples": 500,
+  "future_runs_processed": [],
+  "wall_s": 159.76501088999794,
+  "max_rss_kib": 266672,
+  "process_io": "rchar: 9317660690\nwchar: 7416577\nsyscr: 2274641\nsyscw: 835\nread_bytes: 262144\nwrite_bytes: 7471104\ncancelled_write_bytes: 0\n",
+  "waveforms_retained": false
+}

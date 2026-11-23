@@ -1,0 +1,14 @@
+{
+  "wall_s": 12.719770096999127,
+  "requested_bytes_if_available": 528599951,
+  "raw_reads": false,
+  "runs": [
+    680,
+    1429,
+    1529,
+    1629,
+    1729
+  ],
+  "estimated_new_remote_compressed_PSD_bytes": 316336698,
+  "full_ROOT_copies": false
+}

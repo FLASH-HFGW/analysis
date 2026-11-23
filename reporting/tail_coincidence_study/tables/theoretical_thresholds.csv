@@ -1,0 +1,19 @@
+run,mode,threshold,threshold_V,proper_zero_mean_expected_count,observed_exact_T7,qualification
+680,TM010,T3,0.07342943525582458,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM010,T5,0.10332097310145173,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM010,T7,0.13321251094707887,41.35399148946569,37,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM010,T3,0.05186316135720661,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM010,T5,0.07297553468680862,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM010,T7,0.0940879080164106,41.35399148946569,1368,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM011,T3,0.047303685735925784,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM011,T5,0.06655999497331595,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM011,T7,0.08581630421070612,41.35399148946569,40,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM011,T3,0.03366609331135874,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM011,T5,0.04737083309077941,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM011,T7,0.06107557287020009,41.35399148946569,232,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM012,T3,0.03125663558911844,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM012,T5,0.043980537146906855,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+680,TM012,T7,0.05670443870469526,41.35399148946569,42,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM012,T3,0.02071404162776927,5900862.860682647,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM012,T5,0.029146280784929975,36856.83611597388,,marginal proper zero-mean Gaussian reference; no independent-sample significance
+1429,TM012,T7,0.03757851994209068,41.35399148946569,827,marginal proper zero-mean Gaussian reference; no independent-sample significance

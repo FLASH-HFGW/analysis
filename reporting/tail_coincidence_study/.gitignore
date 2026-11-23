@@ -2,3 +2,5 @@ __pycache__/
 presentation/
 data/pilot_*.npz
 validation/*.log
+tables/pilot1429_binned_statistics.csv
+validation/git_receipt.json

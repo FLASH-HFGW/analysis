@@ -1,0 +1,59 @@
+{
+  "elapsed_s": 1.813706594024552,
+  "rows": [
+    {
+      "run": 1429,
+      "mode": "TM010",
+      "model": "proper complex Gaussian; coarse short-PSD shape; measured deterministic mean; quantized",
+      "seed": 20261123,
+      "replicates": 24,
+      "samples_per_rep": 262144,
+      "total_samples": 6291456,
+      "total_duration_s": 1.2582912,
+      "variance_relative_error": 0.0005493637183010356,
+      "median_coarse_PSD_relative_error": 0.0063790454871366,
+      "properness_abs": 0.0010499729368908556,
+      "T3_count": 35453,
+      "T5_count": 235,
+      "T7_count": 0,
+      "scope": "periodic independent short records; no joined boundary clusters; insufficient exposure for full-run T7 or coincidence inference; observed improper covariance not matched"
+    },
+    {
+      "run": 1429,
+      "mode": "TM011",
+      "model": "proper complex Gaussian; coarse short-PSD shape; measured deterministic mean; quantized",
+      "seed": 20261123,
+      "replicates": 24,
+      "samples_per_rep": 262144,
+      "total_samples": 6291456,
+      "total_duration_s": 1.2582912,
+      "variance_relative_error": 0.00012691666624473007,
+      "median_coarse_PSD_relative_error": 0.006243719942318733,
+      "properness_abs": 0.0006502792084770897,
+      "T3_count": 35406,
+      "T5_count": 250,
+      "T7_count": 1,
+      "scope": "periodic independent short records; no joined boundary clusters; insufficient exposure for full-run T7 or coincidence inference; observed improper covariance not matched"
+    },
+    {
+      "run": 1429,
+      "mode": "TM012",
+      "model": "proper complex Gaussian; coarse short-PSD shape; measured deterministic mean; quantized",
+      "seed": 20261123,
+      "replicates": 24,
+      "samples_per_rep": 262144,
+      "total_samples": 6291456,
+      "total_duration_s": 1.2582912,
+      "variance_relative_error": 0.00023790068874898082,
+      "median_coarse_PSD_relative_error": 0.005902274920277347,
+      "properness_abs": 8.188767210633125e-05,
+      "T3_count": 35587,
+      "T5_count": 233,
+      "T7_count": 0,
+      "scope": "periodic independent short records; no joined boundary clusters; insufficient exposure for full-run T7 or coincidence inference; observed improper covariance not matched"
+    }
+  ],
+  "validated": "PSD/variance/properness only",
+  "observed_IQ_covariance_matched": false,
+  "full_length_significance": false
+}

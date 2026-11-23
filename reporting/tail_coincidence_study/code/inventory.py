@@ -23,7 +23,7 @@ for run in runs:
   row['positive_finite_temperature_readings']=count
  rows.append(row)
 (O/'data/inventory.json').write_text(json.dumps(json_value({'runs':rows,'elapsed_s':time.perf_counter()-t,'full_raw_bytes':sum(r.get('raw_bytes',0) for r in rows),'pilot_raw_bytes':next(r['raw_bytes'] for r in rows if r['run']==1429),'scope':'inventory only; no raw decompression, science extraction or substitutions'}),indent=2))
-with (O/'tables/temperatures.csv').open('w') as f:w=csv.DictWriter(f,fieldnames=list(temps[0]));w.writeheader();w.writerows(temps)
+with (O/'tables/temperatures.csv').open('w') as f:w=csv.DictWriter(f,fieldnames=list(temps[0]),lineterminator="\n");w.writeheader();w.writerows(temps)
 fields=['run','status','raw_available','ROOT_available','raw_bytes','ROOT_bytes','samples','duration_s','serial_gaps','PPS_source','PPS_count','utc_quality','pump_on','pump_frequency_hz','TWPA_flag','positive_finite_temperature_readings']
-with (O/'tables/inventory.csv').open('w') as f:w=csv.DictWriter(f,fieldnames=fields,extrasaction='ignore');w.writeheader();w.writerows(rows)
+with (O/'tables/inventory.csv').open('w') as f:w=csv.DictWriter(f,fieldnames=fields,extrasaction='ignore',lineterminator="\n");w.writeheader();w.writerows(rows)
 print([(r['run'],r['status'],r.get('PPS_intervals')) for r in rows]);print('RAW TOTAL',sum(r.get('raw_bytes',0) for r in rows))

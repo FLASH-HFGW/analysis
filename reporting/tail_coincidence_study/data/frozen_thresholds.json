@@ -1,0 +1,36 @@
+{
+  "680": {
+    "TM010": {
+      "sigma_Rayleigh_V": 0.022813217880575384,
+      "T7_exact_count": 37,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    },
+    "TM011": {
+      "sigma_Rayleigh_V": 0.014696412759927092,
+      "T7_exact_count": 40,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    },
+    "TM012": {
+      "sigma_Rayleigh_V": 0.009710880049996623,
+      "T7_exact_count": 42,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    }
+  },
+  "1429": {
+    "TM010": {
+      "sigma_Rayleigh_V": 0.016112960638949497,
+      "T7_exact_count": 1368,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    },
+    "TM011": {
+      "sigma_Rayleigh_V": 0.010459455655950812,
+      "T7_exact_count": 232,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    },
+    "TM012": {
+      "sigma_Rayleigh_V": 0.006435483851881111,
+      "T7_exact_count": 827,
+      "source": "previous validated v50/pilot product; frozen, not refitted"
+    }
+  }
+}

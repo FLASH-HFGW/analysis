@@ -1,0 +1,21 @@
+{
+  "checks": {
+    "context_is_exact_hit_union": true,
+    "TM010_hit_total": true,
+    "TM010_10ms_exposure_counts_RMS": true,
+    "TM010_100ms_exposure_counts_RMS": true,
+    "TM010_1000ms_exposure_counts_RMS": true,
+    "TM011_hit_total": true,
+    "TM011_10ms_exposure_counts_RMS": true,
+    "TM011_100ms_exposure_counts_RMS": true,
+    "TM011_1000ms_exposure_counts_RMS": true,
+    "TM012_hit_total": true,
+    "TM012_10ms_exposure_counts_RMS": true,
+    "TM012_100ms_exposure_counts_RMS": true,
+    "TM012_1000ms_exposure_counts_RMS": true,
+    "algorithm_unit_tests": true
+  },
+  "all_passed": true,
+  "raw_reads_in_validation": 0,
+  "qualification": "Existing 680 totals reused, not newly reconstructed. Raw CRC verified only for1429. No physical/UTC coincidence claim."
+}

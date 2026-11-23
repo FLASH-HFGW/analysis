@@ -1,0 +1,7 @@
+seed_mode,other_mode,samples,median_other_A_over_sigma,p95_other_A_over_sigma,median_other_max100us_over_sigma,fraction_other_T7_at_seed,fraction_other_T7_within100us,scope
+TM010,TM011,1368,1.542044800236233,3.359919622011116,3.917155263235956,0.0,0.0,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
+TM010,TM012,1368,1.469847780889666,3.1632574974745578,4.027491727509579,0.0,0.0007309941520467836,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
+TM011,TM010,232,1.8858955133944746,3.7200009422139897,4.031152220351627,0.0,0.0,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
+TM011,TM012,232,1.3723411466249187,3.0370650627235,3.9983006913947206,0.0,0.0,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
+TM012,TM010,827,1.4592944269827446,3.2244415140594977,3.997056298640799,0.0,0.0012091898428053204,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
+TM012,TM011,827,1.3906852008985207,2.9297362533499176,3.9071234199171236,0.0,0.0,conditional acquisition-index amplitudes; no joint-noise null or calibrated delay
