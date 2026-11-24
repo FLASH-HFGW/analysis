@@ -53,6 +53,6 @@ A read-only audit script exists under `autoreco/root_storage_dry_run.py`. It req
 
 ## Official-source consolidation (24 November 2026)
 
-The ROOT v3.1 source modules and verified historical conventions are now tracked in `main`. The code integration does **not** establish that the live PSGE checkout has been updated nor that services and schedules should be restarted. Before pulling main into the production checkout, verify the deployed configuration, source/runtime dependency hashes, active jobs and rollback reference. The file `config/autoreco_run3.json` in Git is a disabled reference template and may differ from the live local file.
+The ROOT v3.1 source modules and verified historical conventions are now tracked in `main`. The code integration does **not** establish that the live PSGE checkout has been updated nor that services and schedules should be restarted. Before pulling main into the production checkout, verify the deployed configuration, source/runtime dependency hashes, active jobs and rollback reference. The tracked disabled reference template is `config/autoreco_run3.example.json`. The operational `config/autoreco_run3.json` is Git-ignored and must be restored from the host's existing validated configuration before a production checkout update.
 
 The original commissioning documentation is preserved in the Git history of `autoreco-v3-lightweight` and `autoreco-run3-root31-release`; do not infer current operational status from historical statements in those branches.

@@ -50,6 +50,6 @@ The test commands above must be run with the supported scientific Python environ
 
 ## Branching and operating policy
 
-`main` is the official source-code baseline for the already operational ROOT v3.1 autoreconstruction. Experimental analysis and proposed reconstruction changes should be developed separately and integrated only after review. Local `config/autoreco_run3.json`, worker credentials, Condor state, runtime validation receipts and job queues must not be overwritten by a source-control update. The committed config is a **disabled template**, not necessarily the live configuration.
+`main` is the official source-code baseline for the already operational ROOT v3.1 autoreconstruction. Experimental analysis and proposed reconstruction changes should be developed separately and integrated only after review. Local `config/autoreco_run3.json`, worker credentials, Condor state, runtime validation receipts and job queues must not be overwritten by a source-control update. The tracked `config/autoreco_run3.example.json` is a **disabled template**. The actual `config/autoreco_run3.json` is excluded from version control, must be managed on PSGE, and must not be replaced by this merge.
 
 Never assume that merging a source branch, updating a checkout, submitting HTCondor jobs or re-enabling cron are equivalent operations. Production deployment and live job actions require a distinct operational check.

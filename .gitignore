@@ -260,3 +260,6 @@ run[0-9]*.json
 /outputs/
 /runtime/
 /work/
+
+# Run3 live configuration is host-specific and must never be overwritten by Git.
+/config/autoreco_run3.json
