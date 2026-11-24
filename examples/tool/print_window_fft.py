@@ -35,7 +35,7 @@ def dataset(product, mode, spectrum):
         return product.file[f"spectra/{mode}/window_psd"]
     if spectrum == "mean_psd":
         return product.file[f"spectra/{mode}/mean_psd"]
-    return product.file[f"short_psd/{spectrum.removeprefix('short_')}/{mode}"]
+    return product.file[f"short_psd/{spectrum[len('short_'):]}/{mode}"]
 
 
 def main():
