@@ -1,5 +1,7 @@
 # QUAX/FLASH — Contesto persistente dell'analisi
 
+> **Documentation policy (24 November 2026):** All new and revised FLASH documentation, README files, scientific reports, slides, code docstrings and explanatory comments must be in English. See [`docs/DOCUMENTATION_POLICY.md`](DOCUMENTATION_POLICY.md). Italian conversation is acceptable, but repository artifacts must be English. Older Italian passages below are retained as historical provenance pending translation; do not copy them into new documentation. The complete ROOT v3.1 reference is [`docs/iq_root_v31.md`](iq_root_v31.md); [`docs/ROOT_V3_1_FORMAT.md`](ROOT_V3_1_FORMAT.md) is only a compatibility index. Codex must check this policy at session start and report milestones with commit/push.
+
 ## Run 1670 targeted diagnostic · 23 November 2026
 
 - Scientific milestone `3409be09bee5fc085d759a64c0f2139ad5c0ceb5` on the pilot branch. Run 1670 is a separate targeted analysis. Existing Run 1429 and the completed 24-run sample remain intact.
