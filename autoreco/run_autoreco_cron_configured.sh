@@ -3,6 +3,13 @@ set -euo pipefail
 
 AUTORECO_DIR="/home/mazzitel/HFGW/analysis/autoreco"
 
+if [[ ${1:-} == --run3 ]]; then
+  shift
+  export PYTHONPATH="/cvmfs/mazzitel-personalrepo.infn.it/package/python3.9/site-packages"
+  exec /usr/bin/python3 "$AUTORECO_DIR/run3_cycle.py" \
+    --config "$AUTORECO_DIR/../config/autoreco_run3.json" "$@"
+fi
+
 exec "$AUTORECO_DIR/run_autoreco_cron.sh" \
   --run-min 408 \
   --input-path flash/data/LNF \

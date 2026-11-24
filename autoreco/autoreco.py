@@ -424,16 +424,14 @@ def discover_existing_jobs(
         )
 
 
-def submit_job(submit_path: Path) -> str:
+def submit_job(submit_path: Path, *, spool=True) -> str:
     """Sottomette un job in spool e restituisce il ClusterId."""
-    result = run_command(
-        ["condor_submit", "-spool", submit_path.name],
-        cwd=submit_path.parent,
-    )
+    command = ["condor_submit", *(["-spool"] if spool else []), submit_path.name]
+    result = run_command(command, cwd=submit_path.parent)
     if result.returncode != 0:
         diagnostics = submit_path.parent / "submit_error.json"
         diagnostics.write_text(json.dumps({
-            "timestamp": utc_now(), "command": ["condor_submit", "-spool", submit_path.name],
+            "timestamp": utc_now(), "command": command,
             "exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
         }, indent=2) + "\n")
         diagnostics.chmod(0o600)
@@ -636,6 +634,21 @@ def update_reco_done_batch(
             )
             continue
 
+        expected = state.get("expected_reco_done")
+        migration = state.get("migration")
+        requested = str(current_record.get("reco_requested_version") or "").strip()
+        allowed = ("", "3.0", state["reco_version"]) if migration else ("", state.get("reco_version", "1.0"))
+        if expected is not None and (
+            current_value != expected or get_run_number(current_record) != run_number
+            or parse_integer(current_record.get("rucio_status")) != 0 or requested not in allowed
+            or (migration and (
+                str(current_record.get("reco_output_path", "")).strip() != migration["reference"]["url"]
+                or str(current_record.get("reco_version", "")).strip() != migration["expected_version"]
+            ))
+        ):
+            print(f"Run {run_number}: logbook row changed; update deferred")
+            continue
+
         target = state.get("target_reco_done")
         if target is None:
             target = current_value + 1
@@ -650,7 +663,8 @@ def update_reco_done_batch(
         if output_path:
             cells.append(Cell(row_number, output_col, output_path))
         # reco_done è il commit marker logico e viene aggiunto per ultimo.
-        cells.append(Cell(row_number, reco_done_col, target))
+        if not migration:
+            cells.append(Cell(row_number, reco_done_col, target))
         ready.append(
             (
                 run_dir,
@@ -985,12 +999,24 @@ def parse_args() -> argparse.Namespace:
             "insieme a --read-only"
         ),
     )
-    parser.add_argument("--analysis-kind", choices=("fft", "noise"), default="fft")
+    parser.add_argument("--analysis-kind", choices=("fft", "noise", "iq-v3"), default="fft")
     parser.add_argument("--noise-reference", type=Path,
                         help="Riferimento fisso per la modalità noise")
     parser.add_argument("--prepare-only", action="store_true",
                         help="Genera i job di una selezione esplicita senza logbook, coda o sottomissione")
+    parser.add_argument("--iq-v3-split-pairs", type=json.loads,
+                        help="Mapping I/Q diagnostico per il formato SPE")
+    parser.add_argument("--iq-v3-full-run", action="store_true",
+                        help="Richiede EOR per il payload IQ v3")
+    parser.add_argument("--iq-v3-product", choices=("compact", "psd", "fft"), default="compact")
+    parser.add_argument("--iq-v3-bin-hz", type=int, default=100)
     args = parser.parse_args()
+    if args.analysis_kind == "iq-v3":
+        if not (args.prepare_only and args.read_only and args.run is not None):
+            parser.error("iq-v3 richiede --prepare-only --read-only --run")
+        if args.iq_v3_bin_hz <= 0:
+            parser.error("--iq-v3-bin-hz deve essere positivo")
+        args.analysis_script_name = "analyze_midas_iq_v3.py"
     if args.prepare_only and args.run_min is not None:
         parser.error("--prepare-only richiede --run oppure --run-range")
     if args.analysis_kind == "noise":
@@ -1067,6 +1093,14 @@ def main() -> None:
         runs = [run for run in runs if load_state(args.output_dir / f"{run:05d}") is None]
         if not runs:
             print("Nessun nuovo job da preparare; stati esistenti conservati.")
+            return
+        if args.analysis_kind == "iq-v3":
+            from noise_jobs import build_iq_v3_jobs
+            files = build_iq_v3_jobs(runs, args.output_dir, args.input_path,
+                                     args.analysis_script, args.iq_v3_split_pairs,
+                                     None if args.iq_v3_full_run else args.max_events,
+                                     args.cpus, args.iq_v3_product, args.iq_v3_bin_hz)
+            print(f"Preparati {len(files)} job pilota in {args.output_dir}.")
             return
         files = build_htcondor_files(
             run_numbers=runs, output_dir=args.output_dir, input_path=args.input_path,
