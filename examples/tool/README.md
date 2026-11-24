@@ -1,6 +1,6 @@
 # FLASH standalone tools
 
-Standalone inspection/export scripts are organized under `examples/tool/`. Their old paths at `examples/<name>.py` remain executable compatibility wrappers; shared DAQ/product modules and scientific campaign scripts remain in `examples/`.
+Standalone inspection/export scripts are organized under `examples/tool/`. Old standalone CLI paths remain supported with compatibility wrappers. **Exception:** `examples/extract_thermometers.py` remains the intact operational implementation because `thermometers_batch.py` imports it and HTCondor ships it standalone. A convenience copy is also available in `examples/tool/`. Shared DAQ/product modules remain in `examples/`.
 
 ## ROOT v3.1 tools
 
