@@ -112,19 +112,18 @@ def main():
                         help="stored PSD representation (default: window_psd)")
     parser.add_argument("--mode", choices=(*MODES, "all"), default="all")
     parser.add_argument("--n", type=int, default=10, help="number of first bins to print")
-    parser.add_argument("--window", type=int,
+    parser.add_argument("--window", type=int, default=0,
                         help="zero-based 1-second window index, for window_psd only")
     parser.add_argument("--all-windows", action="store_true",
                         help="print every 1-second window (window_psd only)")
     parser.add_argument("--rebin-hz", type=float,
                         help="rebin window_psd by overlap integration at this width in Hz")
     args = parser.parse_args()
-    if args.n < 1 or (args.window is not None and args.window < 0):
+    if args.n < 1 or args.window < 0:
         parser.error("--n must be positive and --window nonnegative")
-    if args.spectrum != "window_psd" and (args.all_windows or args.window is not None or args.rebin_hz is not None):
+    if args.spectrum != "window_psd" and (args.all_windows or args.window or args.rebin_hz is not None):
         parser.error("--window, --all-windows and --rebin-hz only apply to --spectrum window_psd")
 
-    window = 0 if args.window is None else args.window
     failed = False
     for path in args.files:
         try:
@@ -156,10 +155,10 @@ def main():
                         if len(shape) != 2 or shape[1] != stored_bins:
                             raise ValueError(f"{mode}: unexpected PSD shape {shape}")
                         count = shape[0]
-                        if not args.all_windows and window >= count:
-                            raise ValueError(f"{mode}: window {window} outside 0..{count-1}")
+                        if not args.all_windows and args.window >= count:
+                            raise ValueError(f"{mode}: window {args.window} outside 0..{count-1}")
                         print(f"# {mode}: {count} ordered 1-second PSD windows, {len(freqs)} bins each")
-                        windows = range(count) if args.all_windows else (window,)
+                        windows = range(count) if args.all_windows else (args.window,)
                         for i in windows:
                             if args.rebin_hz is None:
                                 values = np.asarray(ds[i:i + 1, :n])[0]
