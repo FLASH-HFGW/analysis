@@ -1,6 +1,6 @@
 # FLASH/QUAX — VNA Calibration and Cavity Characterization
 
-This 64-slide scientific presentation consolidates the Phase A inventory,
+This 57-slide scientific presentation consolidates the Phase A inventory,
 fit extension, validity audit, cavity timeline and Run 1429 spectral pilot.
 The editable PPTX contains native text, notes and table cells rendered as
 editable shapes. The measured and fitted plots are embedded figures.
@@ -75,7 +75,7 @@ interpretation. The reference fit ID is recorded in every row.
 
 ## Deck contents
 
-The 12-slide overview precedes 11 chronological table slides and 41
+The 12-slide overview precedes four compact chronological tables and 41
 full-page fit panels. Every available original fit plot is included,
 with measured and fitted magnitudes, wrapped phase and fractional
 residuals. The overview retains the Run 1429 TM012 VNA-versus-ADC-PSD
@@ -85,9 +85,10 @@ appendix under **Historical reference**.
 
 See [the scientific summary](SUMMARY.md) for the conclusions and limitations.
 
-Validation reopened the PPTX with python-pptx, checked all 64 slide titles
+Validation reopened the PPTX with python-pptx, checked all 57 slide titles
 against the corresponding PDF pages and verified all shape bounds.
-All 64 exported PDF pages were rasterized and visually reviewed.
+The revised tables were rasterized and visually reviewed. The original
+overview and fit slides were verified unchanged apart from page numbering.
 A separate regeneration produced identical PPTX slide XML and media,
 and identical PDF page rasters. Microsoft PowerPoint or LibreOffice
 rendering was unavailable on the validation host.

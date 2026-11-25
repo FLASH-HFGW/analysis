@@ -200,7 +200,7 @@ def build(snapshot, chronological):
            "Source: characterization timeline and Run 1429 VNA-versus-PSD pilot")
     assert len(deck.slides) == 12
     append_slides(deck, chronological, HERE / "figures")
-    assert len(deck.slides) == 64
+    assert len(deck.slides) == 57
     return deck
 
 

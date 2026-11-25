@@ -170,35 +170,49 @@ def append_slides(deck, table, assets):
         slide["footer"] = "FLASH / QUAX  |  CHRONOLOGICAL APPENDIX"
         return slide
 
-    for index in range(0, len(table), 4):
-        items = table[index:index+4]
+    headers = ("Calibration timestamp (UTC)", "Mode", "Candidate runs", "f₀ (MHz)",
+               "Loaded Q", "20 log₁₀(Abs21) (dB)", "Quality / status")
+    widths = (2.95, .93, 1.64, 1.39, 1.18, 2.01, 1.88)
+    for index in range(0, len(table), 11):
+        items = table[index:index+11]
         slide = page(f"Chronological calibration table | {index+1:02d}–{index+len(items):02d}",
-                     "Candidate intervals use UTC acquisition epochs and the Europe/Rome trace-clock interpretation.",
-                     "Source: FLASH-logbook / log; chronology and alternate clock windows in the companion CSV")
-        for offset, r in enumerate(items):
-            y = 1.62 + offset*1.19
+                     "Sweep starts shown in UTC using the Europe/Rome filename interpretation.",
+                     "Source: FLASH-logbook / log and archived fits; alternate clock windows are in the companion CSV/JSON")
+        values = [headers]
+        for r in items:
             window = r["candidate_windows"][ROME]
-            deck.rect(slide,.64,y,12.0,1.10,"#FFFFFF" if offset%2==0 else "#EDF1F6")
-            title = (f'{r["mode"]}  |  {r["fit_id"]}  |  '
-                     f'{compact(r["sweep_windows_utc"][ROME][0])} UTC'
-                     + ("  |  HISTORICAL REFERENCE" if r["scope"] == "Historical reference" else ""))
-            deck.text(slide,.80,y+.08,11.55,.30,title,14,True)
             if window["first"]:
-                a,b = window["first"],window["last"]
-                bounds = (f'Runs {a["run"]}–{b["run"]}  •  first start {compact(iso(a["start_epoch"]))}'
-                          f'  •  last end {compact(iso(b["end_epoch"]))} UTC')
-                if window["right_censored"]:
-                    bounds += "  •  logbook cutoff"
+                first, last = window["first"]["run"], window["last"]["run"]
+                bounds = str(first) if first == last else f"{first}–{last}"
+                bounds += "†" if window["right_censored"] else ""
             else:
-                bounds = "No complete acquisition lies inside this chronological window."
-            deck.text(slide,.80,y+.40,11.55,.28,bounds,12)
-            alternate = r["candidate_windows"][UTC]
-            clock = "verified Rome clock" if r["clock"].startswith("VERIFIED") else "inferred Rome clock"
-            if window["run_ids"] != alternate["run_ids"]:
-                clock += "; alternate window in CSV"
-            metric = (f'f₀ {r["f0_MHz"]:.6f} MHz  |  QL {r["loaded_Q"]:,.0f}  |  '
-                      f'Abs21 {r["fitted_Abs21_dB"]:+.2f} dB  |  {clock}  |  {r["scientific_status"]}')
-            deck.text(slide,.80,y+.72,11.55,.27,metric,12)
+                bounds = "—"
+            quality = [] if r["accurate_covariance"] else ["C"]
+            quality.extend("R" if flag.startswith("Large") else "S" for flag in r["quality_flags"])
+            status = "K" if r["scientific_status"] == "Conditional" else "?"
+            historical = r["scope"] == "Historical reference"
+            markers = "H " if historical else ""
+            values.append((
+                compact(r["sweep_windows_utc"][ROME][0]),
+                r["mode"], bounds, f'{r["f0_MHz"]:.6f}', f'{r["loaded_Q"]:,.0f}',
+                f'{r["fitted_Abs21_dB"]:+.2f}', f'{" ".join(quality)} / {markers}{status}',
+            ))
+        for offset, row in enumerate(values):
+            x, y = .64, 1.58 + offset*.342
+            for value, width in zip(row, widths):
+                deck.rect(slide, x, y, width-.025, .327,
+                          "#DDE9EC" if offset == 0 else "#FFFFFF" if offset%2 else "#EDF1F6")
+                deck.text(slide, x+.071, y+.053, width-.142, .24, value,
+                          11 if offset == 0 else 12, offset == 0)
+                x += width
+        deck.text(slide, .70, 5.83, 11.92, .20,
+                  "C: inaccurate covariance  ·  R: large residuals  ·  S: seed instability  ·  H: Run 680 historical reference", 10)
+        deck.text(slide, .70, 6.06, 11.92, .20,
+                  "K: conditional characterization exists for a separate, evidence-supported span  ·  ?: ambiguous or unassigned", 10)
+        deck.text(slide, .70, 6.29, 11.92, .20,
+                  "Candidate runs show timing only. Selection and applicability are unverified.  —: no complete run  ·  †: logbook cutoff", 10)
+        deck.text(slide, .70, 6.52, 11.92, .20,
+                  "S21 dB is the fitted model amplitude relative to unity. It is not calibrated RF-to-ADC receiver gain.", 10)
     for index, r in enumerate(table, 1):
         scope = r["scope"]
         time = compact(r["sweep_windows_utc"][ROME][0])
