@@ -53,7 +53,7 @@ A read-only audit script exists under `autoreco/root_storage_dry_run.py`. It req
 
 ## Official-source consolidation (24 November 2026)
 
-The ROOT v3.1 source modules and verified historical conventions are now tracked in `main`. The code integration does **not** establish that the live PSGE checkout has been updated nor that services and schedules should be restarted. Before pulling main into the production checkout, verify the deployed configuration, source/runtime dependency hashes, active jobs and rollback reference. The tracked disabled reference template is `config/autoreco_run3.example.json`. The operational `config/autoreco_run3.json` is Git-ignored and must be restored from the host's existing validated configuration before a production checkout update.
+The ROOT v3.1 source modules and verified historical conventions are now tracked in `main`. The code integration does **not** establish that the live PSGE checkout has been updated nor that services and schedules should be restarted. Before pulling main into the production checkout, verify the deployed configuration, source/runtime dependency hashes, active jobs and rollback reference. The tracked disabled reference template is `config/autoreco_run3.example.json`. The operational `config/autoreco_run3.json` is Git-ignored. Preserve the existing validated file during checkout updates. If it is missing, recover the host-specific configuration and verify it before resuming production.
 
 The original commissioning documentation is preserved in the Git history of `autoreco-v3-lightweight` and `autoreco-run3-root31-release`; do not infer current operational status from historical statements in those branches.
 
@@ -80,7 +80,7 @@ after 624 seconds. Its canonical ROOT v3.1 result is 157,058,110 bytes,
 with matching local and remote Adler-32 `68386afe`. The published product
 was opened independently to verify run identity, EOR, 1,048,576,000 samples,
 209 PSD windows per mode and BOR/EOR SHA-256. The wrapper reconciled the
-original attempt and live logbook, recording `reco_done=1`,
+successful retry and live logbook, recording `reco_done=1`,
 `reco_version=3.1` and the exact canonical output URL. A subsequent
 reconciliation dry run proposed no submissions or logbook updates.
 A one-job configuration with the original logbook snapshot is not a
@@ -101,7 +101,8 @@ reconciliation and the publication receipt, is stored under
 
 The 09:25 CET cron cycle submitted 20 distinct Run3 attempts,
 clusters 5277–5296. The first post-cycle snapshot
-showed 1 running and 19 idle, with no holds. At that snapshot,
+showed 1 running and 19 idle, with no holds. By 09:26 CET all 20 were
+running. At the first snapshot,
 Run 2536 was the latest closed acquisition and Run 1753 remained the
 highest verified ROOT run. There were 753 eligible runs without ROOT,
 including the queued attempts and the nine exhausted runs. Continue with
