@@ -214,15 +214,15 @@ def main():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == snapshot["provenance"][path.name]["sha256"]
     args.output.mkdir(parents=True, exist_ok=True)
     with (args.output / "fit_quality.csv").open("w", newline="") as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, lineterminator="\n")
         writer.writerow(["mode", "all_fits", "new_fits", "valid_new", "accurate_covariance", "new_chi2_ndof_range"])
         writer.writerows(snapshot["quality"])
     with (args.output / "coverage.csv").open("w", newline="") as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, lineterminator="\n")
         writer.writerow(["classification", "run_mode_rows"])
         writer.writerows(snapshot["coverage"].items())
     with (args.output / "tm012_intervals.csv").open("w", newline="") as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, lineterminator="\n")
         writer.writerow(["first_run", "last_run"])
         writer.writerows(snapshot["spans"])
     with tempfile.TemporaryDirectory() as scratch:
