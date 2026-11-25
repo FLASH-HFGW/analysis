@@ -12,6 +12,7 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from slide_deck import Deck, export
+from chronology import append_slides, build_table, plot_timelines, stage_appendix, write_table
 
 
 def rows(path):
@@ -83,13 +84,21 @@ def stage(work, reference):
         shutil.copyfile(source, assets / name)
     provenance = {name: {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
                   for name, path in (figures | validation_sources).items()}
+    snapshot = dict(quality=quality, scope=scope, coverage=dict(counts), spans=spans,
+                    change=change, comparison=comparison, provenance=provenance)
+    stage_appendix(HERE, work, reference, snapshot)
+    plot_timelines(snapshot["appendix"], assets)
+    for name in ("resonance_frequency.png", "loaded_q.png"):
+        source = provenance[name]
+        provenance[f"original_{name}"] = dict(source)
+        provenance[name] = dict(path="Regenerated from the saved cavity timeline; historical controls excluded",
+                                sha256=hashlib.sha256((assets / name).read_bytes()).hexdigest())
     with (HERE / "source_snapshot.json").open("w") as stream:
-        json.dump(dict(quality=quality, scope=scope, coverage=dict(counts), spans=spans,
-                       change=change, comparison=comparison, provenance=provenance), stream, indent=2)
+        json.dump(snapshot, stream, indent=2)
         stream.write("\n")
 
 
-def build(snapshot):
+def build(snapshot, chronological):
     deck = Deck()
     def slide(title, subtitle, source, notes=""):
         page = deck.new(title, subtitle, source, notes)
@@ -140,12 +149,6 @@ def build(snapshot):
             "Extract f₀ and QL = Q₀ / (1 + β₁ + β₂), with coupling, amplitude and conditional path-gain terms.",
             "The observed phases are preserved for diagnostics. The model fits magnitudes."],
            "Source: original FitCall/FitFunctions and reference validation report")
-    for mode, caption in (
-        ("TM010", "TM010 shows structured fractional residuals and the largest χ²/ndof of the three Run 1429 fits (5.71)."),
-        ("TM011", "TM011 gives χ²/ndof 1.15 for this triplet. Covariance remains inaccurate."),
-        ("TM012", "TM012 gives χ²/ndof 0.67 for this triplet. A close magnitude fit leaves parameter covariance unresolved.")):
-        figure(f"Run 1429 | {mode}", "Measured and fitted magnitudes, wrapped phase, and fractional residuals",
-               f"1429_{mode}.png", caption, f"Source: original offline reference fit, Run 1429 {mode}")
     page = slide("Fit quality and numerical limitations", "All 32 new fits returned valid optimizer minima",
                  "Source: cavity timeline diagnostics and fit extension; χ² ranges are for new fits")
     table(page, ["Mode","All fits","New fits","Valid new","Accurate cov.","New χ²/ndof"],
@@ -156,11 +159,11 @@ def build(snapshot):
     ], 17, .13)
     figure("Resonance frequency evolved by mode", "Measured sweep dates and conditional run coverage",
            "resonance_frequency.png",
-           "Fitted f₀ by sweep. Crosses flag fit quality. Green spans mark conditional run coverage.",
+           "Fitted f₀ by in-scope sweep. Crosses flag fit quality. Green spans mark conditional run coverage.",
            "Source: conditional cavity-characterization timeline; both clock hypotheses retained in source")
     figure("Loaded Q also changed between sweeps", "Q derived from the common three-path model",
            "loaded_q.png",
-           "Loaded Q by sweep. Open markers use inferred clock times. Green spans show conditional coverage.",
+           "Loaded Q by in-scope sweep. Open markers use inferred clock times. Green spans show conditional coverage.",
            "Source: conditional cavity-characterization timeline")
     points("A timestamp can be verified independently", "BOR/EOR content, key write epochs and original files",
            ["Fifteen trace files agree with Europe/Rome filename time and exact archived array content.",
@@ -195,7 +198,9 @@ def build(snapshot):
             "Resolve sweep routing and mode-qualified selection where records permit.",
             "Keep comparisons at the ADC plane. This campaign establishes neither an RF-to-ADC correction nor absolute noise temperature."],
            "Source: characterization timeline and Run 1429 VNA-versus-PSD pilot")
-    assert len(deck.slides) == 15
+    assert len(deck.slides) == 12
+    append_slides(deck, chronological, HERE / "figures")
+    assert len(deck.slides) == 64
     return deck
 
 
@@ -210,9 +215,13 @@ def main():
             parser.error("--work and --reference must be used together")
         stage(args.work, args.reference)
     snapshot = json.loads((HERE / "source_snapshot.json").read_text())
+    logbook = HERE / "acquisition_snapshot.json"
+    assert hashlib.sha256(logbook.read_bytes()).hexdigest() == snapshot["provenance"][logbook.name]["sha256"]
+    chronological = build_table(snapshot["appendix"], json.loads(logbook.read_text()))
     for path in (HERE / "figures").glob("*.png"):
         assert hashlib.sha256(path.read_bytes()).hexdigest() == snapshot["provenance"][path.name]["sha256"]
     args.output.mkdir(parents=True, exist_ok=True)
+    write_table(chronological, args.output)
     with (args.output / "fit_quality.csv").open("w", newline="") as stream:
         writer = csv.writer(stream, lineterminator="\n")
         writer.writerow(["mode", "all_fits", "new_fits", "valid_new", "accurate_covariance", "new_chi2_ndof_range"])
@@ -226,7 +235,7 @@ def main():
         writer.writerow(["first_run", "last_run"])
         writer.writerows(snapshot["spans"])
     with tempfile.TemporaryDirectory() as scratch:
-        export(build(snapshot), scratch, "vna_calibration", prepared="25 November 2026")
+        export(build(snapshot, chronological), scratch, "vna_calibration", prepared="25 November 2026")
         for extension in ("pptx", "pdf"):
             shutil.copyfile(Path(scratch) / f"iq_noise_summary_vna_calibration.{extension}",
                             args.output / f"flash_quax_vna_calibration.{extension}")

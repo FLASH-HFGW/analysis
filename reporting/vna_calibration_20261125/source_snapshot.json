@@ -96,12 +96,12 @@
       "sha256": "4f982d1b3a5ff16ed7e92170d11185be0ed2f508b18eb7335aec238eeea30f22"
     },
     "resonance_frequency.png": {
-      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/resonance_frequency.png",
-      "sha256": "dcdbbebb1cd5337b31f96ac654248f544d74f887dc70a51ec73905659545a816"
+      "path": "Regenerated from the saved cavity timeline; historical controls excluded",
+      "sha256": "652276ade38b71200c69112737c3ba852d400f3388ab333a474c3b2f9568254e"
     },
     "loaded_q.png": {
-      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/loaded_q.png",
-      "sha256": "08b7a570f785252fffb0fb6ce10fd5b59afa1110b86f343ed60a106788bc29e9"
+      "path": "Regenerated from the saved cavity timeline; historical controls excluded",
+      "sha256": "ea6af545d163f2766325419897377053c3a32e64996cb2f5d883a16305681664"
     },
     "tm012-vna-versus-psd.png": {
       "path": "/home/mazzitel/HFGW/analysis-work/run1429-vna-pilot/tm012-vna-versus-psd.png",
@@ -150,6 +150,3417 @@
     "pilot_evidence": {
       "path": "/home/mazzitel/HFGW/analysis-work/run1429-vna-pilot/evidence.json",
       "sha256": "fb7755c08f535aee7ec3695c56401b6909f08ba45c93c7093d83ff51f5e0d457"
+    },
+    "fit-4a8f6561d386dcd4.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/680_TM010.png",
+      "sha256": "82318dfef81892d82ad5a647bb3e9fd9207b37bbdfed4929e969fecd6bf0097e"
+    },
+    "fit-2a4af7b4d1100f98.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/680_TM011.png",
+      "sha256": "425c2b1d962c6d3d4ded7938da4d1f060531686cfddc1e7353349a9d47b66261"
+    },
+    "fit-67589eecea2b2872.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/680_TM012.png",
+      "sha256": "385aff1f4a7e1df73479de7267cdf2535a2bae5cd68367d1792ec17db5460ed0"
+    },
+    "fit-073231742e491479.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/073231742e491479.png",
+      "sha256": "3ee4ba3fbd84d2c9532b408747019d0ae25db65859d24f52e4de57f01d97b02b"
+    },
+    "fit-b54f4c1267ec7959.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/b54f4c1267ec7959.png",
+      "sha256": "005c322c474fd068970631d65bb920d5aadb4d7a7e37da10a25029fa9e480f83"
+    },
+    "fit-db8c19057bca6165.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1148_TM010.png",
+      "sha256": "4daf80bbc60a3d5686a6672da417ae8b5d1ea66bdfc2363cdba218af973e82de"
+    },
+    "fit-66ba250feabd1d98.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1148_TM011.png",
+      "sha256": "584dd8c8188faada65ea7319b69de8fcbbdc8401ff04ae8e641dc40665a004ce"
+    },
+    "fit-6f8ef0d6e398fea0.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1148_TM012.png",
+      "sha256": "88b49d8fd942f384ec8d511b28883912ef3e19d03c4bcfcb8ca347ddba11a246"
+    },
+    "fit-e96c2eaab1b9981b.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/e96c2eaab1b9981b.png",
+      "sha256": "d9ce3087ff73d6d172ee573b6266eca46f900dfc031cd8dc1d4a7187377ddd09"
+    },
+    "fit-38f6d64224c8b99a.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/38f6d64224c8b99a.png",
+      "sha256": "9fe86c9e50904da213e29bc28bb0b3e965148291f07ace6125af77b31dbc5895"
+    },
+    "fit-46764bdf344d1744.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/46764bdf344d1744.png",
+      "sha256": "f497cf6e8239f2db35aebe333195e826ec4b8b8fc464014cb46cb843cf0eb20d"
+    },
+    "fit-5d0721641ce8a285.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/5d0721641ce8a285.png",
+      "sha256": "1301a27d61dfa8bac667c1df0d9e4b469549a205a5d7a3951c6b28edf24e0cd2"
+    },
+    "fit-07888b00f6fb491a.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM010.png",
+      "sha256": "1a5df73b80b06f82ec29e35fe1b98ec4693e75af5971707a7d1259f31959bbe9"
+    },
+    "fit-9d28e0177654c2ae.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM011.png",
+      "sha256": "1f4aa7d8c72d9e8bbf320c06a6dfc0380f7bc7b583f342ba83bcd5f1dafdf497"
+    },
+    "fit-19db7a371c6db01f.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM012.png",
+      "sha256": "4f982d1b3a5ff16ed7e92170d11185be0ed2f508b18eb7335aec238eeea30f22"
+    },
+    "fit-6d084f2adfa4c909.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/6d084f2adfa4c909.png",
+      "sha256": "2edc1c8b94629a143849b13909cf6cddc67b30493dc17b6c5330b870f5c8f6b7"
+    },
+    "fit-9677fe233964d718.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/9677fe233964d718.png",
+      "sha256": "4f9edec9a73c6abd6dfc12a8b56b19acc249dcb361865babcf56e2929d939440"
+    },
+    "fit-b099d2205df08ef3.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/b099d2205df08ef3.png",
+      "sha256": "9f6a248d1e42cc14f7f99d2b3a3e6327bc0bf013809e224b31e46450acf6a0be"
+    },
+    "fit-8a740496c5ad984c.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/8a740496c5ad984c.png",
+      "sha256": "57cf0be751731e5a43d6bd418a0e1609bbc4e3189ba670c0661eb99d941512b6"
+    },
+    "fit-ae604e2d235e9d32.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/ae604e2d235e9d32.png",
+      "sha256": "1edc1e807f0063fa9c7a8c99f71e66b630dbffec2c02662312cdd9c3f06709fe"
+    },
+    "fit-d9c26dc69493bb72.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/d9c26dc69493bb72.png",
+      "sha256": "177205c01dc2fe4efc2ea84fbbf07376ea99e339db6124217ff2fe3738f60d2b"
+    },
+    "fit-894b4efdc8b6c205.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/894b4efdc8b6c205.png",
+      "sha256": "c328d8ea6bb9a4e46bcdfa04d4581f308bfa5298144abf9bef7a45bb5fbeb05f"
+    },
+    "fit-348dbea976a04c31.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/348dbea976a04c31.png",
+      "sha256": "817cee150ff3992457786eee99aa2078584e3b148e36cf77a07c631afe98f95b"
+    },
+    "fit-bee4275b3e164ecc.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/bee4275b3e164ecc.png",
+      "sha256": "1d60befacce37d4cea2df8c1a4b0e21cab70a52d69683a5265d1f5c1df8bdd28"
+    },
+    "fit-da40a4f81ce5a6f8.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/da40a4f81ce5a6f8.png",
+      "sha256": "ea310c0a43bc894a9310f8618a10ba179a99fbb83d4a148ccc545f53ac71ddda"
+    },
+    "fit-0bdaf52ad62cc7dd.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/0bdaf52ad62cc7dd.png",
+      "sha256": "2d376ab1a5703a4db3fc106b98b51889f5cc870a541382585d16b98deda83267"
+    },
+    "fit-321b9e1073441f78.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/321b9e1073441f78.png",
+      "sha256": "9329408ee27f171831178dc7c1c7db5fb52db60c0a0f751755bf44147eee2e7b"
+    },
+    "fit-949aa00d53fd08df.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/949aa00d53fd08df.png",
+      "sha256": "ce1bd34a51047d45616a693b8c68566ce6e5718be31c7e179059dc1c4017be68"
+    },
+    "fit-e699a4bdabb348ac.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/e699a4bdabb348ac.png",
+      "sha256": "0b611c2f7d8892102465122953f8e5804120da922bb0575663caace9d119d3ee"
+    },
+    "fit-7a76511597350d98.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/7a76511597350d98.png",
+      "sha256": "c4ac465d1e661a98f4d7717f249a1cee70be9b483ca8dab74ab15ebe5e11afac"
+    },
+    "fit-fb50712b84f9096b.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/fb50712b84f9096b.png",
+      "sha256": "b34412bce56b8fe7b872d9e96f1650a81169443982f7d3877b72f2a6bbc8f55b"
+    },
+    "fit-0fb425033635a196.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/0fb425033635a196.png",
+      "sha256": "1fedc142f4d421597a0803b6d1f01f83da65ed0b0c76d67b58096162716359f3"
+    },
+    "fit-aec550cb7403f987.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/aec550cb7403f987.png",
+      "sha256": "5a6c4d4c719d5f682f88060c248a6145475254a9ce51215d050a65cf27256651"
+    },
+    "fit-a42f083fb2bc2f60.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/a42f083fb2bc2f60.png",
+      "sha256": "52af214718092a509f24d52209b29ec24e0cf58dbbed550675d5d5d5a646d1c9"
+    },
+    "fit-615e461ad39a04df.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/615e461ad39a04df.png",
+      "sha256": "ca676ebda8ef1615a58322baa8729997603df88ca321d19c9b42e6413efbbc39"
+    },
+    "fit-b32264c36413f2e7.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/b32264c36413f2e7.png",
+      "sha256": "965fd5ee10bcf4a6aa8949d2ab7537cc32416e56f820ecb5685abc03661c1ab4"
+    },
+    "fit-7c19a27d058f9a63.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/7c19a27d058f9a63.png",
+      "sha256": "0ce4c69710fe2908a331871fff1453a27b3cefde5b72ca6c38e0da1c9c4bd7f0"
+    },
+    "fit-0655ea59dbd913e5.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/0655ea59dbd913e5.png",
+      "sha256": "25d6d4676650e079248393c4e5a9044921b2c3a623e9bd5db287dbfe1d8de4d2"
+    },
+    "fit-6372bb93f3423850.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/6372bb93f3423850.png",
+      "sha256": "a9df693dabfc65a84736b41a018fc18cc41e1058e5c6f6fa0ec612e30b1ddb73"
+    },
+    "fit-253742d55f254627.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/253742d55f254627.png",
+      "sha256": "a5ea6bcf4bf80ba3288e7d5764ac90c4e259c8f8e999c71af238130200337b04"
+    },
+    "fit-3e22b848760f8f3e.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/figures/3e22b848760f8f3e.png",
+      "sha256": "a70432de93db62a29799f65b09a50f4f12f8fc638735d078eae6ccb74f771921"
+    },
+    "acquisition_snapshot.json": {
+      "path": "acquisition_snapshot.json",
+      "sha256": "18390d19a26a8270225f91159cdd398a7c120b4280fc915ec7d20d35ceda8972"
+    },
+    "original_resonance_frequency.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/resonance_frequency.png",
+      "sha256": "dcdbbebb1cd5337b31f96ac654248f544d74f887dc70a51ec73905659545a816"
+    },
+    "original_loaded_q.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/loaded_q.png",
+      "sha256": "08b7a570f785252fffb0fb6ce10fd5b59afa1110b86f343ed60a106788bc29e9"
     }
+  },
+  "appendix": {
+    "fits": [
+      {
+        "id": "4a8f6561d386dcd4",
+        "mode": "TM010",
+        "scope": "pre-cutoff context only",
+        "files": {
+          "S12": "S12cav_modo1_2026-07-24_17-19-42.txt",
+          "S21": "S21cav_modo1_2026-07-24_17-15-46.txt",
+          "S22": "S22cav_modo1_2026-07-24_17-17-07.txt"
+        },
+        "sha256": {
+          "S12cav_modo1_2026-07-24_17-19-42.txt": "14477acff33ec142214d606ba5e3468a54d1189eed481950c75ee08ec4bdf900",
+          "S21cav_modo1_2026-07-24_17-15-46.txt": "102b3a747eab05a05486d9a0ffdf946e68811312f5be61950f234cf0924d3be9",
+          "S22cav_modo1_2026-07-24_17-17-07.txt": "e41cedec0557831fb2a0d6a1a9ea015ec13116963676447d5450c438863063dc"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8737119000.0,
+        "sweep_coverage_hz": [
+          8736119000.0,
+          8738119000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-07-24T15:15:46+00:00",
+            "2026-07-24T15:19:42+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-07-24T17:15:46+00:00",
+            "2026-07-24T17:19:42+00:00"
+          ]
+        },
+        "display_time_utc": "2026-07-24T15:15:46+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_HISTORICAL",
+        "verified_clock_by_file": {
+          "S12cav_modo1_2026-07-24_17-19-42.txt": [],
+          "S21cav_modo1_2026-07-24_17-15-46.txt": [],
+          "S22cav_modo1_2026-07-24_17-17-07.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 28648.677247371565,
+          "Q0": 51395.987283017086,
+          "beta1": 0.0011005761761801913,
+          "beta2": 0.792908509801167,
+          "Abs12": 0.00018730597682346011,
+          "Abs21": 304.20633604483993,
+          "Abs22": 3.44168896134879,
+          "q22": null,
+          "L1_conditional_dB": -56.73845000764915,
+          "L3_conditional_dB": -17.8105172787987,
+          "L5_conditional_dB": 67.47388238573883,
+          "chi2_ndof": 3.942817890374729,
+          "f0_formal_error_hz": 87.84445476531982,
+          "f0_hz": 8737118963.114868
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.4245586395263672,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 87.84445476531982
+        }
+      },
+      {
+        "id": "2a4af7b4d1100f98",
+        "mode": "TM011",
+        "scope": "pre-cutoff context only",
+        "files": {
+          "S12": "S12cav_modo2_2026-07-24_17-28-49.txt",
+          "S21": "S21cav_modo2_2026-07-24_17-24-34.txt",
+          "S22": "S22cav_modo2_2026-07-24_17-25-30.txt"
+        },
+        "sha256": {
+          "S12cav_modo2_2026-07-24_17-28-49.txt": "de38b39a8e9b1e32c626bd71f7183fe2df53cb75021ba91aae3303f1cabc9cfd",
+          "S21cav_modo2_2026-07-24_17-24-34.txt": "41de6d4fe60319fa15be25a08d1e4f85583f9f1d8629450440ee62faf903755f",
+          "S22cav_modo2_2026-07-24_17-25-30.txt": "83888512002b00b518a3bdb1c5247eff93c0f3ff7ad2fe1a89b39c1d9daa49e0"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8780842000.0,
+        "sweep_coverage_hz": [
+          8779842000.0,
+          8781842000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-07-24T15:24:34+00:00",
+            "2026-07-24T15:28:49+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-07-24T17:24:34+00:00",
+            "2026-07-24T17:28:49+00:00"
+          ]
+        },
+        "display_time_utc": "2026-07-24T15:24:34+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_HISTORICAL",
+        "verified_clock_by_file": {
+          "S12cav_modo2_2026-07-24_17-28-49.txt": [],
+          "S21cav_modo2_2026-07-24_17-24-34.txt": [],
+          "S22cav_modo2_2026-07-24_17-25-30.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 29771.234800057886,
+          "Q0": 53663.55516530128,
+          "beta1": 0.0712424200743381,
+          "beta2": 0.7312879595254004,
+          "Abs12": 9.049694097078071e-05,
+          "Abs21": 132.04961334843333,
+          "Abs22": 3.1737704786351557,
+          "q22": null,
+          "L1_conditional_dB": -56.62527718553482,
+          "L3_conditional_dB": -24.242044830795002,
+          "L5_conditional_dB": 66.65678750872881,
+          "chi2_ndof": 0.3992089161982983,
+          "f0_formal_error_hz": 117.75980186462402,
+          "f0_hz": 8780840531.179874
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.1975994110107422,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 117.75980186462402
+        }
+      },
+      {
+        "id": "67589eecea2b2872",
+        "mode": "TM012",
+        "scope": "pre-cutoff context only",
+        "files": {
+          "S12": "S12cav_modo3_2026-07-24_17-39-10.txt",
+          "S21": "S21cav_modo3_2026-07-24_17-36-13.txt",
+          "S22": "S22cav_modo3_2026-07-24_17-36-51.txt"
+        },
+        "sha256": {
+          "S12cav_modo3_2026-07-24_17-39-10.txt": "a7864c8c137600a6641eb650de7bbd61f0a69b7d256d3a5d849914c74f7eddcc",
+          "S21cav_modo3_2026-07-24_17-36-13.txt": "b8556cd6f11a7bf6973c34d0fed050630374dd9f1b6c0c0edef5c394f199d584",
+          "S22cav_modo3_2026-07-24_17-36-51.txt": "fe2dd2ad79e1203f6fdf680af5d898d05b91495b798626d2ee58b8699e9903b3"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8841176000.0,
+        "sweep_coverage_hz": [
+          8840176000.0,
+          8842176000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-07-24T15:36:13+00:00",
+            "2026-07-24T15:39:10+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-07-24T17:36:13+00:00",
+            "2026-07-24T17:39:10+00:00"
+          ]
+        },
+        "display_time_utc": "2026-07-24T15:36:13+00:00",
+        "measurement_clock": "VERIFIED_EUROPE_ROME",
+        "verified_clock_by_file": {
+          "S12cav_modo3_2026-07-24_17-39-10.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S21cav_modo3_2026-07-24_17-36-13.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S22cav_modo3_2026-07-24_17-36-51.txt": [
+            "if_filename_is_Europe_Rome"
+          ]
+        },
+        "parameters": {
+          "Q_loaded": 24514.6559567095,
+          "Q0": 38279.47573964966,
+          "beta1": 0.061341654269196834,
+          "beta2": 0.5001518379196184,
+          "Abs12": 7.818646280420136e-05,
+          "Abs21": 117.68838092965038,
+          "Abs22": 3.234673624442668,
+          "q22": null,
+          "L1_conditional_dB": -56.67771555010762,
+          "L3_conditional_dB": -25.459653132522106,
+          "L5_conditional_dB": 66.87432489623471,
+          "chi2_ndof": 0.34852242573200864,
+          "f0_formal_error_hz": 187.71269035339355,
+          "f0_hz": 8841180745.096872
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 1.4322357177734375,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 187.71269035339355
+        }
+      },
+      {
+        "id": "073231742e491479",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-10-05_19-02-44.txt",
+          "S21": "S21cav_Mode1_2026-10-05_19-03-45.txt",
+          "S22": "S22cav_Mode1_2026-10-05_19-03-33.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-10-05_19-02-44.txt": "24882cc45923fde29610a1c96dac610ba6bd46743d3d6c339e75f4baee145a1d",
+          "S21cav_Mode1_2026-10-05_19-03-45.txt": "ce50b6ff1c53d9619cc99d4b99a98d7d760c507ebc9b542287c41154777b213d",
+          "S22cav_Mode1_2026-10-05_19-03-33.txt": "bdf53271e74e94aa0f1d85c5a85ff4b3daebeb7201d0bb03ccaece6d578fd798"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8742994000.0,
+        "sweep_coverage_hz": [
+          8741994000.0,
+          8743994000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-10-05T17:02:44+00:00",
+            "2026-10-05T17:03:45+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-10-05T19:02:44+00:00",
+            "2026-10-05T19:03:45+00:00"
+          ]
+        },
+        "display_time_utc": "2026-10-05T17:02:44+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-10-05_19-02-44.txt": [],
+          "S21cav_Mode1_2026-10-05_19-03-45.txt": [],
+          "S22cav_Mode1_2026-10-05_19-03-33.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 35097.11963735912,
+          "Q0": 44188.43860987703,
+          "beta1": 0.001259848504351723,
+          "beta2": 0.25777334471645735,
+          "Abs12": 0.0002350306426438444,
+          "Abs21": 1957.1878402112616,
+          "Abs22": 10.828065094557902,
+          "q22": -0.002319791202782594,
+          "L1_conditional_dB": -58.85957162865618,
+          "L3_conditional_dB": -13.71793860986066,
+          "L5_conditional_dB": 79.55058878732729,
+          "chi2_ndof": 45.05450985653491,
+          "f0_formal_error_hz": 185.6852674484253,
+          "f0_hz": 8742989231.350586
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.8887672424316406,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.1945432936924261e-06,
+          "f0": 185.6852674484253,
+          "Q0": 75.86148759091884,
+          "beta1": 1.2334095789028315e-05,
+          "beta2": 0.0009418082955650608,
+          "Abs21": 9.576977438426525,
+          "Abs22": 0.0054720437421993395,
+          "q22": 0.0009061679086631662
+        }
+      },
+      {
+        "id": "b54f4c1267ec7959",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-19_15-19-22.txt",
+          "S21": "S21cav_Mode1_2026-11-19_15-13-56.txt",
+          "S22": "S22cav_Mode1_2026-11-19_15-15-01.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-19_15-19-22.txt": "6c368c7ed385df44c573a24b3f1f048db3e72e05d48a53d39d3c123663ab085a",
+          "S21cav_Mode1_2026-11-19_15-13-56.txt": "ca0e1d69c8a60d439707917287541c4063e2ac7c40b2b1659b08862e21303805",
+          "S22cav_Mode1_2026-11-19_15-15-01.txt": "d688e5b1dd64b7aca228a6e98b015ed5aeb9cf43fc4bd3904261b27b788904ed"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745261000.0,
+        "sweep_coverage_hz": [
+          8744261000.0,
+          8746261000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-19T14:13:56+00:00",
+            "2026-11-19T14:19:22+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-19T15:13:56+00:00",
+            "2026-11-19T15:19:22+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-19T14:13:56+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-19_15-19-22.txt": [],
+          "S21cav_Mode1_2026-11-19_15-13-56.txt": [],
+          "S22cav_Mode1_2026-11-19_15-15-01.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 17555.4389082521,
+          "Q0": 27599.72519246148,
+          "beta1": 0.0010891733444838914,
+          "beta2": 0.5710575178719894,
+          "Abs12": 0.0002408314294615825,
+          "Abs21": 1935.387374384237,
+          "Abs22": 16.105167067956682,
+          "q22": 0.12216714740198084,
+          "L1_conditional_dB": -56.98089505771604,
+          "L3_conditional_dB": -15.384841673373089,
+          "L5_conditional_dB": 81.12019974491636,
+          "chi2_ndof": 5.306512701642021,
+          "f0_formal_error_hz": 211.3377513885498,
+          "f0_hz": 8745235973.146559
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.1546955108642578,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.2309664923352062e-06,
+          "f0": 211.3377513885498,
+          "Q0": 37.36948210313494,
+          "beta1": 1.0910404129538687e-05,
+          "beta2": 0.0007469773522761347,
+          "Abs21": 9.690551068804439,
+          "Abs22": 0.009198160007505507,
+          "q22": 0.000979072429180397
+        }
+      },
+      {
+        "id": "db8c19057bca6165",
+        "mode": "TM010",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-19_15-47-52.txt",
+          "S21": "S21cav_Mode1_2026-11-19_15-45-28.txt",
+          "S22": "S22cav_Mode1_2026-11-19_15-44-42.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-19_15-47-52.txt": "794175d2a54726062bae3c8ccede3f0c125bff3d91937a3ff4986480f78d392f",
+          "S21cav_Mode1_2026-11-19_15-45-28.txt": "4708eafb7179dcdd4cbe5da0141c12c892a54cc8985aafb01ba805f90734921f",
+          "S22cav_Mode1_2026-11-19_15-44-42.txt": "abd9a5059b61057a0cb92f7bfd3fe4a5b6de0cd1920165f2766235a1b67f9f7a"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8744560000.0,
+        "sweep_coverage_hz": [
+          8743560000.0,
+          8745560000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-19T14:44:42+00:00",
+            "2026-11-19T14:47:52+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-19T15:44:42+00:00",
+            "2026-11-19T15:47:52+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-19T14:44:42+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-19_15-47-52.txt": [],
+          "S21cav_Mode1_2026-11-19_15-45-28.txt": [],
+          "S22cav_Mode1_2026-11-19_15-44-42.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 16986.590945224198,
+          "Q0": 33954.37153690503,
+          "beta1": 0.0010860035908823455,
+          "beta2": 0.9978066315703447,
+          "Abs12": 0.00020874965320100773,
+          "Abs21": 1622.3131004723962,
+          "Abs22": 16.65019689398783,
+          "q22": null,
+          "L1_conditional_dB": -56.69089539002746,
+          "L3_conditional_dB": -16.916589356849094,
+          "L5_conditional_dB": 81.11928286094852,
+          "chi2_ndof": 7.821121037127838,
+          "f0_formal_error_hz": 13.098246574401855,
+          "f0_hz": 8744546604.115774
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 70.90577697753906,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 13.098246574401855
+        }
+      },
+      {
+        "id": "66ba250feabd1d98",
+        "mode": "TM011",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-19_16-00-41.txt",
+          "S21": "S21cav_Mode2_2026-11-19_15-58-33.txt",
+          "S22": "S22cav_Mode2_2026-11-19_15-58-03.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-19_16-00-41.txt": "634a18fb3e4319c2f7da95fe1f414bc52bbb07892597f5dad3d42d45c1328d54",
+          "S21cav_Mode2_2026-11-19_15-58-33.txt": "586e3967e2c86669440192badcc3442527d494306ee197a10d2635f72792fdcd",
+          "S22cav_Mode2_2026-11-19_15-58-03.txt": "b2759a202507d2d65ce9dff1f70bec8f65925f601ee691cc49a92cb7af6d5f04"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8787249000.0,
+        "sweep_coverage_hz": [
+          8786249000.0,
+          8788249000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-19T14:58:03+00:00",
+            "2026-11-19T15:00:41+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-19T15:58:03+00:00",
+            "2026-11-19T16:00:41+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-19T14:58:03+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-19_16-00-41.txt": [],
+          "S21cav_Mode2_2026-11-19_15-58-33.txt": [],
+          "S22cav_Mode2_2026-11-19_15-58-03.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22523.014843397013,
+          "Q0": 46551.71551858696,
+          "beta1": 0.04182395852636297,
+          "beta2": 1.0250270311063308,
+          "Abs12": 0.0001408096793764532,
+          "Abs21": 644.2745655398279,
+          "Abs22": 10.246944922916454,
+          "q22": null,
+          "L1_conditional_dB": -56.498440752569316,
+          "L3_conditional_dB": -20.528909055386144,
+          "L5_conditional_dB": 76.71032879037651,
+          "chi2_ndof": 1.1911488611823222,
+          "f0_formal_error_hz": 20.396716117858887,
+          "f0_hz": 8787252189.530037
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 33.44846153259277,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 20.396716117858887
+        }
+      },
+      {
+        "id": "6f8ef0d6e398fea0",
+        "mode": "TM012",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-19_16-08-49.txt",
+          "S21": "S21cav_Mode3_2026-11-19_16-05-10.txt",
+          "S22": "S22cav_Mode3_2026-11-19_16-10-30.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-19_16-08-49.txt": "1db005a97725aa53db4f46c18fff3d46e21fb45263c81e4bc37af22bd4c5c5b2",
+          "S21cav_Mode3_2026-11-19_16-05-10.txt": "22cb9aafc9273571259424d9a873e7e1642177fd411d93f6cd1cb014e14ff3f2",
+          "S22cav_Mode3_2026-11-19_16-10-30.txt": "df39c2cc571ed73b29280090fbe2659266acd8d1d789e4f22d556cea6e7c344a"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8846287000.0,
+        "sweep_coverage_hz": [
+          8845287000.0,
+          8847287000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-19T15:05:10+00:00",
+            "2026-11-19T15:10:30+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-19T16:05:10+00:00",
+            "2026-11-19T16:10:30+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-19T15:05:10+00:00",
+        "measurement_clock": "VERIFIED_EUROPE_ROME",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-19_16-08-49.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S21cav_Mode3_2026-11-19_16-05-10.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S22cav_Mode3_2026-11-19_16-10-30.txt": [
+            "if_filename_is_Europe_Rome"
+          ]
+        },
+        "parameters": {
+          "Q_loaded": 10177.110109120853,
+          "Q0": 15577.128929252582,
+          "beta1": 0.0617050855436416,
+          "beta2": 0.4688992571658045,
+          "Abs12": 6.301069439080421e-05,
+          "Abs21": 257.2362984657504,
+          "Abs22": 8.95375273577739,
+          "q22": null,
+          "L1_conditional_dB": -56.58912889101009,
+          "L3_conditional_dB": -27.42258579587073,
+          "L5_conditional_dB": 75.62923082827713,
+          "chi2_ndof": 0.537760284332275,
+          "f0_formal_error_hz": 369.6935176849365,
+          "f0_hz": 8846293765.101316
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [
+          {
+            "collection_id": "6f8ef0d6e398fea0",
+            "mode": "TM012",
+            "fit_source": "archived ODB fit",
+            "source_run": "",
+            "f0_hz": "8846292655.54338",
+            "f0_formal_error_hz": "",
+            "Q_loaded": "",
+            "Q0": "35777.79050263809",
+            "beta1": "0.07700697348240555",
+            "beta2": "2.4386625045230343",
+            "Abs12": "5.680640204694002e-05",
+            "Abs21": "231.91346538693995",
+            "Abs22": "8.953808351411334",
+            "L1_conditional_dB": "",
+            "L3_conditional_dB": "",
+            "L5_conditional_dB": "",
+            "chi2_ndof": "",
+            "valid": "True",
+            "accurate_covariance": "",
+            "at_limit": "",
+            "seed_f0_spread_hz": "",
+            "seed_Q0_ratio": "",
+            "loaded_Q_from_final_parameters": "10176.664992676178",
+            "S12_path": "/home/mazzitel/flash-data/data/LNF/calib/S12cav_Mode3_2026-11-19_16-08-49.txt",
+            "S12_sha256": "1db005a97725aa53db4f46c18fff3d46e21fb45263c81e4bc37af22bd4c5c5b2",
+            "S12_magnitude_min": "4.708281357004582e-06",
+            "S12_magnitude_max": "1.4879730926459076e-05",
+            "S12_magnitude_at_fitted_f0": "1.3836233323533772e-05",
+            "S21_path": "/home/mazzitel/flash-data/data/LNF/calib/S21cav_Mode3_2026-11-19_16-05-10.txt",
+            "S21_sha256": "22cb9aafc9273571259424d9a873e7e1642177fd411d93f6cd1cb014e14ff3f2",
+            "S21_magnitude_min": "22.018563266012105",
+            "S21_magnitude_max": "58.67717980192335",
+            "S21_magnitude_at_fitted_f0": "57.50498962216742",
+            "S22_path": "/home/mazzitel/flash-data/data/LNF/calib/S22cav_Mode3_2026-11-19_16-10-30.txt",
+            "S22_sha256": "df39c2cc571ed73b29280090fbe2659266acd8d1d789e4f22d556cea6e7c344a",
+            "S22_magnitude_min": "3.413706106750055",
+            "S22_magnitude_max": "8.661254341380195",
+            "S22_magnitude_at_fitted_f0": "3.4927365794660203",
+            "stored_initial_loaded_Q": "10785.49936501213",
+            "reduced_chi2": "0.5386093950155009",
+            "output_utc": "2026-11-19T15:18:01+00:00",
+            "first_snapshot_run": "1148",
+            "fitted_parameters": "{\"Abs12\": {\"name\": \"Abs12\", \"value\": 5.680640204694002e-05, \"error\": 3.0233553579636036e-07}, \"f0\": {\"name\": \"f0\", \"value\": 8846292655.54338, \"error\": 293.8514347076416}, \"Q0\": {\"name\": \"Q0\", \"value\": 35777.79050263809, \"error\": 70.63719369261526}, \"beta1\": {\"name\": \"beta1\", \"value\": 0.07700697348240555, \"error\": 0.0008640055914332853}, \"beta2\": {\"name\": \"beta2\", \"value\": 2.4386625045230343, \"error\": 0.004119190609201517}, \"Abs21\": {\"name\": \"Abs21\", \"value\": 231.91346538693995, \"error\": 1.2113939230068667}, \"Abs22\": {\"name\": \"Abs22\", \"value\": 8.953808351411334, \"error\": 0.006314815131292839}, \"q22\": {\"name\": \"q22\", \"value\": 0.011108649992898081, \"error\": 0.0026407851592553395}}",
+            "session_start_utc": "2026-11-19T15:05:10+00:00",
+            "scope": "in scope",
+            "anchor_configuration": "{\"nominal_RF_Hz\": \"8846287000.0\", \"pump_on\": \"1\", \"pump_Hz\": \"7891000000.0\", \"pump_setting\": \"-6.1\", \"with_TWPA\": \"True\", \"primary_LO_Hz\": \"8743310000.0\", \"secondary1_LO_Hz\": \"42689000\", \"secondary2_LO_Hz\": \"101727000\", \"switches\": {\"RT1_set\": 1, \"RT1_status\": 1, \"CR1_set\": 2, \"CR1_status\": 0, \"CR2_set\": 0, \"CR2_status\": 0}}",
+            "reported_f0_formal_error_hz": "293.8514347076416",
+            "uncertainty_validation": "unvalidated formal estimator; no validated covariance interval",
+            "covariance_status": "forced positive definite in archived Minuit report",
+            "L5_path_model_dB": "75.6293647668035",
+            "residual_diagnostic": "archived reduced chi-square; residual series not stored in this result",
+            "fit_evidence_source": "/home/mazzitel/HFGW/analysis-work/calibration-phase-a-20261125/calibration_comparison.csv",
+            "native_covariance_report_lines": "[\"\\u2502             Hesse ok             \\u2502     Covariance FORCED pos. def.      \\u2502\"]"
+          }
+        ],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 1.0469970703125,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 369.6935176849365
+        }
+      },
+      {
+        "id": "e96c2eaab1b9981b",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-20_11-26-51.txt",
+          "S21": "S21cav_Mode1_2026-11-20_11-16-39.txt",
+          "S22": "S22cav_Mode1_2026-11-20_11-19-53.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-20_11-26-51.txt": "5b10590b8930b707764079ac5b5ef39f5abe08310f5ed48e4519b92d007c283c",
+          "S21cav_Mode1_2026-11-20_11-16-39.txt": "9bb748ca9b96bee5d465acc3e1615d6cad4e354f3a84f2cfd52bd5a79ed44e58",
+          "S22cav_Mode1_2026-11-20_11-19-53.txt": "65f794784cde369c5920d43e1ad046bdafcac16a89eeb17e65709154140eb338"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8744569000.0,
+        "sweep_coverage_hz": [
+          8743569000.0,
+          8745569000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T10:16:39+00:00",
+            "2026-11-20T10:26:51+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T11:16:39+00:00",
+            "2026-11-20T11:26:51+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T10:16:39+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-20_11-26-51.txt": [],
+          "S21cav_Mode1_2026-11-20_11-16-39.txt": [],
+          "S22cav_Mode1_2026-11-20_11-19-53.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 17007.3166400203,
+          "Q0": 34004.15953502578,
+          "beta1": 0.0010100027746661822,
+          "beta2": 0.9983741596281094,
+          "Abs12": 0.00021713717204896107,
+          "Abs21": 225.5213325180464,
+          "Abs22": 2.1791692236736635,
+          "q22": 0.01866639229583598,
+          "L1_conditional_dB": -56.781624948332784,
+          "L3_conditional_dB": -16.48369150438068,
+          "L5_conditional_dB": 63.547444083354776,
+          "chi2_ndof": 7.110906252869977,
+          "f0_formal_error_hz": 12.877604484558105,
+          "f0_hz": 8744543584.96644
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 15.423639297485352,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.2353290998039787e-06,
+          "f0": 12.877604484558105,
+          "Q0": 34.96863697497247,
+          "beta1": 1.1304709406768205e-05,
+          "beta2": 0.0001573317368304128,
+          "Abs21": 1.2619712014790139,
+          "Abs22": 0.0012648204551313214,
+          "q22": 0.0011532323145652633
+        }
+      },
+      {
+        "id": "38f6d64224c8b99a",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-20_11-32-32.txt",
+          "S21": "S21cav_Mode2_2026-11-20_11-33-34.txt",
+          "S22": "S22cav_Mode2_2026-11-20_11-34-07.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-20_11-32-32.txt": "db6b83a4e984a031bd5bc8d9f7cc05b20885acb52a98fbc2de831cf8b5003479",
+          "S21cav_Mode2_2026-11-20_11-33-34.txt": "fb27d9e0501eaa9803894d31493d3bee6b509f97608de802983b17751d3be9ae",
+          "S22cav_Mode2_2026-11-20_11-34-07.txt": "8ff006242e30cc36b61f442fcfaf1b015b517769ef8ad6aedd2e99be9e495954"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8787241000.0,
+        "sweep_coverage_hz": [
+          8786241000.0,
+          8788241000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T10:32:32+00:00",
+            "2026-11-20T10:34:07+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T11:32:32+00:00",
+            "2026-11-20T11:34:07+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T10:32:32+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-20_11-32-32.txt": [],
+          "S21cav_Mode2_2026-11-20_11-33-34.txt": [],
+          "S22cav_Mode2_2026-11-20_11-34-07.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22995.076167697247,
+          "Q0": 48261.64411728497,
+          "beta1": 0.05416518594793297,
+          "beta2": 1.0446164734527605,
+          "Abs12": 0.00012598882991568395,
+          "Abs21": 134.97533864653096,
+          "Abs22": 2.2079280954447578,
+          "q22": -0.0108418447224185,
+          "L1_conditional_dB": -56.85937457375076,
+          "L3_conditional_dB": -21.133984574853905,
+          "L5_conditional_dB": 63.73907309021963,
+          "chi2_ndof": 2.359841892472274,
+          "f0_formal_error_hz": 15.311440467834473,
+          "f0_hz": 8787251760.532227
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 18.014591217041016,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 6.80237061853248e-07,
+          "f0": 15.311440467834473,
+          "Q0": 59.51646099224308,
+          "beta1": 0.0006032576755794702,
+          "beta2": 0.0006291726924663177,
+          "Abs21": 0.7159924315370745,
+          "Abs22": 0.0011855295377665165,
+          "q22": 0.0013315840303459127
+        }
+      },
+      {
+        "id": "46764bdf344d1744",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-20_11-36-32.txt",
+          "S21": "S21cav_Mode3_2026-11-20_11-34-55.txt",
+          "S22": "S22cav_Mode3_2026-11-20_11-34-34.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-20_11-36-32.txt": "947b072067540a1250358c242739b479e5a8cd294abe25ff77075578914e8079",
+          "S21cav_Mode3_2026-11-20_11-34-55.txt": "6e537e11ff8ede307802bbe6cbe42ee0852d3e4a578b5ac01d1b8fd553bba64c",
+          "S22cav_Mode3_2026-11-20_11-34-34.txt": "edd820e137cfc5cac9ee7458cfa34abe5296728ae1dc459105488c6289964e0d"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8846289000.0,
+        "sweep_coverage_hz": [
+          8845289000.0,
+          8847289000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T10:34:34+00:00",
+            "2026-11-20T10:36:32+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T11:34:34+00:00",
+            "2026-11-20T11:36:32+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T10:34:34+00:00",
+        "measurement_clock": "VERIFIED_EUROPE_ROME",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-20_11-36-32.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S21cav_Mode3_2026-11-20_11-34-55.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S22cav_Mode3_2026-11-20_11-34-34.txt": [
+            "if_filename_is_Europe_Rome"
+          ]
+        },
+        "parameters": {
+          "Q_loaded": 10475.551551590319,
+          "Q0": 16104.48181219244,
+          "beta1": 0.06082495737075129,
+          "beta2": 0.4765147934653352,
+          "Abs12": 6.3963899921439e-05,
+          "Abs21": 68.16948433770557,
+          "Abs22": 2.1468295597391363,
+          "q22": 0.01777847153374206,
+          "L1_conditional_dB": -56.95857507257145,
+          "L3_conditional_dB": -26.92272622534226,
+          "L5_conditional_dB": 63.59452640188289,
+          "chi2_ndof": 0.671082323012173,
+          "f0_formal_error_hz": 359.4893207550049,
+          "f0_hz": 8846298035.747675
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.9774436950683594,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.2596591399716387e-07,
+          "f0": 359.4893207550049,
+          "Q0": 24.94779706220652,
+          "beta1": 0.0006429642256261213,
+          "beta2": 0.0007409455209018145,
+          "Abs21": 0.34052999213368906,
+          "Abs22": 0.0015038798712472268,
+          "q22": 0.000832303528847533
+        }
+      },
+      {
+        "id": "5d0721641ce8a285",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-20_17-48-03.txt",
+          "S21": "S21cav_Mode1_2026-11-20_17-45-59.txt",
+          "S22": "S22cav_Mode1_2026-11-20_17-46-25.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-20_17-48-03.txt": "a22e73716f0ab5f895c23ee0e09b35072aa2fc4687de0282c8af893483606820",
+          "S21cav_Mode1_2026-11-20_17-45-59.txt": "84fe5ff7c18cee6ca6c15f9db9540602d5a72905a90fa09971c231ddb7c2c203",
+          "S22cav_Mode1_2026-11-20_17-46-25.txt": "dace5e907f6bf6cec23767f73bdb4f0583f12e09da5cfe645a3f8d0c8d9ff86a"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8744950000.0,
+        "sweep_coverage_hz": [
+          8743950000.0,
+          8745950000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T16:45:59+00:00",
+            "2026-11-20T16:48:03+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T17:45:59+00:00",
+            "2026-11-20T17:48:03+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T16:45:59+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-20_17-48-03.txt": [],
+          "S21cav_Mode1_2026-11-20_17-45-59.txt": [],
+          "S22cav_Mode1_2026-11-20_17-46-25.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 21526.89214470323,
+          "Q0": 36066.63708745745,
+          "beta1": 0.0010885017705263877,
+          "beta2": 0.6743338882808761,
+          "Abs12": 0.0002607609182741278,
+          "Abs21": 2107.2722446399694,
+          "Abs22": 16.90071253579104,
+          "q22": 0.09258739243365063,
+          "L1_conditional_dB": -56.7957313035559,
+          "L3_conditional_dB": -14.879418661515203,
+          "L5_conditional_dB": 81.35383160155587,
+          "chi2_ndof": 5.42575433236844,
+          "f0_formal_error_hz": 151.99031829833984,
+          "f0_hz": 8744940539.943382
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.35395050048828125,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.3378286030458141e-06,
+          "f0": 151.99031829833984,
+          "Q0": 48.12179084373565,
+          "beta1": 1.0948637591251054e-05,
+          "beta2": 0.0007599016192305075,
+          "Abs21": 10.594575690562806,
+          "Abs22": 0.009198230883022518,
+          "q22": 0.0011207105914672263
+        }
+      },
+      {
+        "id": "07888b00f6fb491a",
+        "mode": "TM010",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-20_18-02-20.txt",
+          "S21": "S21cav_Mode1_2026-11-20_18-00-54.txt",
+          "S22": "S22cav_Mode1_2026-11-20_17-59-50.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-20_18-02-20.txt": "82383ad0f28ad528254ad90aeff1fa5c2ee9111acb5a0982e23a204cecebf10e",
+          "S21cav_Mode1_2026-11-20_18-00-54.txt": "4e127119b5ebe1f1c0495ec2ca6bb4176c4426d44fde957dfdaef91296aa4ec6",
+          "S22cav_Mode1_2026-11-20_17-59-50.txt": "ca0463ac03291aba6724fd979505d19d1fa925fe8aa67602fc68a1ffc83de44f"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8744950000.0,
+        "sweep_coverage_hz": [
+          8743950000.0,
+          8745950000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T16:59:50+00:00",
+            "2026-11-20T17:02:20+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T17:59:50+00:00",
+            "2026-11-20T18:02:20+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T16:59:50+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-20_18-02-20.txt": [],
+          "S21cav_Mode1_2026-11-20_18-00-54.txt": [],
+          "S22cav_Mode1_2026-11-20_17-59-50.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22182.901675423174,
+          "Q0": 38130.10464291925,
+          "beta1": 0.001081366505408164,
+          "beta2": 0.7178147995973458,
+          "Abs12": 0.0002568572443395101,
+          "Abs21": 2012.3473828578724,
+          "Abs22": 16.16256932794814,
+          "q22": null,
+          "L1_conditional_dB": -56.8550073350999,
+          "L3_conditional_dB": -14.951156285510635,
+          "L5_conditional_dB": 81.0252153503238,
+          "chi2_ndof": 5.71408030180291,
+          "f0_formal_error_hz": 133.33816719055176,
+          "f0_hz": 8744932701.242332
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.3846721649169922,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 133.33816719055176
+        }
+      },
+      {
+        "id": "9d28e0177654c2ae",
+        "mode": "TM011",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-20_18-12-49.txt",
+          "S21": "S21cav_Mode2_2026-11-20_18-10-13.txt",
+          "S22": "S22cav_Mode2_2026-11-20_18-10-43.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-20_18-12-49.txt": "ac48149c1e6fe4191e073aeac04e9ecb92d61653d86c668f005f7a1e95624641",
+          "S21cav_Mode2_2026-11-20_18-10-13.txt": "c4072e1997db4b76b4624ccf6afa302db10254f3685f625244e709603f4da45a",
+          "S22cav_Mode2_2026-11-20_18-10-43.txt": "0694619000e7a957e8eea648bfa5669929d965fd0f04bd941e218d5372534b93"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788245000.0,
+        "sweep_coverage_hz": [
+          8787245000.0,
+          8789245000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T17:10:13+00:00",
+            "2026-11-20T17:12:49+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T18:10:13+00:00",
+            "2026-11-20T18:12:49+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T17:10:13+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-20_18-12-49.txt": [],
+          "S21cav_Mode2_2026-11-20_18-10-13.txt": [],
+          "S22cav_Mode2_2026-11-20_18-10-43.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 24497.573168569717,
+          "Q0": 51478.63364684904,
+          "beta1": 0.0572560220485136,
+          "beta2": 1.0441208487386677,
+          "Abs12": 0.00012371691958448994,
+          "Abs21": 565.7858883961649,
+          "Abs22": 10.021571901181677,
+          "q22": null,
+          "L1_conditional_dB": -56.592871665205095,
+          "L3_conditional_dB": -21.558546374598322,
+          "L5_conditional_dB": 76.6115885997571,
+          "chi2_ndof": 1.1470334019184134,
+          "f0_formal_error_hz": 16.954727172851562,
+          "f0_hz": 8788242546.60355
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 8.911186218261719,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 16.954727172851562
+        }
+      },
+      {
+        "id": "19db7a371c6db01f",
+        "mode": "TM012",
+        "scope": "in scope",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-20_18-15-47.txt",
+          "S21": "S21cav_Mode3_2026-11-20_18-16-14.txt",
+          "S22": "S22cav_Mode3_2026-11-20_18-16-34.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-20_18-15-47.txt": "afeda944bd87bb3364ef121a6de026b60b13fdb923a43b8ba7cd919e638cdc48",
+          "S21cav_Mode3_2026-11-20_18-16-14.txt": "52d37277c987bc25d76f09c820750c12aaa8c75a341f5944a4307b0e787936c1",
+          "S22cav_Mode3_2026-11-20_18-16-34.txt": "33d18ba6d98c901fabb181023bad39e294da401421568498216d6633ee1edb0a"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847093000.0,
+        "sweep_coverage_hz": [
+          8846093000.0,
+          8848093000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-20T17:15:47+00:00",
+            "2026-11-20T17:16:34+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-20T18:15:47+00:00",
+            "2026-11-20T18:16:34+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-20T17:15:47+00:00",
+        "measurement_clock": "VERIFIED_EUROPE_ROME",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-20_18-15-47.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S21cav_Mode3_2026-11-20_18-16-14.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S22cav_Mode3_2026-11-20_18-16-34.txt": [
+            "if_filename_is_Europe_Rome"
+          ]
+        },
+        "parameters": {
+          "Q_loaded": 12412.112540125203,
+          "Q0": 19915.61033371761,
+          "beta1": 0.058863473954496544,
+          "beta2": 0.5456667999481535,
+          "Abs12": 7.147812525810389e-05,
+          "Abs21": 284.8820233827949,
+          "Abs22": 8.515889023323298,
+          "q22": null,
+          "L1_conditional_dB": -56.70261898842419,
+          "L3_conditional_dB": -26.213917947085477,
+          "L5_conditional_dB": 75.30721885241041,
+          "chi2_ndof": 0.6684103374904511,
+          "f0_formal_error_hz": 287.9701232910156,
+          "f0_hz": 8847077579.665415
+        },
+        "fit_source": "existing offline fit",
+        "archived_fit_records": [
+          {
+            "collection_id": "19db7a371c6db01f",
+            "mode": "TM012",
+            "fit_source": "archived ODB fit",
+            "source_run": "",
+            "f0_hz": "8847075138.398254",
+            "f0_formal_error_hz": "",
+            "Q_loaded": "",
+            "Q0": "39325.33452643029",
+            "beta1": "0.07794548495494835",
+            "beta2": "2.0915142518983414",
+            "Abs12": "6.265650979809731e-05",
+            "Abs21": "249.7372587166759",
+            "Abs22": "8.51715875986696",
+            "L1_conditional_dB": "",
+            "L3_conditional_dB": "",
+            "L5_conditional_dB": "",
+            "chi2_ndof": "",
+            "valid": "True",
+            "accurate_covariance": "",
+            "at_limit": "",
+            "seed_f0_spread_hz": "",
+            "seed_Q0_ratio": "",
+            "loaded_Q_from_final_parameters": "12407.582929409085",
+            "S12_path": "/home/mazzitel/flash-data/data/LNF/calib/S12cav_Mode3_2026-11-20_18-15-47.txt",
+            "S12_sha256": "afeda944bd87bb3364ef121a6de026b60b13fdb923a43b8ba7cd919e638cdc48",
+            "S12_magnitude_min": "4.752512240084209e-06",
+            "S12_magnitude_max": "1.655785526777246e-05",
+            "S12_magnitude_at_fitted_f0": "1.5771519620354295e-05",
+            "S21_path": "/home/mazzitel/flash-data/data/LNF/calib/S21cav_Mode3_2026-11-20_18-16-14.txt",
+            "S21_sha256": "52d37277c987bc25d76f09c820750c12aaa8c75a341f5944a4307b0e787936c1",
+            "S21_magnitude_min": "20.1132612286513",
+            "S21_magnitude_max": "66.30930605830457",
+            "S21_magnitude_at_fitted_f0": "64.06358965878462",
+            "S22_path": "/home/mazzitel/flash-data/data/LNF/calib/S22cav_Mode3_2026-11-20_18-16-34.txt",
+            "S22_sha256": "33d18ba6d98c901fabb181023bad39e294da401421568498216d6633ee1edb0a",
+            "S22_magnitude_min": "2.6742243430532726",
+            "S22_magnitude_max": "8.368751855922186",
+            "S22_magnitude_at_fitted_f0": "2.8396687276989176",
+            "stored_initial_loaded_Q": "13803.671660732776",
+            "reduced_chi2": "0.6909055306689929",
+            "output_utc": "2026-11-20T17:17:47+00:00",
+            "first_snapshot_run": "1429",
+            "fitted_parameters": "{\"Abs12\": {\"name\": \"Abs12\", \"value\": 6.265650979809731e-05, \"error\": 3.2642070858907e-07}, \"f0\": {\"name\": \"f0\", \"value\": 8847075138.398254, \"error\": 227.01738357543945}, \"Q0\": {\"name\": \"Q0\", \"value\": 39325.33452643029, \"error\": 69.1063227321356}, \"beta1\": {\"name\": \"beta1\", \"value\": 0.07794548495494835, \"error\": 0.0008560050835453026}, \"beta2\": {\"name\": \"beta2\", \"value\": 2.0915142518983414, \"error\": 0.0031560914257955375}, \"Abs21\": {\"name\": \"Abs21\", \"value\": 249.7372587166759, \"error\": 1.2759501946975433}, \"Abs22\": {\"name\": \"Abs22\", \"value\": 8.51715875986696, \"error\": 0.005444085832141177}, \"q22\": {\"name\": \"q22\", \"value\": 0.0162386256394569, \"error\": 0.0022335960832936203}}",
+            "session_start_utc": "2026-11-20T17:15:47+00:00",
+            "scope": "in scope",
+            "anchor_configuration": "{\"nominal_RF_Hz\": \"8847093000.0\", \"pump_on\": \"1\", \"pump_Hz\": \"7891000000.0\", \"pump_setting\": \"-6.1\", \"with_TWPA\": \"True\", \"primary_LO_Hz\": \"8743664000.0\", \"secondary1_LO_Hz\": \"43331000\", \"secondary2_LO_Hz\": \"102179000\", \"switches\": {\"RT1_set\": 1, \"RT1_status\": 2, \"CR1_set\": 2, \"CR1_status\": 1, \"CR2_set\": 0, \"CR2_status\": 0}}",
+            "reported_f0_formal_error_hz": "227.01738357543945",
+            "uncertainty_validation": "unvalidated formal estimator; no validated covariance interval",
+            "covariance_status": "forced positive definite in archived Minuit report",
+            "L5_path_model_dB": "75.3081188347943",
+            "residual_diagnostic": "archived reduced chi-square; residual series not stored in this result",
+            "fit_evidence_source": "/home/mazzitel/HFGW/analysis-work/calibration-phase-a-20261125/calibration_comparison.csv",
+            "native_covariance_report_lines": "[\"\\u2502             Hesse ok             \\u2502     Covariance FORCED pos. def.      \\u2502\"]"
+          }
+        ],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.05023193359375,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/fit_details.json",
+        "formal_errors": {
+          "f0": 287.9701232910156
+        }
+      },
+      {
+        "id": "6d084f2adfa4c909",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-21_09-13-37.txt",
+          "S21": "S21cav_Mode3_2026-11-21_09-11-14.txt",
+          "S22": "S22cav_Mode3_2026-11-21_09-11-50.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-21_09-13-37.txt": "f927d1a2c16d21818c03389172d23db04a5a6637620d62222cff54e97559edb8",
+          "S21cav_Mode3_2026-11-21_09-11-14.txt": "0c4aa82cb818b8cbc71471dbd1d3b4fb59c7738147ee9e2c38a0c86fa7433084",
+          "S22cav_Mode3_2026-11-21_09-11-50.txt": "ee549be76012fda7cf6d00806597028c58ee6a193b7af64fffec103e0d532d46"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847093000.0,
+        "sweep_coverage_hz": [
+          8846093000.0,
+          8848093000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-21T08:11:14+00:00",
+            "2026-11-21T08:13:37+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-21T09:11:14+00:00",
+            "2026-11-21T09:13:37+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-21T08:11:14+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-21_09-13-37.txt": [],
+          "S21cav_Mode3_2026-11-21_09-11-14.txt": [],
+          "S22cav_Mode3_2026-11-21_09-11-50.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 12474.407422247863,
+          "Q0": 20095.185730305755,
+          "beta1": 0.05832532867907361,
+          "beta2": 0.5525877231478519,
+          "Abs12": 7.290171857696677e-05,
+          "Abs21": 293.9924565878255,
+          "Abs22": 8.672134761935663,
+          "q22": 0.013265514485231555,
+          "L1_conditional_dB": -56.674724027211504,
+          "L3_conditional_dB": -26.07052064382382,
+          "L5_conditional_dB": 75.4372443878281,
+          "chi2_ndof": 0.6016132188793071,
+          "f0_formal_error_hz": 283.8506450653076,
+          "f0_hz": 8847077506.31291
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.2147960662841797,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.716042438660567e-07,
+          "f0": 283.8506450653076,
+          "Q0": 30.04481048047819,
+          "beta1": 0.0006151602690468126,
+          "beta2": 0.0007578181073143453,
+          "Abs21": 1.468404739471481,
+          "Abs22": 0.005547782462914874,
+          "q22": 0.0009144082392273873
+        }
+      },
+      {
+        "id": "9677fe233964d718",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-21_09-16-54.txt",
+          "S21": "S21cav_Mode2_2026-11-21_09-14-24.txt",
+          "S22": "S22cav_Mode2_2026-11-21_09-14-56.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-21_09-16-54.txt": "c09683834077243c698e4825e085855fc6c63617fbb23db8809ffe3b571a5f98",
+          "S21cav_Mode2_2026-11-21_09-14-24.txt": "398d8314ff17560e7a41faca56d0c1673508997688008ce9e73b47cec3fb5a18",
+          "S22cav_Mode2_2026-11-21_09-14-56.txt": "d2cc18d827d2b3fb9b7e758d9312b105a3e194e58b80fb06ec11afa062891079"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788245000.0,
+        "sweep_coverage_hz": [
+          8787245000.0,
+          8789245000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-21T08:14:24+00:00",
+            "2026-11-21T08:16:54+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-21T09:14:24+00:00",
+            "2026-11-21T09:16:54+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-21T08:14:24+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-21_09-16-54.txt": [],
+          "S21cav_Mode2_2026-11-21_09-14-24.txt": [],
+          "S22cav_Mode2_2026-11-21_09-14-56.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 24550.24442062298,
+          "Q0": 52470.18372036677,
+          "beta1": 0.058891902629845796,
+          "beta2": 1.0783651780487544,
+          "Abs12": 0.00012201914755195546,
+          "Abs21": 556.3336574768294,
+          "Abs22": 9.978139606638877,
+          "q22": -0.000155190471420724,
+          "L1_conditional_dB": -56.598577724235156,
+          "L3_conditional_dB": -21.672862543636498,
+          "L5_conditional_dB": 76.57956924359597,
+          "chi2_ndof": 1.1947633417066081,
+          "f0_formal_error_hz": 20.700690269470215,
+          "f0_hz": 8788240898.337286
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.01995849609375,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 6.563896971497346e-07,
+          "f0": 20.700690269470215,
+          "Q0": 66.70147738271044,
+          "beta1": 0.0006563800223893176,
+          "beta2": 0.0007107153743520778,
+          "Abs21": 2.9386013063235623,
+          "Abs22": 0.005231599196958037,
+          "q22": 0.001421117387156992
+        }
+      },
+      {
+        "id": "b099d2205df08ef3",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-21_09-18-34.txt",
+          "S21": "S21cav_Mode1_2026-11-21_09-19-03.txt",
+          "S22": "S22cav_Mode1_2026-11-21_09-19-33.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-21_09-18-34.txt": "503ef0aea4d574101b592d6ea8ee4fd6661b1278cb099ec4446f61ad04a0ca72",
+          "S21cav_Mode1_2026-11-21_09-19-03.txt": "b86e3e7f9225cea01a47a6d94a95e6b3d90999ab64bc77fe1c22a01967f6b849",
+          "S22cav_Mode1_2026-11-21_09-19-33.txt": "157375a6c5c6cf3e2592a36760fecb53207b767298537548c30351c823c9cab4"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8744914000.0,
+        "sweep_coverage_hz": [
+          8743914000.0,
+          8745914000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-21T08:18:34+00:00",
+            "2026-11-21T08:19:33+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-21T09:18:34+00:00",
+            "2026-11-21T09:19:33+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-21T08:18:34+00:00",
+        "measurement_clock": "VERIFIED_EUROPE_ROME",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-21_09-18-34.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S21cav_Mode1_2026-11-21_09-19-03.txt": [
+            "if_filename_is_Europe_Rome"
+          ],
+          "S22cav_Mode1_2026-11-21_09-19-33.txt": [
+            "if_filename_is_Europe_Rome"
+          ]
+        },
+        "parameters": {
+          "Q_loaded": 22271.71111244398,
+          "Q0": 38235.00382741774,
+          "beta1": 0.0010743002466427122,
+          "beta2": 0.7156776652570099,
+          "Abs12": 0.00026115459997361114,
+          "Abs21": 2051.342307999899,
+          "Abs22": 16.21195929553372,
+          "q22": 0.10444860226119526,
+          "L1_conditional_dB": -56.853049526876546,
+          "L3_conditional_dB": -14.808996875172525,
+          "L5_conditional_dB": 81.04975962004453,
+          "chi2_ndof": 6.494876628155698,
+          "f0_formal_error_hz": 134.33505153656006,
+          "f0_hz": 8744931519.858017
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)",
+          "Starting-value instability (f0 spread > 1 kHz)"
+        ],
+        "seed_f0_spread_hz": 6855.380666732788,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.3463395267814427e-06,
+          "f0": 134.33505153656006,
+          "Q0": 50.061774980797054,
+          "beta1": 1.0859503169299302e-05,
+          "beta2": 0.0007463552388556338,
+          "Abs21": 10.36476519805126,
+          "Abs22": 0.008760511707203378,
+          "q22": 0.0011633096214416078
+        }
+      },
+      {
+        "id": "8a740496c5ad984c",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-23_14-39-12.txt",
+          "S21": "S21cav_Mode1_2026-11-23_14-34-43.txt",
+          "S22": "S22cav_Mode1_2026-11-23_14-36-11.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-23_14-39-12.txt": "11b6313d50996c4d5dbc39cb361699fe8c2d4c4ce22408d06ea95c1f531f4a9a",
+          "S21cav_Mode1_2026-11-23_14-34-43.txt": "a8945c7893ec31895f2983ad07813e7cf25878fe76207d9bcebead407f4ef979",
+          "S22cav_Mode1_2026-11-23_14-36-11.txt": "53adc64ce697109b16c28bded02e4844a6e35b0977c2060ea924491d2181c851"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745214000.0,
+        "sweep_coverage_hz": [
+          8744214000.0,
+          8746214000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-23T13:34:43+00:00",
+            "2026-11-23T13:39:12+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-23T14:34:43+00:00",
+            "2026-11-23T14:39:12+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-23T13:34:43+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-23_14-39-12.txt": [],
+          "S21cav_Mode1_2026-11-23_14-34-43.txt": [],
+          "S22cav_Mode1_2026-11-23_14-36-11.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 25246.861610710028,
+          "Q0": 41361.11547676544,
+          "beta1": 0.0011052437942319449,
+          "beta2": 0.637162360097554,
+          "Abs12": 0.0002540175179395534,
+          "Abs21": 2092.4661108976206,
+          "Abs22": 16.367255754809307,
+          "q22": 0.09129444170721801,
+          "L1_conditional_dB": -57.018188961085855,
+          "L3_conditional_dB": -14.884537676425538,
+          "L5_conditional_dB": 81.29770633618938,
+          "chi2_ndof": 9.937292578451812,
+          "f0_formal_error_hz": 151.42101764678955,
+          "f0_hz": 8745213108.464384
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.1832427978515625,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.2913794608536606e-06,
+          "f0": 151.42101764678955,
+          "Q0": 58.08245169852307,
+          "beta1": 1.0999385582629337e-05,
+          "beta2": 0.00083717847486664,
+          "Abs21": 10.408488422597657,
+          "Abs22": 0.008615670548142162,
+          "q22": 0.0011458681800655748
+        }
+      },
+      {
+        "id": "ae604e2d235e9d32",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-23_14-59-00.txt",
+          "S21": "S21cav_Mode1_2026-11-23_14-57-13.txt",
+          "S22": "S22cav_Mode1_2026-11-23_14-57-30.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-23_14-59-00.txt": "eb4ccfc0465a4a13e47131677f8c1142a1d19f6e22e3e912438a6608ec44e855",
+          "S21cav_Mode1_2026-11-23_14-57-13.txt": "7ede84ed7cdd985d6e09dc2e7415368dc45e9e301064c7795f54c2fd8e260c45",
+          "S22cav_Mode1_2026-11-23_14-57-30.txt": "23f1670cfac820a15d0338e64e87a586c9b82d14693e91ef6715d60d28c32f30"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745160000.0,
+        "sweep_coverage_hz": [
+          8744160000.0,
+          8746160000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-23T13:57:13+00:00",
+            "2026-11-23T13:59:00+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-23T14:57:13+00:00",
+            "2026-11-23T14:59:00+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-23T13:57:13+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-23_14-59-00.txt": [],
+          "S21cav_Mode1_2026-11-23_14-57-13.txt": [],
+          "S22cav_Mode1_2026-11-23_14-57-30.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23393.890691687062,
+          "Q0": 36667.30118934726,
+          "beta1": 0.001125991949019905,
+          "beta2": 0.5662619074215136,
+          "Abs12": 0.0002583661243333786,
+          "Abs21": 2051.819848058833,
+          "Abs22": 16.316089619312518,
+          "q22": 0.09065828166852298,
+          "L1_conditional_dB": -56.87287573954525,
+          "L3_conditional_dB": -14.882412849498863,
+          "L5_conditional_dB": 81.1251973815246,
+          "chi2_ndof": 7.2611858133228,
+          "f0_formal_error_hz": 178.76133728027344,
+          "f0_hz": 8745183677.381336
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.024206161499023438,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.3038568242886006e-06,
+          "f0": 178.76133728027344,
+          "Q0": 52.403431925664336,
+          "beta1": 1.1128672601836863e-05,
+          "beta2": 0.0008368452289280737,
+          "Abs21": 10.136474486896645,
+          "Abs22": 0.008696627489733544,
+          "q22": 0.0010511086315879783
+        }
+      },
+      {
+        "id": "d9c26dc69493bb72",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-23_15-04-34.txt",
+          "S21": "S21cav_Mode2_2026-11-23_15-03-20.txt",
+          "S22": "S22cav_Mode2_2026-11-23_15-03-12.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-23_15-04-34.txt": "0c318bf0b15f6433cf13b4e1eec890444dcf571d7cb0fe35747f2225543d299e",
+          "S21cav_Mode2_2026-11-23_15-03-20.txt": "554621f8859e412bd924fc115a8300499370df2aa43842c1a582f4639cecb188",
+          "S22cav_Mode2_2026-11-23_15-03-12.txt": "b25f8ca091bc80d922855f2104ae9740cef158ae9f61450878a5579771294c7e"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788012000.0,
+        "sweep_coverage_hz": [
+          8787012000.0,
+          8789012000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-23T14:03:12+00:00",
+            "2026-11-23T14:04:34+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-23T15:03:12+00:00",
+            "2026-11-23T15:04:34+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-23T14:03:12+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-23_15-04-34.txt": [],
+          "S21cav_Mode2_2026-11-23_15-03-20.txt": [],
+          "S22cav_Mode2_2026-11-23_15-03-12.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23675.51054158811,
+          "Q0": 47170.041133787025,
+          "beta1": 0.06764232082433143,
+          "beta2": 0.9247134955762782,
+          "Abs12": 0.00011285594188544032,
+          "Abs21": 518.4739526638298,
+          "Abs22": 10.070334027926146,
+          "q22": -0.011079984395435092,
+          "L1_conditional_dB": -56.591586371643096,
+          "L3_conditional_dB": -22.357925034405618,
+          "L5_conditional_dB": 76.65246389409423,
+          "chi2_ndof": 1.0605963202029145,
+          "f0_formal_error_hz": 71.21083736419678,
+          "f0_hz": 8788012700.656523
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.4690570831298828,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.827686796482285e-07,
+          "f0": 71.21083736419678,
+          "Q0": 66.51772681496004,
+          "beta1": 0.0007282245111461874,
+          "beta2": 0.0008712393744932934,
+          "Abs21": 2.6249170582424313,
+          "Abs22": 0.005321249969792774,
+          "q22": 0.0013551604442472416
+        }
+      },
+      {
+        "id": "894b4efdc8b6c205",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-23_15-06-26.txt",
+          "S21": "S21cav_Mode3_2026-11-23_15-05-13.txt",
+          "S22": "S22cav_Mode3_2026-11-23_15-05-05.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-23_15-06-26.txt": "1d90d77a17f55c6a70aaba74927f598b6cf7cf3a38a9c893784bc3c389f873e5",
+          "S21cav_Mode3_2026-11-23_15-05-13.txt": "5ee67dceed224a60e143469f1dd80294e3a52c862e6e7ba63961dbd34573c924",
+          "S22cav_Mode3_2026-11-23_15-05-05.txt": "53eae6ea998b8652d75ca3596d8ffb9d40447885647d8707206aee6ad09d6eab"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8846999000.0,
+        "sweep_coverage_hz": [
+          8845999000.0,
+          8847999000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-23T14:05:05+00:00",
+            "2026-11-23T14:06:26+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-23T15:05:05+00:00",
+            "2026-11-23T15:06:26+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-23T14:05:05+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-23_15-06-26.txt": [],
+          "S21cav_Mode3_2026-11-23_15-05-13.txt": [],
+          "S22cav_Mode3_2026-11-23_15-05-05.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 11299.318832121213,
+          "Q0": 18220.175780634836,
+          "beta1": 0.057890252563345165,
+          "beta2": 0.5546118859584311,
+          "Abs12": 6.789690673484388e-05,
+          "Abs21": 274.8710699489484,
+          "Abs22": 8.7428024030094,
+          "q22": 0.008609111172241056,
+          "L1_conditional_dB": -56.65628380965265,
+          "L3_conditional_dB": -26.70671640977092,
+          "L5_conditional_dB": 75.48929706893963,
+          "chi2_ndof": 0.8160691236611234,
+          "f0_formal_error_hz": 305.56775188446045,
+          "f0_hz": 8847012775.25368
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.2612895965576172,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.488262172505376e-07,
+          "f0": 305.56775188446045,
+          "Q0": 27.335116516325797,
+          "beta1": 0.0006154367004506181,
+          "beta2": 0.0007386220915017172,
+          "Abs21": 1.3841235562138934,
+          "Abs22": 0.0058573348630392985,
+          "q22": 0.0009062097369161473
+        }
+      },
+      {
+        "id": "348dbea976a04c31",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-23_18-50-59.txt",
+          "S21": "S21cav_Mode1_2026-11-23_18-49-45.txt",
+          "S22": "S22cav_Mode1_2026-11-23_18-49-37.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-23_18-50-59.txt": "32c9e2cf1c10a220bb3966f66541b04e0ac75f4a9cb90d1f409bf53411c160c0",
+          "S21cav_Mode1_2026-11-23_18-49-45.txt": "df901e5a63aaedae9cc0654eb423624083b764dd121b47eff48ffd4197bf2068",
+          "S22cav_Mode1_2026-11-23_18-49-37.txt": "830e139bec91f04bde179424f52a1f6dd05d49436dbf278ee878c294b4bc6996"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745459000.0,
+        "sweep_coverage_hz": [
+          8744459000.0,
+          8746459000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-23T17:49:37+00:00",
+            "2026-11-23T17:50:59+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-23T18:49:37+00:00",
+            "2026-11-23T18:50:59+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-23T17:49:37+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-23_18-50-59.txt": [],
+          "S21cav_Mode1_2026-11-23_18-49-45.txt": [],
+          "S22cav_Mode1_2026-11-23_18-49-37.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23267.310340044118,
+          "Q0": 35835.199841082926,
+          "beta1": 0.0011262013123575696,
+          "beta2": 0.5390260258837909,
+          "Abs12": 0.00025880052716199136,
+          "Abs21": 2106.53072736332,
+          "Abs22": 16.091608032761606,
+          "q22": 0.10984629128871735,
+          "L1_conditional_dB": -57.040031965368996,
+          "L3_conditional_dB": -14.700664902015319,
+          "L5_conditional_dB": 81.17202087079323,
+          "chi2_ndof": 6.649731792904084,
+          "f0_formal_error_hz": 186.69425106048584,
+          "f0_hz": 8745465325.824884
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.23545074462890625,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.302020126500654e-06,
+          "f0": 186.69425106048584,
+          "Q0": 51.735170176591055,
+          "beta1": 1.1094426114647378e-05,
+          "beta2": 0.0008463161202489911,
+          "Abs21": 10.37268598648052,
+          "Abs22": 0.008590190231366535,
+          "q22": 0.001024309877173231
+        }
+      },
+      {
+        "id": "bee4275b3e164ecc",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_10-26-19.txt",
+          "S21": "S21cav_Mode1_2026-11-24_10-25-05.txt",
+          "S22": "S22cav_Mode1_2026-11-24_10-24-58.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_10-26-19.txt": "ffcc821b2725cad2fc47521c3222fd74a6fa2beadacdf20f8e8a0a8422a8695a",
+          "S21cav_Mode1_2026-11-24_10-25-05.txt": "6ea68ea647f3428572d48f8f118a2f94e456eb65990a7fc9692c305c65611e37",
+          "S22cav_Mode1_2026-11-24_10-24-58.txt": "6ed22bcc6531c05f1c695d8739c9eb0cd52950bb853c73bbb940600793ba19bc"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745459000.0,
+        "sweep_coverage_hz": [
+          8744459000.0,
+          8746459000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:24:58+00:00",
+            "2026-11-24T09:26:19+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:24:58+00:00",
+            "2026-11-24T10:26:19+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:24:58+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_10-26-19.txt": [],
+          "S21cav_Mode1_2026-11-24_10-25-05.txt": [],
+          "S22cav_Mode1_2026-11-24_10-24-58.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22969.72873525969,
+          "Q0": 35235.222122142186,
+          "beta1": 0.0011177410996429556,
+          "beta2": 0.5328673802855455,
+          "Abs12": 0.0002584413245843076,
+          "Abs21": 2126.2984041497116,
+          "Abs22": 16.53658118098257,
+          "q22": 0.08445926038273127,
+          "L1_conditional_dB": -56.968165277395094,
+          "L3_conditional_dB": -14.784595557506528,
+          "L5_conditional_dB": 81.33707982222565,
+          "chi2_ndof": 7.018274170162971,
+          "f0_formal_error_hz": 189.34472942352295,
+          "f0_hz": 8745465700.190245
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)",
+          "Starting-value instability (f0 spread > 1 kHz)"
+        ],
+        "seed_f0_spread_hz": 8424.079797744751,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.3007384436228774e-06,
+          "f0": 189.34472942352295,
+          "Q0": 50.74170474690618,
+          "beta1": 1.101232591216837e-05,
+          "beta2": 0.0008385348239268731,
+          "Abs21": 10.471212731701598,
+          "Abs22": 0.00884665209374802,
+          "q22": 0.0010113870046514761
+        }
+      },
+      {
+        "id": "da40a4f81ce5a6f8",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_10-28-52.txt",
+          "S21": "S21cav_Mode2_2026-11-24_10-27-38.txt",
+          "S22": "S22cav_Mode2_2026-11-24_10-27-30.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_10-28-52.txt": "a6fc248477302586ff451d7a35146203e375e2efb269950c80f4b5ad97b42d59",
+          "S21cav_Mode2_2026-11-24_10-27-38.txt": "5a12ae30fc1a49ef5ef6fb3ef65b18896ba0f760d263bf676c495d289223583c",
+          "S22cav_Mode2_2026-11-24_10-27-30.txt": "d6113d629672a8bdaa8da2e21a67bdc091319f98d560fa5d4e948447ca67d51c"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788254000.0,
+        "sweep_coverage_hz": [
+          8787254000.0,
+          8789254000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:27:30+00:00",
+            "2026-11-24T09:28:52+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:27:30+00:00",
+            "2026-11-24T10:28:52+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:27:30+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_10-28-52.txt": [],
+          "S21cav_Mode2_2026-11-24_10-27-38.txt": [],
+          "S22cav_Mode2_2026-11-24_10-27-30.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23479.225999589034,
+          "Q0": 45919.27331446793,
+          "beta1": 0.06784091829727136,
+          "beta2": 0.8878995867462794,
+          "Abs12": 0.00011301952507722473,
+          "Abs21": 520.6223322303456,
+          "Abs22": 10.040433259883773,
+          "q22": -0.0018491749820600803,
+          "L1_conditional_dB": -56.61616861666616,
+          "L3_conditional_dB": -22.320761823259943,
+          "L5_conditional_dB": 76.65121769021061,
+          "chi2_ndof": 1.000692824457999,
+          "f0_formal_error_hz": 84.6186294555664,
+          "f0_hz": 8788269854.66197
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.027471542358398438,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.788889593467473e-07,
+          "f0": 84.6186294555664,
+          "Q0": 65.93838780387887,
+          "beta1": 0.0007242874149376161,
+          "beta2": 0.0008914696895898633,
+          "Abs21": 2.6136304991508723,
+          "Abs22": 0.005317153983953382,
+          "q22": 0.001336238071135229
+        }
+      },
+      {
+        "id": "0bdaf52ad62cc7dd",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_10-30-46.txt",
+          "S21": "S21cav_Mode3_2026-11-24_10-29-32.txt",
+          "S22": "S22cav_Mode3_2026-11-24_10-29-25.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_10-30-46.txt": "b7ffbca09a2e61da3b323e29fb382f167ab8288f1c034c51c97edb1bb8a53f56",
+          "S21cav_Mode3_2026-11-24_10-29-32.txt": "3cbccdb83c25db274b83d3dab23fb4152d4e20848daaf642af3acd42c0e5b493",
+          "S22cav_Mode3_2026-11-24_10-29-25.txt": "671231a60eb27f2934d7bec4ba3c4d70711f22d58e8c52ade915bbccf167f6d2"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847182000.0,
+        "sweep_coverage_hz": [
+          8846182000.0,
+          8848182000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:29:25+00:00",
+            "2026-11-24T09:30:46+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:29:25+00:00",
+            "2026-11-24T10:30:46+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:29:25+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_10-30-46.txt": [],
+          "S21cav_Mode3_2026-11-24_10-29-32.txt": [],
+          "S22cav_Mode3_2026-11-24_10-29-25.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 11065.959424505862,
+          "Q0": 17948.42170914757,
+          "beta1": 0.05738149949772027,
+          "beta2": 0.564567490248285,
+          "Abs12": 6.68878607777949e-05,
+          "Abs21": 271.6950694584611,
+          "Abs22": 8.673631430716597,
+          "q22": 0.004496001251987896,
+          "L1_conditional_dB": -56.70533487032035,
+          "L3_conditional_dB": -26.78771900020859,
+          "L5_conditional_dB": 75.46935414424453,
+          "chi2_ndof": 0.8096892006565078,
+          "f0_formal_error_hz": 306.47401428222656,
+          "f0_hz": 8847208856.025093
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.013711929321289062,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.447557016329189e-07,
+          "f0": 306.47401428222656,
+          "Q0": 26.858625091615977,
+          "beta1": 0.0006118234331535487,
+          "beta2": 0.0007332629935442592,
+          "Abs21": 1.37275761890524,
+          "Abs22": 0.005875895457180924,
+          "q22": 0.0009142727572165092
+        }
+      },
+      {
+        "id": "321b9e1073441f78",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_10-50-11.txt",
+          "S21": "S21cav_Mode1_2026-11-24_10-46-45.txt",
+          "S22": "S22cav_Mode1_2026-11-24_10-47-41.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_10-50-11.txt": "d82670bb4f1a613f92a02b943e5bc8f0cd45800001d639863af17d3f27243e7d",
+          "S21cav_Mode1_2026-11-24_10-46-45.txt": "c7f6195d491b80ef3dd9ccb73d7e275bcf7edcf7bc6001781522efdd98108c10",
+          "S22cav_Mode1_2026-11-24_10-47-41.txt": "7be14c1b7845ed3a71d4e2383c756041b0cf9e6774e9feeac2cc165951b8acc9"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8745732000.0,
+        "sweep_coverage_hz": [
+          8744732000.0,
+          8746732000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:46:45+00:00",
+            "2026-11-24T09:50:11+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:46:45+00:00",
+            "2026-11-24T10:50:11+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:46:45+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_10-50-11.txt": [],
+          "S21cav_Mode1_2026-11-24_10-46-45.txt": [],
+          "S22cav_Mode1_2026-11-24_10-47-41.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23066.4966314084,
+          "Q0": 35417.19752314709,
+          "beta1": 0.0011423507043362103,
+          "beta2": 0.5342966060257208,
+          "Abs12": 0.0002617646466177227,
+          "Abs21": 2095.8240733419975,
+          "Abs22": 16.308572788733045,
+          "q22": 0.09153332235270982,
+          "L1_conditional_dB": -56.91027876913045,
+          "L3_conditional_dB": -14.73150140533857,
+          "L5_conditional_dB": 81.15859789539454,
+          "chi2_ndof": 5.040078434338323,
+          "f0_formal_error_hz": 188.31190967559814,
+          "f0_hz": 8745755389.110567
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.40932273864746094,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.315079954513791e-06,
+          "f0": 188.31190967559814,
+          "Q0": 51.11230871724547,
+          "beta1": 1.1241921240851991e-05,
+          "beta2": 0.0008408450794000766,
+          "Abs21": 10.309498032252122,
+          "Abs22": 0.008715551672564104,
+          "q22": 0.0010145965359582912
+        }
+      },
+      {
+        "id": "949aa00d53fd08df",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_10-53-00.txt",
+          "S21": "S21cav_Mode2_2026-11-24_10-51-35.txt",
+          "S22": "S22cav_Mode2_2026-11-24_10-51-10.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_10-53-00.txt": "e221e7a297b57425f8f5a36dab1139db3ea8394fd872ac4a7c3f91f2446c1dd3",
+          "S21cav_Mode2_2026-11-24_10-51-35.txt": "42da3c209a245baa79a39383c3b725ddc9cd7522a84120364f12b1213a288880",
+          "S22cav_Mode2_2026-11-24_10-51-10.txt": "ce14bfd8647c1daa1a1707141f7ce882ba904fa553998d88d10a154c69ecd671"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788530000.0,
+        "sweep_coverage_hz": [
+          8787530000.0,
+          8789530000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:51:10+00:00",
+            "2026-11-24T09:53:00+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:51:10+00:00",
+            "2026-11-24T10:53:00+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:51:10+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_10-53-00.txt": [],
+          "S21cav_Mode2_2026-11-24_10-51-35.txt": [],
+          "S22cav_Mode2_2026-11-24_10-51-10.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 23582.08299452701,
+          "Q0": 46106.385345217575,
+          "beta1": 0.06869744373481347,
+          "beta2": 0.8864472886417988,
+          "Abs12": 0.00011296277476776849,
+          "Abs21": 517.6636135769065,
+          "Abs22": 9.989886172668045,
+          "q22": 0.0016975058137985366,
+          "L1_conditional_dB": -56.61551748175303,
+          "L3_conditional_dB": -22.32577548511047,
+          "L5_conditional_dB": 76.6067282775764,
+          "chi2_ndof": 0.8619149908014068,
+          "f0_formal_error_hz": 85.2437686920166,
+          "f0_hz": 8788540941.527948
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.014581680297851562,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.779868598320575e-07,
+          "f0": 85.2437686920166,
+          "Q0": 66.48265658591117,
+          "beta1": 0.0007332247818001916,
+          "beta2": 0.0008976429375222028,
+          "Abs21": 2.5960541574498848,
+          "Abs22": 0.005283509938423414,
+          "q22": 0.001338054120789668
+        }
+      },
+      {
+        "id": "e699a4bdabb348ac",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_10-55-15.txt",
+          "S21": "S21cav_Mode3_2026-11-24_10-53-51.txt",
+          "S22": "S22cav_Mode3_2026-11-24_10-53-23.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_10-55-15.txt": "471d234ba4c1d6cf4b06d001cc99f1dd268c0048e9dff6b67b3193fb5d317dbd",
+          "S21cav_Mode3_2026-11-24_10-53-51.txt": "b3321d5756de9728a5eafd8401f33a0b6ed92b1bdba990142ad271efbd2df9a2",
+          "S22cav_Mode3_2026-11-24_10-53-23.txt": "6a4cca4489a3dcd3860d098c4967c880dc1bdef06e7fd6faf0801e12552de848"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847398000.0,
+        "sweep_coverage_hz": [
+          8846398000.0,
+          8848398000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T09:53:23+00:00",
+            "2026-11-24T09:55:15+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T10:53:23+00:00",
+            "2026-11-24T10:55:15+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T09:53:23+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_10-55-15.txt": [],
+          "S21cav_Mode3_2026-11-24_10-53-51.txt": [],
+          "S22cav_Mode3_2026-11-24_10-53-23.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 11007.72403490077,
+          "Q0": 17776.7543995323,
+          "beta1": 0.05947313752456011,
+          "beta2": 0.5554614614143158,
+          "Abs12": 6.561261479751008e-05,
+          "Abs21": 263.628716590486,
+          "Abs22": 8.596914745813816,
+          "q22": 0.009103771890781789,
+          "L1_conditional_dB": -56.69662749834179,
+          "L3_conditional_dB": -26.96362558906616,
+          "L5_conditional_dB": 75.38347989699848,
+          "chi2_ndof": 0.6219602160455738,
+          "f0_formal_error_hz": 312.1249666213989,
+          "f0_hz": 8847415137.667486
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.9912014007568359,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.375658795727268e-07,
+          "f0": 312.1249666213989,
+          "Q0": 26.850006475366172,
+          "beta1": 0.00063417239704339,
+          "beta2": 0.0007392255695921057,
+          "Abs21": 1.3295212157166532,
+          "Abs22": 0.0058373253365058275,
+          "q22": 0.0009062931077045274
+        }
+      },
+      {
+        "id": "7a76511597350d98",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_12-59-57.txt",
+          "S21": "S21cav_Mode1_2026-11-24_12-58-43.txt",
+          "S22": "S22cav_Mode1_2026-11-24_12-58-35.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_12-59-57.txt": "c7d71ec5337da54f3446b675c9ec45ce661f5eb3d2c5f80604971fc97cf8d953",
+          "S21cav_Mode1_2026-11-24_12-58-43.txt": "60b7f70ec56eb68bb9d4ec3c32f571a5bf998e5d0cef9ffa3433f702e1b9ffd4",
+          "S22cav_Mode1_2026-11-24_12-58-35.txt": "532cea3b6b2421067e971e749371e22fd9768effc0a04a61f029d789121d6d7c"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8746055000.0,
+        "sweep_coverage_hz": [
+          8745055000.0,
+          8747055000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T11:58:35+00:00",
+            "2026-11-24T11:59:57+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T12:58:35+00:00",
+            "2026-11-24T12:59:57+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T11:58:35+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_12-59-57.txt": [],
+          "S21cav_Mode1_2026-11-24_12-58-43.txt": [],
+          "S22cav_Mode1_2026-11-24_12-58-35.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22273.071663426752,
+          "Q0": 35723.6092584364,
+          "beta1": 0.0011105574149915245,
+          "beta2": 0.602781792875245,
+          "Abs12": 0.00024815483946924395,
+          "Abs21": 2050.513110215236,
+          "Abs22": 16.72364627867767,
+          "q22": 0.11016487496743266,
+          "L1_conditional_dB": -56.93808827977058,
+          "L3_conditional_dB": -15.167456737316442,
+          "L5_conditional_dB": 81.40470774429937,
+          "chi2_ndof": 5.293938668620425,
+          "f0_formal_error_hz": 173.43217945098877,
+          "f0_hz": 8746069727.610653
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.24712371826171875,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.258806333446431e-06,
+          "f0": 173.43217945098877,
+          "Q0": 49.67954722880677,
+          "beta1": 1.103854460608191e-05,
+          "beta2": 0.0008106310113536463,
+          "Abs21": 10.187932117906712,
+          "Abs22": 0.00901373209673828,
+          "q22": 0.0010717862133723458
+        }
+      },
+      {
+        "id": "fb50712b84f9096b",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_13-02-25.txt",
+          "S21": "S21cav_Mode2_2026-11-24_13-01-11.txt",
+          "S22": "S22cav_Mode2_2026-11-24_13-01-03.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_13-02-25.txt": "0c24116203291aaa964ae438372fb16afee4d022b21d10871bb4076460a6c79b",
+          "S21cav_Mode2_2026-11-24_13-01-11.txt": "ef537e41223a5c73a73e9527d878a40122ed901d3356e7488c23a3dcdbda0542",
+          "S22cav_Mode2_2026-11-24_13-01-03.txt": "fcee82d6a5d3cad7dd31491249995a05bf7397a69f0f47b2b8b4245c216eb196"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8788833000.0,
+        "sweep_coverage_hz": [
+          8787833000.0,
+          8789833000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T12:01:03+00:00",
+            "2026-11-24T12:02:25+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T13:01:03+00:00",
+            "2026-11-24T13:02:25+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T12:01:03+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_13-02-25.txt": [],
+          "S21cav_Mode2_2026-11-24_13-01-11.txt": [],
+          "S22cav_Mode2_2026-11-24_13-01-03.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 21697.54595202889,
+          "Q0": 44697.05032377995,
+          "beta1": 0.054359458412170276,
+          "beta2": 1.0056454113828137,
+          "Abs12": 0.0001150972825685525,
+          "Abs21": 532.159531724464,
+          "Abs22": 10.112541647455581,
+          "q22": 0.010372044692203552,
+          "L1_conditional_dB": -56.60116452043667,
+          "L3_conditional_dB": -22.1775340772393,
+          "L5_conditional_dB": 76.69837098485392,
+          "chi2_ndof": 0.9058492100692805,
+          "f0_formal_error_hz": 37.736422538757324,
+          "f0_hz": 8788836261.306452
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.11597061157226562,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 6.194443521320299e-07,
+          "f0": 37.736422538757324,
+          "Q0": 56.0465764396904,
+          "beta1": 0.0006039223695948268,
+          "beta2": 0.0006745449959308925,
+          "Abs21": 2.8121115346234546,
+          "Abs22": 0.005423133079624165,
+          "q22": 0.0013312018161653642
+        }
+      },
+      {
+        "id": "0fb425033635a196",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_13-04-27.txt",
+          "S21": "S21cav_Mode3_2026-11-24_13-03-13.txt",
+          "S22": "S22cav_Mode3_2026-11-24_13-03-06.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_13-04-27.txt": "0a62016cbddc195b0cb0ee63f41a2dc36569cb6153cb4793e862b6bbb8bd847f",
+          "S21cav_Mode3_2026-11-24_13-03-13.txt": "735d73562eeb1391326c6db6f6765c9bb2b54f03342012a6efe8218d52eb923e",
+          "S22cav_Mode3_2026-11-24_13-03-06.txt": "2d02241f9f5b126451a6d573d50504f8026940ee71a4ecd3ebbe4d08b3271119"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847641000.0,
+        "sweep_coverage_hz": [
+          8846641000.0,
+          8848641000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T12:03:06+00:00",
+            "2026-11-24T12:04:27+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T13:03:06+00:00",
+            "2026-11-24T13:04:27+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T12:03:06+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_13-04-27.txt": [],
+          "S21cav_Mode3_2026-11-24_13-03-13.txt": [],
+          "S22cav_Mode3_2026-11-24_13-03-06.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 10288.834862154239,
+          "Q0": 15986.953550519549,
+          "beta1": 0.06111282285911277,
+          "beta2": 0.49270291669803457,
+          "Abs12": 6.0600540640965016e-05,
+          "Abs21": 245.46117306004598,
+          "Abs22": 8.610607602851932,
+          "q22": 0.01880024000587103,
+          "L1_conditional_dB": -56.72472508399545,
+          "L3_conditional_dB": -27.62574494213743,
+          "L5_conditional_dB": 75.42540104978247,
+          "chi2_ndof": 0.5128439108065457,
+          "f0_formal_error_hz": 357.4939012527466,
+          "f0_hz": 8847627282.398447
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 2.673229217529297,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.1009080748458417e-07,
+          "f0": 357.4939012527466,
+          "Q0": 24.841675203201703,
+          "beta1": 0.0006490519000145779,
+          "beta2": 0.0007368388385298186,
+          "Abs21": 1.230894744458638,
+          "Abs22": 0.006065112140004381,
+          "q22": 0.0008470200113619274
+        }
+      },
+      {
+        "id": "aec550cb7403f987",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_14-54-18.txt",
+          "S21": "S21cav_Mode1_2026-11-24_14-53-04.txt",
+          "S22": "S22cav_Mode1_2026-11-24_14-52-57.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_14-54-18.txt": "02bd8e283619f1c89589bffd9593e00e4eff44dca150e3a2445d75e537a178e1",
+          "S21cav_Mode1_2026-11-24_14-53-04.txt": "aa8caaedb4693d2c72308b9a425a05e01bba2d6e382fc3f9c05c4345941b6714",
+          "S22cav_Mode1_2026-11-24_14-52-57.txt": "6da3aba43ff1e59365e979e78107dcea21d5187e7f5f4a0a866608c07536ad84"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8746341000.0,
+        "sweep_coverage_hz": [
+          8745341000.0,
+          8747341000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T13:52:57+00:00",
+            "2026-11-24T13:54:18+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T14:52:57+00:00",
+            "2026-11-24T14:54:18+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T13:52:57+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_14-54-18.txt": [],
+          "S21cav_Mode1_2026-11-24_14-53-04.txt": [],
+          "S22cav_Mode1_2026-11-24_14-52-57.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22044.534537035073,
+          "Q0": 35156.724857644,
+          "beta1": 0.0011109375090141728,
+          "beta2": 0.5936936521991649,
+          "Abs12": 0.00023198486297972598,
+          "Abs21": 1950.5448290066286,
+          "Abs22": 17.220543402288968,
+          "q22": 0.090732260322281,
+          "L1_conditional_dB": -56.886494362867026,
+          "L3_conditional_dB": -15.804312675422494,
+          "L5_conditional_dB": 81.60743139684811,
+          "chi2_ndof": 5.46670406089228,
+          "f0_formal_error_hz": 176.89787673950195,
+          "f0_hz": 8746358830.527452
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.8703384399414062,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.1762841938147659e-06,
+          "f0": 176.89787673950195,
+          "Q0": 48.943418877934164,
+          "beta1": 1.1037096765580774e-05,
+          "beta2": 0.0008066096131670308,
+          "Abs21": 9.686749124203516,
+          "Abs22": 0.009293600757672493,
+          "q22": 0.0010585460429999305
+        }
+      },
+      {
+        "id": "a42f083fb2bc2f60",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_14-56-38.txt",
+          "S21": "S21cav_Mode2_2026-11-24_14-55-25.txt",
+          "S22": "S22cav_Mode2_2026-11-24_14-55-17.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_14-56-38.txt": "04ddc05e92f4750e7449144724ceded48e0497b412514fdb6fa7d669b9ad6948",
+          "S21cav_Mode2_2026-11-24_14-55-25.txt": "3e49f352f2f63dab70a239ff747cd41e34c20a3353f3bd03efeedc92692f82fb",
+          "S22cav_Mode2_2026-11-24_14-55-17.txt": "58929c9adfe462ad53a13f17de377f5a8260996c42e05ff5e0ce27634e135e19"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8789068000.0,
+        "sweep_coverage_hz": [
+          8788068000.0,
+          8790068000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T13:55:17+00:00",
+            "2026-11-24T13:56:38+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T14:55:17+00:00",
+            "2026-11-24T14:56:38+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T13:55:17+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_14-56-38.txt": [],
+          "S21cav_Mode2_2026-11-24_14-55-25.txt": [],
+          "S22cav_Mode2_2026-11-24_14-55-17.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 21896.027389584637,
+          "Q0": 45309.467608210136,
+          "beta1": 0.060949235561966145,
+          "beta2": 1.0083515924851647,
+          "Abs12": 0.00010683413757622984,
+          "Abs21": 493.7820069502655,
+          "Abs22": 10.22641982448081,
+          "q22": 0.0019068050612034235,
+          "L1_conditional_dB": -56.551015942009045,
+          "L3_conditional_dB": -22.874783088029304,
+          "L5_conditional_dB": 76.74548829834433,
+          "chi2_ndof": 1.026010382532342,
+          "f0_formal_error_hz": 39.00689220428467,
+          "f0_hz": 8789070807.870102
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.12153816223144531,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.714168569408167e-07,
+          "f0": 39.00689220428467,
+          "Q0": 58.89073865104365,
+          "beta1": 0.0006768120268626047,
+          "beta2": 0.0007412929419399195,
+          "Abs21": 2.592962756643061,
+          "Abs22": 0.0055028639167638005,
+          "q22": 0.0013353648213034527
+        }
+      },
+      {
+        "id": "615e461ad39a04df",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_14-58-59.txt",
+          "S21": "S21cav_Mode3_2026-11-24_14-57-46.txt",
+          "S22": "S22cav_Mode3_2026-11-24_14-57-38.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_14-58-59.txt": "733c5b2d67cf5fe17ad511a5e7c20bc1ca5cd06bd944b50c857e5dd27023b77c",
+          "S21cav_Mode3_2026-11-24_14-57-46.txt": "6cab06557f56c92c6d4f3edf5ca7ec214994c941379c32bf21b8480cb1182cc8",
+          "S22cav_Mode3_2026-11-24_14-57-38.txt": "70b7497aeb34ecb10d8320a4796460e5bc8abb7b1be21e9b744c73bf2960fdec"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8847667000.0,
+        "sweep_coverage_hz": [
+          8846667000.0,
+          8848667000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T13:57:38+00:00",
+            "2026-11-24T13:58:59+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T14:57:38+00:00",
+            "2026-11-24T14:58:59+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T13:57:38+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_14-58-59.txt": [],
+          "S21cav_Mode3_2026-11-24_14-57-46.txt": [],
+          "S22cav_Mode3_2026-11-24_14-57-38.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 11121.959654357353,
+          "Q0": 18115.64809922171,
+          "beta1": 0.05856961049593986,
+          "beta2": 0.5702483912061591,
+          "Abs12": 6.473196338705508e-05,
+          "Abs21": 260.5162898676603,
+          "Abs22": 8.66754522093473,
+          "q22": 0.011624912533855766,
+          "L1_conditional_dB": -56.66819988575888,
+          "L3_conditional_dB": -27.109424517917034,
+          "L5_conditional_dB": 75.4261222090883,
+          "chi2_ndof": 0.5417044578218089,
+          "f0_formal_error_hz": 303.47468852996826,
+          "f0_hz": 8847629212.403223
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.12214088439941406,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.336280257876771e-07,
+          "f0": 303.47468852996826,
+          "Q0": 27.14029597079025,
+          "beta1": 0.0006251618491169668,
+          "beta2": 0.0007373274114168549,
+          "Abs21": 1.3162416253962306,
+          "Abs22": 0.0058577434576383425,
+          "q22": 0.0009222024303060256
+        }
+      },
+      {
+        "id": "b32264c36413f2e7",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_17-55-03.txt",
+          "S21": "S21cav_Mode1_2026-11-24_17-53-50.txt",
+          "S22": "S22cav_Mode1_2026-11-24_17-53-42.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_17-55-03.txt": "8cd8f039b082b2067eed98bd7f3b9f0c4a626f6bb0107c47df1f4563783b2b3f",
+          "S21cav_Mode1_2026-11-24_17-53-50.txt": "87e459486d5b840c7c2352ba1cb20d75cdfc462d3f576bb0c8c0e7b96787ddeb",
+          "S22cav_Mode1_2026-11-24_17-53-42.txt": "29b9e7e20da68ef167891826ffd8a05661ecc310225c8bb23a37851401cf86be"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8746626000.0,
+        "sweep_coverage_hz": [
+          8745626000.0,
+          8747626000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T16:53:42+00:00",
+            "2026-11-24T16:55:03+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T17:53:42+00:00",
+            "2026-11-24T17:55:03+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T16:53:42+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_17-55-03.txt": [],
+          "S21cav_Mode1_2026-11-24_17-53-50.txt": [],
+          "S22cav_Mode1_2026-11-24_17-53-42.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22353.675584659806,
+          "Q0": 35172.21227875726,
+          "beta1": 0.0011114698966628164,
+          "beta2": 0.5723305417112251,
+          "Abs12": 0.0002609661769911017,
+          "Abs21": 2232.064461090302,
+          "Abs22": 17.5897942396873,
+          "q22": 0.07830907338322271,
+          "L1_conditional_dB": -56.86861750015896,
+          "L3_conditional_dB": -14.799698031082457,
+          "L5_conditional_dB": 81.77383268488401,
+          "chi2_ndof": 4.530275410272356,
+          "f0_formal_error_hz": 181.3671522140503,
+          "f0_hz": 8746647249.978601
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.7526588439941406,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.3180826792609697e-06,
+          "f0": 181.3671522140503,
+          "Q0": 49.65155580568535,
+          "beta1": 1.0999528460360034e-05,
+          "beta2": 0.0008170603091759987,
+          "Abs21": 11.041849554323335,
+          "Abs22": 0.009468914747884583,
+          "q22": 0.001040434624102915
+        }
+      },
+      {
+        "id": "7c19a27d058f9a63",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_18-00-22.txt",
+          "S21": "S21cav_Mode2_2026-11-24_17-59-09.txt",
+          "S22": "S22cav_Mode2_2026-11-24_17-59-01.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_18-00-22.txt": "cbce116c4cf820de841f4be44ed3ee0551159f8c531149e32c9a9bc604fdb726",
+          "S21cav_Mode2_2026-11-24_17-59-09.txt": "514009d75bb52a12b7edcc64e61fb11dc632dc31d1e61c36be2a95036271a5d2",
+          "S22cav_Mode2_2026-11-24_17-59-01.txt": "00cf14ae96695c3d3a436e86b9cb5520ffd79fdc8498882120e992dc66208e8c"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8789394000.0,
+        "sweep_coverage_hz": [
+          8788394000.0,
+          8790394000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T16:59:01+00:00",
+            "2026-11-24T17:00:22+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T17:59:01+00:00",
+            "2026-11-24T18:00:22+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T16:59:01+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_18-00-22.txt": [],
+          "S21cav_Mode2_2026-11-24_17-59-09.txt": [],
+          "S22cav_Mode2_2026-11-24_17-59-01.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22453.132739241984,
+          "Q0": 44504.17145410856,
+          "beta1": 0.07229875603632709,
+          "beta2": 0.9097930959539897,
+          "Abs12": 0.00010624104657124086,
+          "Abs21": 495.08750620316357,
+          "Abs22": 10.460419100329545,
+          "q22": 0.006222488879279932,
+          "L1_conditional_dB": -56.48840541536059,
+          "L3_conditional_dB": -22.985747779801358,
+          "L5_conditional_dB": 76.87938711614675,
+          "chi2_ndof": 0.7778078210332438,
+          "f0_formal_error_hz": 80.38108158111572,
+          "f0_hz": 8789370033.476576
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.006839752197265625,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.474553601048001e-07,
+          "f0": 80.38108158111572,
+          "Q0": 63.45424143887067,
+          "beta1": 0.000779853814235433,
+          "beta2": 0.0009036352038545581,
+          "Abs21": 2.5002656545307502,
+          "Abs22": 0.005542008729914727,
+          "q22": 0.0013407080341878482
+        }
+      },
+      {
+        "id": "0655ea59dbd913e5",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_18-02-54.txt",
+          "S21": "S21cav_Mode3_2026-11-24_18-01-40.txt",
+          "S22": "S22cav_Mode3_2026-11-24_18-01-32.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_18-02-54.txt": "5ad0038946a08678b687e729ec44dd7cb52dbd197c6a226c2bff814e54e714c1",
+          "S21cav_Mode3_2026-11-24_18-01-40.txt": "2233b2a054cd7e23c087d876554f0d260a536e6b355b21077eb861fd2f287c57",
+          "S22cav_Mode3_2026-11-24_18-01-32.txt": "698a8b18c7a70b20af1dca8defee70dd6629cc3593f8449ed57994deea73e428"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8848038000.0,
+        "sweep_coverage_hz": [
+          8847038000.0,
+          8849038000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T17:01:32+00:00",
+            "2026-11-24T17:02:54+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T18:01:32+00:00",
+            "2026-11-24T18:02:54+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T17:01:32+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_18-02-54.txt": [],
+          "S21cav_Mode3_2026-11-24_18-01-40.txt": [],
+          "S22cav_Mode3_2026-11-24_18-01-32.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 10787.443520903122,
+          "Q0": 17205.301106117335,
+          "beta1": 0.05852845452985306,
+          "beta2": 0.5364093148107842,
+          "Abs12": 6.529451739370058e-05,
+          "Abs21": 262.9163617000987,
+          "Abs22": 8.731597752275963,
+          "q22": 0.007214130288629379,
+          "L1_conditional_dB": -56.63847177124565,
+          "L3_conditional_dB": -27.063993903597535,
+          "L5_conditional_dB": 75.46034617916416,
+          "chi2_ndof": 0.48888293827173035,
+          "f0_formal_error_hz": 325.3153762817383,
+          "f0_hz": 8848036920.584307
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 2.244403839111328,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.355338081328379e-07,
+          "f0": 325.3153762817383,
+          "Q0": 26.107732946940814,
+          "beta1": 0.000622803559752548,
+          "beta2": 0.0007341729555911947,
+          "Abs21": 1.3242638519875811,
+          "Abs22": 0.0059918819645545796,
+          "q22": 0.0008873670803713394
+        }
+      },
+      {
+        "id": "6372bb93f3423850",
+        "mode": "TM010",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode1_2026-11-24_19-53-55.txt",
+          "S21": "S21cav_Mode1_2026-11-24_19-52-42.txt",
+          "S22": "S22cav_Mode1_2026-11-24_19-52-34.txt"
+        },
+        "sha256": {
+          "S12cav_Mode1_2026-11-24_19-53-55.txt": "ab5cbc4d3109ccd97bfd4657445c30f1c65ecfbfdf36539fca0396113894c3b8",
+          "S21cav_Mode1_2026-11-24_19-52-42.txt": "f7af6896b1bec0c09786adcaaadf8ed9275939dabc62fbba1e733b2eac89b0e6",
+          "S22cav_Mode1_2026-11-24_19-52-34.txt": "ffcf17644823b8ef6a3018fc3eaa5acd8913844259e139e8adbafbc35ea0765e"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8746917000.0,
+        "sweep_coverage_hz": [
+          8745917000.0,
+          8747917000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T18:52:34+00:00",
+            "2026-11-24T18:53:55+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T19:52:34+00:00",
+            "2026-11-24T19:53:55+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T18:52:34+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode1_2026-11-24_19-53-55.txt": [],
+          "S21cav_Mode1_2026-11-24_19-52-42.txt": [],
+          "S22cav_Mode1_2026-11-24_19-52-34.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22391.21398301694,
+          "Q0": 35175.545957739145,
+          "beta1": 0.0011036382490083566,
+          "beta2": 0.5698494143375433,
+          "Abs12": 0.0002650509174703407,
+          "Abs21": 2269.2911014080823,
+          "Abs22": 17.538178440862023,
+          "q22": 0.07600308141272288,
+          "L1_conditional_dB": -56.88576413802271,
+          "L3_conditional_dB": -14.64764962458112,
+          "L5_conditional_dB": 81.76545382721707,
+          "chi2_ndof": 4.4906503951916585,
+          "f0_formal_error_hz": 181.73976612091064,
+          "f0_hz": 8746919467.836447
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [
+          "Large relative residuals (chi-square/ndof >= 3)"
+        ],
+        "seed_f0_spread_hz": 0.2886619567871094,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 1.338186748462485e-06,
+          "f0": 181.73976612091064,
+          "Q0": 49.75223350029046,
+          "beta1": 1.0918025102509216e-05,
+          "beta2": 0.0008185325424269196,
+          "Abs21": 11.222080508650151,
+          "Abs22": 0.00944090003615905,
+          "q22": 0.0010387692161812484
+        }
+      },
+      {
+        "id": "253742d55f254627",
+        "mode": "TM011",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode2_2026-11-24_19-57-00.txt",
+          "S21": "S21cav_Mode2_2026-11-24_19-55-46.txt",
+          "S22": "S22cav_Mode2_2026-11-24_19-55-39.txt"
+        },
+        "sha256": {
+          "S12cav_Mode2_2026-11-24_19-57-00.txt": "e1ea2d214e2f587e9944c32cd19310295b1231c9dab3bce43bf246c11bca7220",
+          "S21cav_Mode2_2026-11-24_19-55-46.txt": "ff2a01b77d9f543fd4119bb6cf02d4055d615b6a87d8e245b556a315bf304a51",
+          "S22cav_Mode2_2026-11-24_19-55-39.txt": "5997976674e483779068f22bb4810e1c8eb8ba549f1afbe582e86d48b61b9f82"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8789679000.0,
+        "sweep_coverage_hz": [
+          8788679000.0,
+          8790679000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T18:55:39+00:00",
+            "2026-11-24T18:57:00+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T19:55:39+00:00",
+            "2026-11-24T19:57:00+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T18:55:39+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode2_2026-11-24_19-57-00.txt": [],
+          "S21cav_Mode2_2026-11-24_19-55-46.txt": [],
+          "S22cav_Mode2_2026-11-24_19-55-39.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 22611.1306581731,
+          "Q0": 44601.22524874938,
+          "beta1": 0.06519098055747134,
+          "beta2": 0.9073430745950367,
+          "Abs12": 0.00011216887020708402,
+          "Abs21": 524.2978559340918,
+          "Abs22": 10.485368819351828,
+          "q22": 0.005696424002114564,
+          "L1_conditional_dB": -56.49122024904746,
+          "L3_conditional_dB": -22.511332839487224,
+          "L5_conditional_dB": 76.90289447371984,
+          "chi2_ndof": 0.7367003873590106,
+          "f0_formal_error_hz": 78.57501411437988,
+          "f0_hz": 8789693734.858232
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.05471992492675781,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 5.801570348211999e-07,
+          "f0": 78.57501411437988,
+          "Q0": 61.940470772748085,
+          "beta1": 0.0007014931276793646,
+          "beta2": 0.0008524732393582757,
+          "Abs21": 2.6581618724633813,
+          "Abs22": 0.005546776228023909,
+          "q22": 0.0013356673316353277
+        }
+      },
+      {
+        "id": "3e22b848760f8f3e",
+        "mode": "TM012",
+        "scope": "post-cutoff",
+        "files": {
+          "S12": "S12cav_Mode3_2026-11-24_20-00-11.txt",
+          "S21": "S21cav_Mode3_2026-11-24_19-58-58.txt",
+          "S22": "S22cav_Mode3_2026-11-24_19-58-50.txt"
+        },
+        "sha256": {
+          "S12cav_Mode3_2026-11-24_20-00-11.txt": "54f07685fff072e7c0c97dabcf00b0468971ce1cbcf109d7209f4c55d33d48f0",
+          "S21cav_Mode3_2026-11-24_19-58-58.txt": "40bc8431ff003e16d029b0534bdcef7bf8acc8b54092bad626ab40bc0378eee0",
+          "S22cav_Mode3_2026-11-24_19-58-50.txt": "bc3450d849b1ccf7f8fdfba27b43b363d2b59e00ec7ff67340fe409a120e7893"
+        },
+        "trace_identity": "VERIFIED_EXACT_FIT_INPUT_HASHES",
+        "sweep_center_hz": 8848235000.0,
+        "sweep_coverage_hz": [
+          8846735000.0,
+          8849735000.0
+        ],
+        "sweep_windows_utc": {
+          "if_filename_is_Europe_Rome": [
+            "2026-11-24T18:58:50+00:00",
+            "2026-11-24T19:00:11+00:00"
+          ],
+          "if_filename_is_UTC": [
+            "2026-11-24T19:58:50+00:00",
+            "2026-11-24T20:00:11+00:00"
+          ]
+        },
+        "display_time_utc": "2026-11-24T18:58:50+00:00",
+        "measurement_clock": "INFERRED_EUROPE_ROME_UNVERIFIED_PER_FILE",
+        "verified_clock_by_file": {
+          "S12cav_Mode3_2026-11-24_20-00-11.txt": [],
+          "S21cav_Mode3_2026-11-24_19-58-58.txt": [],
+          "S22cav_Mode3_2026-11-24_19-58-50.txt": []
+        },
+        "parameters": {
+          "Q_loaded": 10755.913973521672,
+          "Q0": 17072.41257634032,
+          "beta1": 0.059608684557347615,
+          "beta2": 0.5276495083185219,
+          "Abs12": 6.493303275070511e-05,
+          "Abs21": 258.6453091657196,
+          "Abs22": 8.702902359395797,
+          "q22": 0.00854788457493613,
+          "L1_conditional_dB": -56.60574807889205,
+          "L3_conditional_dB": -27.144938172558582,
+          "L5_conditional_dB": 75.3990303001521,
+          "chi2_ndof": 0.7436444038765886,
+          "f0_formal_error_hz": 363.8188714981079,
+          "f0_hz": 8848269361.316542
+        },
+        "fit_source": "extension offline fit",
+        "archived_fit_records": [],
+        "fit_quality_flags": [],
+        "seed_f0_spread_hz": 0.27955055236816406,
+        "valid": true,
+        "accurate_covariance": false,
+        "at_limit": false,
+        "uncertainty_status": "Formal fit diagnostics. Covariance is not validated.",
+        "fit_diagnostics_file": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/fit_evidence.json",
+        "formal_errors": {
+          "Abs12": 3.24194190899857e-07,
+          "f0": 363.8188714981079,
+          "Q0": 26.042690315049185,
+          "beta1": 0.0006155416724374467,
+          "beta2": 0.0008176931174128099,
+          "Abs21": 1.2642645262297663,
+          "Abs22": 0.005067250392345457,
+          "q22": 0.0009333055140607681
+        }
+      }
+    ],
+    "conditional_intervals": [
+      {
+        "mode": "TM010",
+        "fit_id": "4a8f6561d386dcd4",
+        "first_run": 680,
+        "last_run": 680,
+        "first_BOR_utc": "2026-07-24T16:05:00+00:00",
+        "last_EOR_utc": "2026-07-24T16:08:32+00:00",
+        "count": 1,
+        "supporting_anchor_run": 680,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM010",
+        "fit_id": "db8c19057bca6165",
+        "first_run": 1148,
+        "last_run": 1148,
+        "first_BOR_utc": "2026-11-19T17:02:57+00:00",
+        "last_EOR_utc": "2026-11-19T17:06:29+00:00",
+        "count": 1,
+        "supporting_anchor_run": 1148,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM010",
+        "fit_id": "e96c2eaab1b9981b",
+        "first_run": 1426,
+        "last_run": 1426,
+        "first_BOR_utc": "2026-11-20T15:37:45+00:00",
+        "last_EOR_utc": "2026-11-20T15:41:17+00:00",
+        "count": 1,
+        "supporting_anchor_run": 1426,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM011",
+        "fit_id": "2a4af7b4d1100f98",
+        "first_run": 680,
+        "last_run": 680,
+        "first_BOR_utc": "2026-07-24T16:05:00+00:00",
+        "last_EOR_utc": "2026-07-24T16:08:32+00:00",
+        "count": 1,
+        "supporting_anchor_run": 680,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM011",
+        "fit_id": "66ba250feabd1d98",
+        "first_run": 1148,
+        "last_run": 1148,
+        "first_BOR_utc": "2026-11-19T17:02:57+00:00",
+        "last_EOR_utc": "2026-11-19T17:06:29+00:00",
+        "count": 1,
+        "supporting_anchor_run": 1148,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM011",
+        "fit_id": "38f6d64224c8b99a",
+        "first_run": 1426,
+        "last_run": 1426,
+        "first_BOR_utc": "2026-11-20T15:37:45+00:00",
+        "last_EOR_utc": "2026-11-20T15:41:17+00:00",
+        "count": 1,
+        "supporting_anchor_run": 1426,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM011",
+        "fit_id": "9d28e0177654c2ae",
+        "first_run": 1429,
+        "last_run": 1429,
+        "first_BOR_utc": "2026-11-20T17:44:07+00:00",
+        "last_EOR_utc": "2026-11-20T17:47:40+00:00",
+        "count": 1,
+        "supporting_anchor_run": 1429,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM012",
+        "fit_id": "67589eecea2b2872",
+        "first_run": 680,
+        "last_run": 680,
+        "first_BOR_utc": "2026-07-24T16:05:00+00:00",
+        "last_EOR_utc": "2026-07-24T16:08:32+00:00",
+        "count": 1,
+        "supporting_anchor_run": 680,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM012",
+        "fit_id": "6f8ef0d6e398fea0",
+        "first_run": 1148,
+        "last_run": 1219,
+        "first_BOR_utc": "2026-11-19T17:02:57+00:00",
+        "last_EOR_utc": "2026-11-19T21:18:43+00:00",
+        "count": 72,
+        "supporting_anchor_run": 1148,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM012",
+        "fit_id": "46764bdf344d1744",
+        "first_run": 1426,
+        "last_run": 1428,
+        "first_BOR_utc": "2026-11-20T15:37:45+00:00",
+        "last_EOR_utc": "2026-11-20T15:48:23+00:00",
+        "count": 3,
+        "supporting_anchor_run": 1426,
+        "applicability": "CONDITIONAL"
+      },
+      {
+        "mode": "TM012",
+        "fit_id": "19db7a371c6db01f",
+        "first_run": 1429,
+        "last_run": 1669,
+        "first_BOR_utc": "2026-11-20T17:44:07+00:00",
+        "last_EOR_utc": "2026-11-21T07:59:49+00:00",
+        "count": 241,
+        "supporting_anchor_run": 1429,
+        "applicability": "CONDITIONAL"
+      }
+    ]
   }
 }

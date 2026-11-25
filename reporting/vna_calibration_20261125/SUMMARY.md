@@ -21,3 +21,10 @@ TM012 spans, with explicit frequency registration and uncertainty labels.
 Sweep routing, mode-qualified selection and sideband evidence remain
 open. The presentation makes no RF-to-ADC normalization or absolute
 noise-temperature claim.
+
+The revised appendix contains all 41 fitted triplets and their original
+residual panels. The authoritative FLASH-logbook snapshot contributes
+1,814 dated acquisitions. Temporal candidate intervals are reported
+under both VNA clock hypotheses and remain separate from the
+evidence-supported characterization spans. Run 680 remains a historical
+reference in the tables and appendix.
