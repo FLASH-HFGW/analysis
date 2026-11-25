@@ -1,0 +1,155 @@
+{
+  "quality": [
+    [
+      "TM010",
+      17,
+      14,
+      14,
+      0,
+      "4.49\u201345.05"
+    ],
+    [
+      "TM011",
+      12,
+      9,
+      9,
+      0,
+      "0.74\u20132.36"
+    ],
+    [
+      "TM012",
+      12,
+      9,
+      9,
+      0,
+      "0.49\u20130.82"
+    ]
+  ],
+  "scope": {
+    "cutoff_utc": "2026-07-24T16:05:00+00:00",
+    "files": {
+      "before cutoff": 64,
+      "included": 131,
+      "timezone ambiguous": 9,
+      "undated": 1
+    },
+    "sets": 6,
+    "fits": 8,
+    "association": {
+      "MISSING": 4758,
+      "AMBIGUOUS": 594
+    }
+  },
+  "coverage": {
+    "UNASSIGNED": 4752,
+    "CONDITIONAL": 324,
+    "AMBIGUOUS": 276
+  },
+  "spans": [
+    [
+      1148,
+      1219
+    ],
+    [
+      1426,
+      1428
+    ],
+    [
+      1429,
+      1669
+    ]
+  ],
+  "change": {
+    "mode": "TM012",
+    "earlier_fit": "46764bdf344d1744",
+    "later_fit": "19db7a371c6db01f",
+    "delta_f0_hz": 779543.9177398682,
+    "loaded_Q_change_pct": 18.48648234890209,
+    "beta1_change": -0.001961483416254746,
+    "beta2_change": 0.06915200648281827,
+    "large_descriptive_change": true,
+    "statistical_significance": "NOT_ESTABLISHED"
+  },
+  "comparison": {
+    "main_branch_lo_sum_hz": 8845843000.0,
+    "alternative_image_lo_difference_hz": 8641485000.0,
+    "common_rf_hz": [
+      8846093000.0,
+      8848093000.0
+    ],
+    "common_bins": 2000001,
+    "unclassified_narrow_candidates": [],
+    "known_line_if_hz": -492750.5,
+    "known_line_in_common_band": false
+  },
+  "provenance": {
+    "1429_TM010.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM010.png",
+      "sha256": "1a5df73b80b06f82ec29e35fe1b98ec4693e75af5971707a7d1259f31959bbe9"
+    },
+    "1429_TM011.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM011.png",
+      "sha256": "1f4aa7d8c72d9e8bbf320c06a6dfc0380f7bc7b583f342ba83bcd5f1dafdf497"
+    },
+    "1429_TM012.png": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/figures/1429_TM012.png",
+      "sha256": "4f982d1b3a5ff16ed7e92170d11185be0ed2f508b18eb7335aec238eeea30f22"
+    },
+    "resonance_frequency.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/resonance_frequency.png",
+      "sha256": "dcdbbebb1cd5337b31f96ac654248f544d74f887dc70a51ec73905659545a816"
+    },
+    "loaded_q.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/loaded_q.png",
+      "sha256": "08b7a570f785252fffb0fb6ce10fd5b59afa1110b86f343ed60a106788bc29e9"
+    },
+    "tm012-vna-versus-psd.png": {
+      "path": "/home/mazzitel/HFGW/analysis-work/run1429-vna-pilot/tm012-vna-versus-psd.png",
+      "sha256": "7f93dcce510c4b195393e6e140101778f5d1e7b3613418b400773f294d4c0bac"
+    },
+    "phase_a_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/calibration-phase-a-20261125/odb_calibration_audit.md",
+      "sha256": "49bf52a3528090e4858033f528b9fa280e106f65405aa25e21ab6a5a92d020a9"
+    },
+    "timestamp_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/calibration-phase-a-20261125/followup-run680/run680_timestamp_report.txt",
+      "sha256": "ce62909e9cdf9af8abfc0b0f469e26ff6ca4681865f3039e0f96bc80c5e07ad5"
+    },
+    "extension_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-fit-extension-20261125/REPORT.md",
+      "sha256": "5861315b677c1a908d48a9e0db23835b1fbbdc9e7cf72f5c553f33bcdb56b0d2"
+    },
+    "validity_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-validity-intervals-20261125/REPORT.md",
+      "sha256": "40047e36262026f4f1acae06d6392b42c7c4e714bad5ba6532dcfb6005c57d3f"
+    },
+    "timeline_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/REPORT.md",
+      "sha256": "168ddfe23095512efdf971d9bd22080a296f27d7390ae85fd20779997247f5b2"
+    },
+    "pilot_report": {
+      "path": "/home/mazzitel/HFGW/analysis-work/run1429-vna-pilot/REPORT.md",
+      "sha256": "788fec08af6314fba08b195e312e5602a120c9a79ed7d0e1a250c0bc7986e923"
+    },
+    "fit_validation_report": {
+      "path": "/home/mazzitel/HFGW/worktrees/run2-run3-pilot/comparison/root-pilot/rf-calibration/VALIDATION_REPORT.md",
+      "sha256": "0a7bad53ad3936b5e6352a23de8d9d6fd9be0b301e418f7d6a680e2ed3b8de80"
+    },
+    "timeline_data": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/cavity_timeline.json",
+      "sha256": "40fd162431deb6d589eb4ceb90dcdb305d9346218b538b5e831e9e8fbd07286b"
+    },
+    "run_mode_data": {
+      "path": "/home/mazzitel/HFGW/analysis-work/cavity-characterization-timeline-20261125/run_mode_characterizations.csv",
+      "sha256": "240575e738b6bada6fd66587370452a7938cfd728af81b89f73af35dfc8bc1b4"
+    },
+    "configuration_intervals": {
+      "path": "/home/mazzitel/HFGW/analysis-work/vna-validity-intervals-20261125/recorded_configuration_intervals.csv",
+      "sha256": "7d223812ec388438bd4e1f77021317556637b6e3931d9dad140116a4fd0fead6"
+    },
+    "pilot_evidence": {
+      "path": "/home/mazzitel/HFGW/analysis-work/run1429-vna-pilot/evidence.json",
+      "sha256": "fb7755c08f535aee7ec3695c56401b6909f08ba45c93c7093d83ff51f5e0d457"
+    }
+  }
+}
