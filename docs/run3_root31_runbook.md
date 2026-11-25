@@ -56,3 +56,36 @@ A read-only audit script exists under `autoreco/root_storage_dry_run.py`. It req
 The ROOT v3.1 source modules and verified historical conventions are now tracked in `main`. The code integration does **not** establish that the live PSGE checkout has been updated nor that services and schedules should be restarted. Before pulling main into the production checkout, verify the deployed configuration, source/runtime dependency hashes, active jobs and rollback reference. The tracked disabled reference template is `config/autoreco_run3.example.json`. The operational `config/autoreco_run3.json` is Git-ignored and must be restored from the host's existing validated configuration before a production checkout update.
 
 The original commissioning documentation is preserved in the Git history of `autoreco-v3-lightweight` and `autoreco-run3-root31-release`; do not infer current operational status from historical statements in those branches.
+
+## Backlog recovery mode
+
+The live host configuration enables a one-shot recovery by setting
+`max_active` to 60 and adding
+`"backlog_recovery": {"threshold": 20, "normal_max_active": 20}`.
+Keep `max_submit_per_cycle` at 20. The existing five-minute cron checks the
+policy on each normal ROOT production cycle. The active limit counts local
+attempts, including idle and held jobs. Matchmaking still depends on the
+pool's CPU, memory, disk and slot policy. The HDF5 migration lane has its
+own eligibility policy and concurrency limit.
+
+The scheduler counts unique archived, released runs from the live logbook
+using normal ROOT production eligibility. A canonical ROOT publication
+requires the scheduler's validated receipt and an archive entry. The
+report separates outstanding runs, exhausted or explicitly deferred runs,
+job states, and archive entries or receipts awaiting reconciliation.
+Exhausted and deferred runs are excluded from the threshold but remain
+visible. Missing archive data, failed reconciliation, or a failed query
+does not establish that recovery is complete.
+
+At 20 actionable outstanding runs or fewer, with publication and logbook
+reconciliation consistent, cron atomically sets `max_active` to 20 and
+removes the policy under the production lock. Existing attempts drain
+without cancellation. New runs remain eligible at the normal limit.
+There is no time expiration or automatic rearming. The official
+`--run3 --dry-run` reports the calculation without changing configuration.
+
+For manual rollback, acquire the existing production `.autoreco.lock`,
+remove `backlog_recovery` and set `max_active` to the desired rollback
+value (20 for normal operation, or 40 to restore the pre-change cap).
+Keep the per-cycle cap at 20 and let existing jobs drain. The saved
+pre-change host configuration can also be restored under the same lock.

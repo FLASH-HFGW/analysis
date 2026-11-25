@@ -12,6 +12,40 @@ import run3_storage as storage
 from noise_jobs import check_run3_inputs
 
 
+class BacklogRecoveryTests(unittest.TestCase):
+    settings = dict(max_active=60, max_submit_per_cycle=20,
+                    backlog_recovery=dict(threshold=20, normal_max_active=20))
+
+    def test_threshold_counts_unique_active_and_waiting_runs(self):
+        running = {1, 2, 3}
+        idle = {4}
+        held = {5}
+        waiting = set(range(6, 20))
+        exhausted = {90, 91}
+        validated_pending_logbook = {92}
+        outstanding = running | idle | held | waiting
+        for new_runs, expected in ((set(), 20), ({20}, 20), ({20, 21}, 60)):
+            with self.subTest(new_runs=new_runs):
+                eligible = outstanding | new_runs | exhausted | validated_pending_logbook
+                counts = run3.recovery_backlog(
+                    eligible, exhausted, validated_pending_logbook, validated_pending_logbook)
+                self.assertEqual(counts["actionable_outstanding"], len(outstanding | new_runs))
+                self.assertEqual(counts["permanently_blocked"], 2)
+                self.assertEqual(counts["publication_or_logbook_pending"], 1)
+                self.assertEqual(run3.recovery_limit(self.settings, counts, True), expected)
+                self.assertEqual(run3.recovery_limit(self.settings, counts, False), 60)
+
+    def test_return_to_normal_preserves_other_settings_and_stays_disarmed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "config.json"
+            path.write_text(json.dumps(self.settings))
+            run3.finish_recovery(path, self.settings, 20)
+            self.assertEqual(json.loads(path.read_text()),
+                             dict(max_active=20, max_submit_per_cycle=20))
+            with self.assertRaises(ValueError):
+                run3.finish_recovery(path, self.settings, 20)
+
+
 class Run3CleanupTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

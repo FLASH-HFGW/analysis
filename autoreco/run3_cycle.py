@@ -1,5 +1,6 @@
 """Isolated Run3 cycle using existing HTCondor submission and state helpers."""
 import argparse
+from collections import Counter
 from datetime import datetime
 import fcntl
 import json
@@ -7,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 import time
 from types import SimpleNamespace
 import uuid
@@ -18,6 +20,7 @@ from noise_jobs import build_iq_v3_jobs, check_run3_inputs
 from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
+ROOT_ARCHIVE = Path("/home/mazzitel/flash-data/analysis/autoreco/Run3")
 ANALYSIS = Path(__file__).resolve().parents[1] / "examples/analyze_midas_iq_v3.py"
 ARTIFACT = re.compile(r"(script\.sh|submit\.sub|iq_v3_job\.json|publication\.json|"
                       r"submit_error\.json|run\d+_job_status\.json|"
@@ -262,12 +265,50 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
                          expected_reco_done=prior, reco_version=version, output_path=url)
 
 
+def recovery_backlog(eligible, blocked, validated, pending):
+    """Count distinct actionable runs and distinguish unverified publications."""
+    missing = eligible - validated
+    return {
+        "awaiting_valid_root": len(missing),
+        "actionable_outstanding": len(missing - blocked),
+        "permanently_blocked": len(missing & blocked),
+        "publication_or_logbook_pending": len(pending),
+    }
+
+
+def recovery_limit(settings, backlog, consistent):
+    policy = settings["backlog_recovery"]
+    if consistent and backlog["actionable_outstanding"] <= policy["threshold"]:
+        return policy["normal_max_active"]
+    return settings["max_active"]
+
+
+def finish_recovery(path, settings, limit):
+    """Atomically restore the normal limit under the caller's production lock."""
+    if path.is_symlink() or json.loads(path.read_text()) != settings:
+        raise ValueError("Recovery configuration changed during reconciliation")
+    restored = dict(settings, max_active=limit)
+    del restored["backlog_recovery"]
+    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as output:
+        temporary = Path(output.name)
+        try:
+            json.dump(restored, output, indent=2)
+            output.write("\n")
+            output.flush()
+            os.fsync(output.fileno())
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
+    print(f"ROOT recovery complete. Restored max_active={limit}.", flush=True)
+
+
 def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
     dry_run = getattr(args, "dry_run", False)
     read_only = args.gc_dry_run or dry_run
     migration = getattr(args, "migrate_root", False)
     root_output = not args.pilot and (migration or settings.get("output_format") == "root")
+    recovery = root_output and not migration and "backlog_recovery" in settings
     migrations = {}
     records, eligible, updates, rebuilt = {}, {}, [], set()
     if args.pilot:
@@ -291,6 +332,9 @@ def cycle(root, settings, args):
         runs = set(eligible) - set(settings["deferred_runs"])
     active = 0
     waiting = []
+    blocked = set(settings.get("deferred_runs", ()))
+    validated = set()
+    pending = set()
     known = set(runs)
     for directory in root.iterdir():
         if re.fullmatch(r"\d{5,}", directory.name):
@@ -310,6 +354,9 @@ def cycle(root, settings, args):
             version = "3.1" if previous_url.endswith(".root") else settings["reco_version"]
             occupied = reconcile(run_dir, state, run, previous_url, settings["failure_days"], read_only)
             active += occupied
+            if recovery and not occupied and state["phase"] == "failed":
+                if state["attempt_number"] >= settings["max_attempts"]:
+                    blocked.add(run)
             if not occupied and state["phase"] in ("failed", "verified"):
                 for previous in state.get("previous", []):
                     source, jobs = lookup(previous["attempt"])
@@ -323,6 +370,11 @@ def cycle(root, settings, args):
                     update = plan_logbook_update(run_dir, run, state, records[run], previous_url, version, read_only)
                     if update:
                         updates.append(update)
+                if recovery and previous_url == url and run in eligible:
+                    validate_receipt(state["publication"], dict(run=run, exit_code=0, status="success"),
+                                     run, url, state["attempt"])
+                    validated.add(run)
+                    pending.add(run)  # Eligibility means the live row still requests reconstruction.
             if (not occupied and state["phase"] == "failed"
                     and state["attempt_number"] < settings["max_attempts"] and run in runs):
                 history = state.get("previous", []) + [
@@ -331,6 +383,31 @@ def cycle(root, settings, args):
         elif run in runs:
             waiting.append((run, url, 1, []))
     limit = settings.get("migration_max_active", 40) if migration else settings["max_active"]
+    finish = False
+    if recovery:
+        if not records:
+            raise ValueError("ROOT recovery cannot use an empty live logbook")
+        roots = set()
+        for entry in ROOT_ARCHIVE.iterdir():
+            match = re.fullmatch(r"run(\d{5,})_iq_v3\.1\.root", entry.name)
+            if match:
+                roots.add(int(match[1]))
+        if not roots:
+            raise ValueError("ROOT recovery requires a readable, populated publication archive")
+        eligible_runs = set(eligible)
+        pending |= eligible_runs & (roots - validated)
+        # A verified receipt for an absent archive entry needs investigation.
+        consistent = validated <= roots and not (pending - blocked) and not updates
+        backlog = recovery_backlog(eligible_runs, blocked, validated & roots, pending)
+        jobs = subprocess.check_output(
+            ["condor_q", "-constraint", "FlashRun3Attempt isnt undefined", "-af", "JobStatus"],
+            text=True)
+        queue = Counter(map(int, jobs.split()))
+        print("ROOT recovery backlog " + json.dumps(dict(
+            backlog, running_jobs=queue[2], idle_jobs=queue[1], held_jobs=queue[5],
+            consistent=consistent), sort_keys=True), flush=True)
+        limit = recovery_limit(settings, backlog, consistent)
+        finish = limit != settings["max_active"]
     slots = max(0, limit - active)
     submissions = waiting[:slots if migration else min(slots, settings.get("max_submit_per_cycle", slots))]
     if dry_run:
@@ -347,6 +424,8 @@ def cycle(root, settings, args):
         return
     if updates:
         update_reco_done_batch(worksheet, headers, updates)
+    if finish and getattr(args, "cron", False):
+        finish_recovery(args.config, settings, limit)
     for run, url, number, history in submissions:
         run_dir = root / f"{run:05d}"
         attempt = uuid.uuid4().hex
@@ -389,6 +468,11 @@ def main():
     parser.add_argument("--migrate-root", action="store_true")
     args = parser.parse_args()
     settings = json.loads(args.config.read_text())
+    if "backlog_recovery" in settings:
+        policy = settings["backlog_recovery"]
+        if (policy != {"threshold": 20, "normal_max_active": 20}
+                or settings["max_active"] != 60 or settings.get("output_format") != "root"):
+            parser.error("invalid ROOT backlog recovery policy")
     if (settings["max_active"] < 1 or settings["max_submit_per_cycle"] < 1
             or settings["failure_days"] < 7 or settings["max_attempts"] < 1):
         parser.error("invalid Run3 concurrency or retention")
@@ -422,7 +506,11 @@ def main():
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
+            if args.dry_run:
+                raise SystemExit("Production lock busy. Dry run did not execute.")
             return
+        if json.loads(args.config.read_text()) != settings:
+            raise SystemExit("Production configuration changed while taking the lock. Retry next cycle.")
         if args.cron:
             logs = BASE / "logs"
             local(logs)
