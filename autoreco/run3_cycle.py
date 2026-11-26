@@ -21,6 +21,8 @@ from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
 ROOT_ARCHIVE = Path("/home/mazzitel/flash-data/analysis/autoreco/Run3")
+RAW_ARCHIVE = Path("/home/mazzitel/flash-data/data/LNF")
+ARCHIVE_MOUNT = Path("/home/mazzitel/flash-data")
 ANALYSIS = Path(__file__).resolve().parents[1] / "examples/analyze_midas_iq_v3.py"
 ARTIFACT = re.compile(r"(script\.sh|submit\.sub|iq_v3_job\.json|publication\.json|"
                       r"submit_error\.json|run\d+_job_status\.json|"
@@ -214,6 +216,14 @@ def migration_inputs(records):
     return inputs
 
 
+def late_rucio_row(record):
+    """An explicitly unreconstructed row whose archived raw has been released."""
+    return (parse_integer(record.get("reco_done")) == -1
+            and parse_integer(record.get("rucio_status")) == 0
+            and not any(str(record.get(key) or "").strip()
+                        for key in ("reco_version", "reco_output_path")))
+
+
 def discover(records, settings):
     minimum = settings["run_min"]
     by_run = {}
@@ -225,6 +235,18 @@ def discover(records, settings):
             by_run[run] = record
     criteria = SimpleNamespace(run=None, run_min=minimum, ignore_reco_done=False)
     eligible = dict(runs_to_reconstruct(by_run.values(), criteria))
+    if settings.get("output_format") == "root" and settings.get("late_rucio_recovery"):
+        late = {run: f"run{run:05d}.mid.gz" for run, row in by_run.items()
+                if late_rucio_row(row) and row.get("filename") == f"run{run:05d}.mid.gz"
+                and str(row.get("reco_requested_version") or "").strip() in ("", "3.1")}
+        if late and not ARCHIVE_MOUNT.is_mount():
+            raise RuntimeError("Tier-1 archive mount unavailable for late Rucio discovery")
+        for run, filename in late.items():
+            try:
+                if (RAW_ARCHIVE / filename).stat().st_size > 0:
+                    eligible[run] = filename
+            except FileNotFoundError:
+                continue
     # The worker resolves raw names from the run number and supports one profile.
     for run, filename in list(eligible.items()):
         requested = str(by_run[run].get("reco_requested_version") or "").strip()
@@ -248,7 +270,8 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
         print(f"Run {run}: logbook row changed; update deferred")
         return None
     done = parse_integer(record.get("reco_done"))
-    prior = migration["reco_done"] if migration else 0
+    late = not migration and version == "3.1" and state.get("late_rucio_recovery")
+    prior = migration["reco_done"] if migration else -1 if late else 0
     target = prior if migration else 1
     current_path = str(record.get("reco_output_path", "")).strip()
     current_version = str(record.get("reco_version", "")).strip()
@@ -257,7 +280,7 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
             state["status"] = "sheet_updated"
             save_state(run_dir, state)
         return None
-    if done != prior or (migration and (current_path != migration["reference"]["url"]
+    if done != prior or (late and not late_rucio_row(record)) or (migration and (current_path != migration["reference"]["url"]
                                         or current_version != migration["expected_version"])):
         print(f"Run {run}: earlier reconstruction references changed; update deferred")
         return None
@@ -383,6 +406,17 @@ def cycle(root, settings, args):
         elif run in runs:
             waiting.append((run, url, 1, []))
     limit = settings.get("migration_max_active", 40) if migration else settings["max_active"]
+    late_runs = {run for run in runs if root_output and not migration and late_rucio_row(records[run])}
+    for run, _, _, _ in waiting:
+        if run in late_runs:
+            existing = ROOT_ARCHIVE / f"run{run:05d}_iq_v3.1.root"
+            try:
+                existing.stat()
+            except FileNotFoundError:
+                continue
+            print(f"Run {run}: existing ROOT publication requires reconciliation; submission deferred")
+            runs.remove(run)
+    waiting = [entry for entry in waiting if entry[0] in runs]
     finish = False
     if recovery:
         if not records:
@@ -438,6 +472,8 @@ def cycle(root, settings, args):
             submit = prepare(directory.parent, run, settings["split_pairs"], url, args.pilot, attempt)
         state = dict(attempt=attempt, attempt_number=number, phase="submitting", previous=history,
                      product_url=url)
+        if run in late_runs:
+            state["late_rucio_recovery"] = True
         if input_state:
             state["migration"] = input_state
         save_state(run_dir, state)

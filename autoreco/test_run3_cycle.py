@@ -46,6 +46,63 @@ class BacklogRecoveryTests(unittest.TestCase):
                 run3.finish_recovery(path, self.settings, 20)
 
 
+class LateRucioTests(unittest.TestCase):
+    def test_discovery_and_submission_guard(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            production = base / "production"
+            production.mkdir()
+            roots = base / "roots"
+            roots.mkdir()
+            settings = dict(run_min=1148, reco_version="3.1", output_format="root",
+                            late_rucio_recovery=True, max_active=20, max_submit_per_cycle=20,
+                            failure_days=7, max_attempts=2, deferred_runs=[])
+            records = [dict(run=run, filename=f"run{run:05d}.mid.gz", rucio_status=0,
+                            reco_done=-1, reco_version="", reco_output_path="")
+                       for run in range(1148, 1156)]
+            for row in records[:-1]:
+                (base / row["filename"]).write_bytes(b"raw fixture")
+            records[0]["rucio_status"] = -1
+            records[2]["reco_done"] = 1
+            records[6]["reco_done"] = 0
+            (roots / "run01153_iq_v3.1.root").touch()
+            for run, phase, attempts in ((1151, "submitted", 1), (1152, "failed", 2)):
+                path = production / f"{run:05d}"
+                path.mkdir()
+                run3.state_path(path).write_text(json.dumps(dict(phase=phase, attempt_number=attempts)))
+            args = SimpleNamespace(pilot=False, gc_dry_run=False, dry_run=True)
+            with patch.object(run3, "RAW_ARCHIVE", base), patch.object(run3, "ROOT_ARCHIVE", roots), \
+                 patch.object(run3, "ARCHIVE_MOUNT", SimpleNamespace(is_mount=lambda: True)), \
+                 patch.object(run3, "local"), patch.object(run3, "open_google_sheet"), \
+                 patch.object(run3, "get_headers", return_value=list(records[0])), \
+                 patch.object(run3, "read_all_records", return_value=records), \
+                 patch.object(run3, "reconcile", side_effect=lambda _, s, *args: s["phase"] == "submitted"), \
+                 patch.object(run3, "submit_job") as submit, patch("builtins.print") as display:
+                self.assertNotIn(1148, run3.discover(records, settings)[1])
+                records[0]["rucio_status"] = 0
+                eligible = run3.discover(records, settings)[1]
+                self.assertEqual(set(eligible), {1148, 1149, 1151, 1152, 1153, 1154})
+                self.assertEqual(set(run3.discover(records, dict(settings, late_rucio_recovery=False))[1]),
+                                 {1154})
+                run3.cycle(production, settings, args)
+                display.assert_any_call("Job da sottomettere (3): [1148, 1149, 1154]")
+                submit.assert_not_called()
+
+    def test_late_completion_requires_marker_and_blank_metadata(self):
+        url = run3.final_url(run3.PRODUCTION, 1148, True)
+        state = dict(attempt="a"*32, late_rucio_recovery=True,
+                     publication=dict(run=1148, attempt="a"*32, url=url, validated=True,
+                                      size=100, remote_size=100, root_schema="3.1",
+                                      local_adler32="abcdef12", remote_adler32="abcdef12"))
+        row = dict(filename="run01148.mid.gz", rucio_status=0, reco_done=-1)
+        result = run3.plan_logbook_update(Path("."), 1148, state, row, url, "3.1", True)
+        self.assertEqual((result[1]["expected_reco_done"], result[1]["target_reco_done"]), (-1, 1))
+        self.assertIsNone(run3.plan_logbook_update(
+            Path("."), 1148, dict(state, late_rucio_recovery=False), row, url, "3.1", True))
+        self.assertIsNone(run3.plan_logbook_update(
+            Path("."), 1148, state, dict(row, reco_output_path="existing"), url, "3.1", True))
+
+
 class Run3CleanupTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

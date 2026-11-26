@@ -89,3 +89,25 @@ remove `backlog_recovery` and set `max_active` to the desired rollback
 value (20 for normal operation, or 40 to restore the pre-change cap).
 Keep the per-cycle cap at 20 and let existing jobs drain. The saved
 pre-change host configuration can also be restored under the same lock.
+
+## Late Rucio raw publications
+
+In the 25–26 November logbook snapshots, unreleased raw files had
+`reco_done=-1` and Rucio status 2 or 4. When Rucio released 23 of
+those files, `rucio_status` became zero and `reco_done` stayed at
+minus one. The original eligibility rule therefore skipped them.
+
+The opt-in host setting `late_rucio_recovery: true` enables a ROOT-only
+path for exactly this shape of row: released Rucio status, minus-one
+reconstruction status, empty reconstruction version and output path,
+canonical filename, a blank or 3.1 requested version, and a nonempty
+raw file visible on the mounted Tier-1 archive. A visible ROOT object
+blocks a new submission and calls for reconciliation. The usual state,
+retry and capacity checks continue to apply.
+
+The scheduler records the recovery marker in the attempt state. The
+logbook row retains minus one until a valid ROOT publication receipt
+has been reconciled. The guarded success update changes it to one
+only if the release and reconstruction fields still match expectations.
+To suspend new late admissions, remove the opt-in under the production
+lock. Existing tagged attempts can still reconcile normally.

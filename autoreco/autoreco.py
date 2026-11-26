@@ -641,6 +641,9 @@ def update_reco_done_batch(
         if expected is not None and (
             current_value != expected or get_run_number(current_record) != run_number
             or parse_integer(current_record.get("rucio_status")) != 0 or requested not in allowed
+            or (state.get("late_rucio_recovery") and any(
+                str(current_record.get(key) or "").strip()
+                for key in ("reco_version", "reco_output_path")))
             or (migration and (
                 str(current_record.get("reco_output_path", "")).strip() != migration["reference"]["url"]
                 or str(current_record.get("reco_version", "")).strip() != migration["expected_version"]
