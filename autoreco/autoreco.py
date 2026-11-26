@@ -424,10 +424,19 @@ def discover_existing_jobs(
         )
 
 
-def submit_job(submit_path: Path, *, spool=True) -> str:
+class SubmissionError(RuntimeError):
+    """Submission failed or its scheduler identity could not be confirmed."""
+
+    def __init__(self, explanation, stdout="", stderr=""):
+        super().__init__(explanation)
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+def submit_job(submit_path: Path, *, spool=True, show_output=True) -> str:
     """Sottomette un job in spool e restituisce il ClusterId."""
     command = ["condor_submit", *(["-spool"] if spool else []), submit_path.name]
-    result = run_command(command, cwd=submit_path.parent)
+    result = run_command(command, cwd=submit_path.parent, show_output=show_output)
     if result.returncode != 0:
         diagnostics = submit_path.parent / "submit_error.json"
         diagnostics.write_text(json.dumps({
@@ -435,9 +444,9 @@ def submit_job(submit_path: Path, *, spool=True) -> str:
             "exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr,
         }, indent=2) + "\n")
         diagnostics.chmod(0o600)
-        raise RuntimeError(
+        raise SubmissionError(
             f"condor_submit fallito per {submit_path} "
-            f"(exit code {result.returncode}); dettagli: {diagnostics}"
+            f"(exit code {result.returncode}); dettagli: {diagnostics}", result.stdout, result.stderr
         )
 
     match = re.search(
@@ -446,8 +455,8 @@ def submit_job(submit_path: Path, *, spool=True) -> str:
         flags=re.IGNORECASE,
     )
     if not match:
-        raise RuntimeError(
-            "ClusterId non trovato nell'output di condor_submit"
+        raise SubmissionError(
+            "ClusterId non trovato nell'output di condor_submit", result.stdout, result.stderr
         )
     return match.group(1)
 

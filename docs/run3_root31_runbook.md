@@ -111,3 +111,33 @@ has been reconciled. The guarded success update changes it to one
 only if the release and reconstruction fields still match expectations.
 To suspend new late admissions, remove the opt-in under the production
 lock. Existing tagged attempts can still reconcile normally.
+
+## Discord operational notifications
+
+Normal Run3 cron cycles use the private mode-0600 webhook file under
+`~/.config/flash-autoreco/discord-webhook` at send time. The notifier
+uses bounded HTTPS and suppresses mentions and response bodies.
+Delivery and state failures are logged as fixed messages and do not
+alter submissions, retries or reconciliation. Dry runs never send.
+
+Authorization alerts use only one unambiguous HTTPS approval link
+present in explicit Condor challenge output on the expected
+`condor.psge.cloud.infn.it` origin and `/key/` path. The scheduler
+preserves restricted local diagnostics. It does not echo submission
+stdout or stderr to the cron log while the notifier is active.
+
+Other categories cover submission failures, HOLD, repeated or
+exhausted reconstruction failures, invalid or persistently missing
+publication evidence, persistent Google logbook failures and scheduler
+exceptions. Incident state is atomically replaced in
+`analysis-runtime/autoreco/Run3/discord-notifications.json` under the
+existing lock. The state stores only incident keys, counters and send
+times. Set `discord_reminder_seconds` to a positive integer to opt in
+to reminders. The default is disabled. After a delivery failure,
+the next cycle can retry without adding multiple delays to the current
+cycle.
+
+Recovery requires an accepted Condor cluster, an observed exit from
+HOLD, a validated ROOT receipt, or a successful logbook update, as
+appropriate. A generic scheduler exception is not automatically
+declared recovered by an otherwise successful cron cycle.

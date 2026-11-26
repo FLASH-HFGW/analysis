@@ -13,10 +13,11 @@ import time
 from types import SimpleNamespace
 import uuid
 
-from autoreco import (get_run_number, parse_integer, runs_to_reconstruct, save_state,
+from autoreco import (SubmissionError, get_run_number, parse_integer, runs_to_reconstruct, save_state,
                       state_path, submit_job, transfer_job_data, update_reco_done_batch)
 from googletool import get_headers, open_google_sheet, read_all_records
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
+from notify import Notifier, approval_url
 from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
@@ -118,10 +119,14 @@ def finalize_verified(run_dir, state, directory, dry_run, queue):
     return False
 
 
-def reconcile(run_dir, state, run, url, retention, dry_run):
+def reconcile(run_dir, state, run, url, retention, dry_run, notifier=None, max_attempts=2):
     """Return True if the run still occupies a slot."""
     attempt = state["attempt"]
     directory = workdir(run_dir, attempt, run)
+    incident = f"{run_dir.parent.name}:{run}"
+    reference = state_path(run_dir)
+    if dry_run:
+        notifier = None
     if state["phase"] == "verified":
         age = time.time() - state["verified_at"]
         if state.get("queue_closed"):
@@ -136,6 +141,15 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
     if len(jobs) != 1:
         return state["phase"] not in ("verified", "failed") or source == "active"
     job = jobs[0]
+    if notifier:
+        if job["JobStatus"] == 5:
+            notifier.fault(f"hold:{incident}:{attempt}", "HTCondor HOLD",
+                           f"Cluster {job['ClusterId']} is held. Inspect its HoldReason locally.",
+                           reference, run=run)
+        else:
+            notifier.resolved(f"hold:{incident}:{attempt}", "HTCondor HOLD cleared",
+                              f"Cluster {job['ClusterId']} is observed outside HOLD.",
+                              reference, run=run)
     succeeded = job["JobStatus"] == 4 and job.get("ExitCode") == 0 and not job.get("ExitBySignal")
     if source == "active":
         if not succeeded:
@@ -153,15 +167,32 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
         local(receipt)
         local(status)
         if not (receipt.is_file() and status.is_file()):
+            if notifier:
+                notifier.fault(f"publication:{incident}", "ROOT publication evidence missing",
+                               "Condor completed successfully, but the local receipt or status file is missing.",
+                               reference, run=run, after=2)
             return True
-        identity = json.loads(receipt.read_text())
-        completion = json.loads(status.read_text())
-        validate_receipt(identity, completion, run, url, attempt)
+        try:
+            identity = json.loads(receipt.read_text())
+            completion = json.loads(status.read_text())
+            validate_receipt(identity, completion, run, url, attempt)
+        except Exception as error:
+            if notifier:
+                notifier.fault(f"publication:{incident}", "ROOT publication verification failed",
+                               "Publication receipt or completion evidence failed validation.",
+                               reference, run=run, error=error)
+            raise
         if dry_run:
             return source == "active"
         state.update(phase="verified", publication=identity, cluster=job["ClusterId"],
                      verified_at=time.time())
         save_state(run_dir, state)
+        if notifier:
+            for key in (f"publication:{incident}", f"reconstruction:{incident}",
+                        f"reconstruction:{incident}:exhausted"):
+                notifier.resolved(key, "ROOT recovery verified",
+                                  "A reconstruction completed and its publication receipt passed validation.",
+                                  reference, run=run)
         return finalize_verified(run_dir, state, directory, dry_run,
                                  jobs if source == "active" else [])
     if job["JobStatus"] not in (3, 4):
@@ -169,6 +200,12 @@ def reconcile(run_dir, state, run, url, retention, dry_run):
     if state["phase"] != "failed" and not dry_run:
         state.update(phase="failed", failed_at=time.time(), cluster=job["ClusterId"])
         save_state(run_dir, state)
+    if notifier and state["attempt_number"] >= min(2, max_attempts):
+        exhausted = state["attempt_number"] >= max_attempts
+        notifier.fault(f"reconstruction:{incident}" + (":exhausted" if exhausted else ""),
+                       "ROOT reconstruction retries exhausted" if exhausted else "Repeated ROOT reconstruction failure",
+                       f"Attempt {state['attempt_number']} ended unsuccessfully. Inspect worker diagnostics locally.",
+                       reference, run=run)
     if state.get("failed_at", time.time()) + retention*86400 <= time.time():
         clean_attempt(directory, dry_run=dry_run)
     return False
@@ -329,6 +366,7 @@ def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
     dry_run = getattr(args, "dry_run", False)
     read_only = args.gc_dry_run or dry_run
+    notifier = None if read_only else getattr(args, "notifier", None)
     migration = getattr(args, "migrate_root", False)
     root_output = not args.pilot and (migration or settings.get("output_format") == "root")
     recovery = root_output and not migration and "backlog_recovery" in settings
@@ -375,7 +413,9 @@ def cycle(root, settings, args):
             # Pre-release submissions have no product_url and still expect HDF5.
             previous_url = state.get("product_url", final_url(destination, run, migration))
             version = "3.1" if previous_url.endswith(".root") else settings["reco_version"]
-            occupied = reconcile(run_dir, state, run, previous_url, settings["failure_days"], read_only)
+            notification_options = dict(notifier=notifier, max_attempts=settings["max_attempts"]) if notifier else {}
+            occupied = reconcile(run_dir, state, run, previous_url, settings["failure_days"], read_only,
+                                 **notification_options)
             active += occupied
             if recovery and not occupied and state["phase"] == "failed":
                 if state["attempt_number"] >= settings["max_attempts"]:
@@ -457,7 +497,28 @@ def cycle(root, settings, args):
     if read_only:
         return
     if updates:
-        update_reco_done_batch(worksheet, headers, updates)
+        try:
+            update_reco_done_batch(worksheet, headers, updates)
+        except Exception as error:
+            if notifier:
+                for run_dir, state in updates:
+                    run = state["run_number"]
+                    notifier.fault(f"logbook:{root.name}:{run}", "Google logbook reconciliation failing",
+                                   "Repeated update failures after verified publication.",
+                                   state_path(run_dir), run=run, after=2, error=error)
+            raise
+        if notifier:
+            for run_dir, state in updates:
+                run = state["run_number"]
+                key = f"logbook:{root.name}:{run}"
+                if state.get("status") == "sheet_updated":
+                    notifier.resolved(key, "Google logbook reconciliation restored",
+                                      "The validated publication was written to Google Sheets.",
+                                      state_path(run_dir), run=run)
+                else:
+                    notifier.fault(key, "Google logbook reconciliation pending",
+                                   "Repeated reconciliation attempts have not updated the row.",
+                                   state_path(run_dir), run=run, after=2)
     if finish and getattr(args, "cron", False):
         finish_recovery(args.config, settings, limit)
     for run, url, number, history in submissions:
@@ -477,8 +538,26 @@ def cycle(root, settings, args):
         if input_state:
             state["migration"] = input_state
         save_state(run_dir, state)
-        state.update(cluster=submit_job(submit), phase="submitted")
+        try:
+            cluster = submit_job(submit, show_output=False) if notifier else submit_job(submit)
+        except SubmissionError as error:
+            if notifier:
+                link = approval_url(error.stdout + "\n" + error.stderr)
+                notifier.fault("condor:auth" if link else f"submit:{root.name}:{run}",
+                               "HTCondor authentication required" if link else "HTCondor submission failed",
+                               "Open the authorization link and approve the HTCondor request." if link else
+                               "Condor did not confirm submission. Inspect the local submission diagnostics.",
+                               submit.parent / "submit_error.json", run=run, approval=link, error=error)
+            raise
+        state.update(cluster=cluster, phase="submitted")
         save_state(run_dir, state)
+        if notifier:
+            print(f"Run {run}: submitted to cluster {cluster}.", flush=True)
+            notifier.resolved("condor:auth", "HTCondor submission restored",
+                              f"An authenticated submission was accepted as cluster {cluster}.",
+                              state_path(run_dir), run=run)
+            notifier.resolved(f"submit:{root.name}:{run}", "HTCondor submission restored",
+                              f"The scheduler accepted cluster {cluster}.", state_path(run_dir), run=run)
 
 
 def scheduled_cycles(root, settings, args):
@@ -576,7 +655,18 @@ def main():
             print(prepare(manual, 1148, settings["split_pairs"],
                           f"{PILOT}/run01148_iq_v3.h5", True, uuid.uuid4().hex))
         else:
-            scheduled_cycles(root, settings, args)
+            if args.cron and not args.pilot and not args.gc_dry_run:
+                args.notifier = Notifier(BASE / "discord-notifications.json",
+                                         settings.get("discord_reminder_seconds", 0))
+            try:
+                scheduled_cycles(root, settings, args)
+            except Exception as error:
+                notifier = getattr(args, "notifier", None)
+                if notifier and notifier.reported_exception is not error:
+                    notifier.fault(f"scheduler:{type(error).__name__}", "Run3 scheduler stopped",
+                                   "An operational error stopped the current cycle. Inspect the local log.",
+                                   logfile)
+                raise
 
 
 if __name__ == "__main__":
