@@ -9,32 +9,69 @@ import socket
 import stat
 import tempfile
 import time
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 WEBHOOK = Path("/home/mazzitel/.config/flash-autoreco/discord-webhook")
 APPROVAL_HOST = "condor.psge.cloud.infn.it"
+URL_TEXT = r"https?://[^\s<>\x22\x27\[\]{}()`*]+"
+VISIT_PROMPT = re.compile(r"(?m)^[ \t]*Please visit:[ \t]*\n?[ \t]*"
+                          r"(?:[<`*]+|\[[^\]\n]*\]\()?(?P<url>" + URL_TEXT + r")")
+
+
+def prompt_text(output):
+    return output.replace(r"\r\n", "\n").replace(r"\n", "\n").replace("\r\n", "\n")
 
 
 def approval_url(output):
     """Accept only an unambiguous URL from an explicit Condor challenge."""
-    urls = r"https://[^\s<>\x22\x27\[\]{}()]+"
-    context = re.sub(r"https?://\S+", "", output)
-    if not re.search(r"authenticat|authoriz|approv|secure sign.in", context, re.I):
+    output = prompt_text(output)
+    prompts = {match["url"] for match in VISIT_PROMPT.finditer(output)}
+    context = re.sub(URL_TEXT, "", output)
+    if not prompts and not re.search(r"authenticat|authoriz|approv|secure sign.in", context, re.I):
         return None
     links = set()
-    for candidate in re.findall(urls, output):
+    for match in re.finditer(URL_TEXT, output):
+        candidate = match[0]
+        following = output[match.end():]
+        leading = output[:match.start()]
+        if following and not following[0].isspace():
+            closing = following[0]
+            opening = {">": "<", ")": "](", '"': '"', "'": "'"}.get(closing)
+            if closing in "`*":
+                opening = re.match(r"[`*]+", following)[0]
+            if not opening or not leading.endswith(opening):
+                continue
         try:
             url = urlsplit(candidate)
         except ValueError:
             continue
-        if (url.netloc not in (APPROVAL_HOST, APPROVAL_HOST + ":443") or url.fragment
-                or not re.fullmatch(r"/key/[A-Za-z0-9._~/%+=-]*", url.path)
+        if (url.scheme != "https" or url.netloc not in (APPROVAL_HOST, APPROVAL_HOST + ":443")
+                or url.fragment or not re.fullmatch(r"/key/[A-Za-z0-9._~+=-]*", url.path)
                 or (url.path == "/key/" and not url.query)
                 or any(segment in (".", "..") for segment in url.path.split("/"))
+                or any(re.search(r"redirect|return|next|url|target|destination", key, re.I)
+                       or "://" in value for key, value in parse_qsl(url.query))
                 or any(c in candidate for c in ("\\", "`", "*", "|"))):
             continue
         links.add(candidate)
-    return links.pop() if len(links) == 1 else None
+    if len(links) != 1 or (prompts and prompts != links):
+        return None
+    return links.pop()
+
+
+def approval_message(output, link):
+    """Include only recognized challenge lines and show the URL separately as a link."""
+    output = prompt_text(output)
+    lines = []
+    if re.search(r"(?m)^[ \t]*Submitting job\(s\)[.]?[ \t]*$", output):
+        lines.append("Submitting job(s)")
+    greeting = re.search(r"(?m)^[ \t]*(Hellow, [A-Za-z0-9_.-]+\.)[ \t]*$", output)
+    if greeting:
+        lines.append(greeting[1])
+    if any(match["url"] == link for match in VISIT_PROMPT.finditer(output)):
+        lines.append(f"Please visit: {link}")
+    action = "Action required: Open the authorization URL and approve the HTCondor request."
+    return "HTCondor message:\n```\n" + "\n".join(lines) + "\n```\n" + action if lines else action
 
 
 def deliver(message, webhook=WEBHOOK, timeout=3):

@@ -17,7 +17,7 @@ from autoreco import (SubmissionError, get_run_number, parse_integer, runs_to_re
                       state_path, submit_job, transfer_job_data, update_reco_done_batch)
 from googletool import get_headers, open_google_sheet, read_all_records
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
-from notify import Notifier, approval_url
+from notify import Notifier, approval_message, approval_url
 from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
@@ -542,10 +542,11 @@ def cycle(root, settings, args):
             cluster = submit_job(submit, show_output=False) if notifier else submit_job(submit)
         except SubmissionError as error:
             if notifier:
-                link = approval_url(error.stdout + "\n" + error.stderr)
+                output = error.stdout + "\n" + error.stderr
+                link = approval_url(output)
                 notifier.fault("condor:auth" if link else f"submit:{root.name}:{run}",
                                "HTCondor authentication required" if link else "HTCondor submission failed",
-                               "Open the authorization link and approve the HTCondor request." if link else
+                               approval_message(output, link) if link else
                                "Condor did not confirm submission. Inspect the local submission diagnostics.",
                                submit.parent / "submit_error.json", run=run, approval=link, error=error)
             raise

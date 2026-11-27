@@ -22,6 +22,30 @@ class NotificationTests(unittest.TestCase):
         self.state = self.root / "notification-state.json"
         self.link = "https://condor.psge.cloud.infn.it/key/example-approval"
 
+    def test_production_visit_prompt_and_wrapping(self):
+        sample = f"Submitting job(s)\nHellow, mazzitel.\nPlease visit: {self.link}"
+        self.assertEqual(notify.approval_url(sample + "\r\n  "), self.link)
+        self.assertEqual(notify.approval_url(sample.replace("\n", r"\n")), self.link)
+        self.assertEqual(notify.approval_url(sample.replace("\n", r"\r\n")), self.link)
+        for wrapped in (f"<{self.link}>", f"`{self.link}`", f"**{self.link}**",
+                        f"[Approve]({self.link})", f"\n   {self.link}"):
+            self.assertEqual(notify.approval_url(sample.replace(self.link, wrapped)), self.link)
+
+    def test_visit_prompt_with_invalid_missing_or_conflicting_links(self):
+        for output in (
+            "Submitting job(s)\nPlease visit:",
+            "Submitting job(s)\nERROR: job exceeds memory",
+            f"Please visit: {self.link.replace('.it/', '.it.evil.test/')}",
+            f"Please visit: {self.link.replace('https:', 'http:')}",
+            f"Please visit: {self.link.replace('/key/', '/key/%2e%2e/')}",
+            f"Please visit: {self.link}?redirect=https%3A%2F%2Fevil.test",
+            f"Please visit: {self.link}*unexpected",
+            f"Please visit: {self.link}?param=(unexpected)",
+            f"Please visit: {self.link}\nPlease visit: {self.link}2",
+            f"Please visit: https://example.test/key/other\nReference: {self.link}",
+        ):
+            self.assertIsNone(notify.approval_url(output), output)
+
     def test_delivery_uses_https_and_suppresses_mentions(self):
         with patch.object(notify.http.client, "HTTPSConnection") as connection:
             client = connection.return_value
@@ -102,9 +126,13 @@ class NotificationTests(unittest.TestCase):
                         failure_days=7, max_active=20, max_attempts=2,
                         max_submit_per_cycle=20, deferred_runs=[], split_pairs={})
         args = SimpleNamespace(pilot=False, gc_dry_run=False, notifier=notify.Notifier(self.state))
-        error = scheduler.SubmissionError("original failure", "", "Authorize at " + self.link)
+        output = f"Submitting job(s)\nHellow, mazzitel.\nPlease visit: {self.link}\nPrivate diagnostic"
+        error = scheduler.SubmissionError("original failure", output, "")
+        generic = {"count": 1, "sent": 1}
+        self.state.write_text(json.dumps({"submit:production:1220": generic}))
         logs = io.StringIO()
-        with contextlib.redirect_stdout(logs), patch.object(notify, "deliver", return_value=False), \
+        with contextlib.redirect_stdout(logs), patch.object(notify, "deliver", side_effect=[False, True]) as send, \
+             patch.object(notify.socket, "getfqdn", return_value="ui.cloudcnaf"), \
              patch.object(scheduler, "BASE", self.root), patch.object(scheduler, "local"), \
              patch.object(scheduler, "open_google_sheet"), \
              patch.object(scheduler, "get_headers", return_value=list(fixture) +
@@ -114,7 +142,18 @@ class NotificationTests(unittest.TestCase):
              patch.object(scheduler, "submit_job", side_effect=error):
             with self.assertRaises(scheduler.SubmissionError) as observed:
                 scheduler.cycle(production, settings, args)
+            sent = send.call_args.args[0]
+            self.assertIn("**FLASH autoreco — HTCondor authentication required**", sent)
+            self.assertIn("Host: ui.cloudcnaf\nRun: 01220", sent)
+            self.assertIn(f"HTCondor message:\n```\nSubmitting job(s)\nHellow, mazzitel.\nPlease visit: {self.link}\n```",
+                          sent)
+            self.assertIn(f"Authorization: <{self.link}>", sent)
+            self.assertNotIn("Private diagnostic", sent)
+            for _ in range(2):
+                notify.Notifier(self.state).fault("condor:auth", "authentication", "approve", "local")
+            self.assertEqual(send.call_count, 2)
         self.assertIs(observed.exception, error)
+        self.assertEqual(json.loads(self.state.read_text())["submit:production:1220"], generic)
         self.assertEqual(json.loads(scheduler.state_path(run_dir).read_text())["phase"], "submitting")
         self.assertNotIn(self.link, logs.getvalue())
 
