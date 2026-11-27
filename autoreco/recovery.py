@@ -81,7 +81,7 @@ def retry(state, now, policy, source, jobs, diagnosed=None):
     failures = state.get("episode_attempts", state["attempt_number"])
     submit_failures = state.get("submission_failures", 0)
     if state["phase"] == "submitting":
-        if source == "active" or jobs or not diagnosed:
+        if source != "history" or jobs or state.get("cluster") or not diagnosed:
             return "submission_uncertain", None
         category, observed_at = diagnosed
         failures = max(failures - 1, 0)
@@ -97,12 +97,12 @@ def retry(state, now, policy, source, jobs, diagnosed=None):
         return "waiting_capacity", (episode, failures, submit_failures)
     if state["phase"] != "failed":
         return "attempt_pending", None
-    if source == "active" or len(jobs) != 1:
+    if source != "history" or len(jobs) != 1:
         return "terminal_attempt_unconfirmed", None
     job = jobs[0]
     if (job.get("JobStatus") not in (3, 4)
-            or (job.get("JobStatus") == 4 and job.get("ExitCode") == 0
-                and not job.get("ExitBySignal"))):
+            or (not job.get("ExitBySignal") and not (
+                type(job.get("ExitCode")) is int and job["ExitCode"] != 0))):
         return "terminal_attempt_unconfirmed", None
     if failures < 2:
         return "waiting_capacity", (episode, failures, 0)

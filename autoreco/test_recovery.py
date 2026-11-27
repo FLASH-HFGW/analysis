@@ -49,6 +49,8 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(recovery.retry(failed, cooldown, self.policy, "history", jobs)[1], (2, 0, 0))
         self.assertIsNone(recovery.retry(failed, cooldown, self.policy, "active", jobs)[1])
         self.assertIsNone(recovery.retry(failed, cooldown, self.policy, "history", [dict(JobStatus=4, ExitCode=0)])[1])
+        self.assertIsNone(recovery.retry(failed, cooldown, self.policy, "history", [dict(JobStatus=3)])[1])
+        self.assertIsNone(recovery.retry(failed, cooldown, self.policy, "history", [dict(JobStatus=3, ExitCode=0)])[1])
         self.assertEqual(recovery.retry(dict(failed, recovery_episode=3), cooldown, self.policy, "history", jobs)[0],
                          "automatic_recovery_exhausted")
 
@@ -63,13 +65,15 @@ class RecoveryTests(unittest.TestCase):
             self.assertIsNone(recovery.retry(submit, 5000, self.policy, source, jobs, diagnosis)[1])
         self.assertEqual(recovery.retry(dict(submit, submission_failures=3), 5000, self.policy,
                                         "history", [], evidence)[0], "submission_recovery_exhausted")
+        self.assertIsNone(recovery.retry(dict(submit, cluster=123), 5000, self.policy,
+                                        "history", [], evidence)[1])
 
     def test_operator_change_at_submit_time_is_respected(self):
         root = self.base / "production"
         root.mkdir()
         headers = list(self.row)
         sheet = Mock()
-        sheet.row_values.return_value = list(dict(self.row, auto_reco=-2).values())
+        sheet.batch_get.return_value = [[headers], [list(dict(self.row, auto_reco=-2).values())]]
         settings = dict(run_min=1148, reco_version="3.0", output_format="root", max_attempts=2,
                         persistent_recovery={}, failure_days=7, max_active=20,
                         max_submit_per_cycle=20, deferred_runs=[], split_pairs={})
@@ -82,9 +86,50 @@ class RecoveryTests(unittest.TestCase):
              patch.object(run3, "prepare", return_value=root / "submit.sub"), \
              patch.object(run3, "save_state") as save, patch.object(run3, "submit_job") as submit:
             run3.cycle(root, settings, SimpleNamespace(pilot=False, gc_dry_run=False))
-        sheet.row_values.assert_called_once_with(2)
+        sheet.batch_get.assert_called_once_with(["1:1", "2:2"])
         save.assert_not_called()
         submit.assert_not_called()
+
+    def test_changed_or_missing_control_header_fails_closed(self):
+        sheet = Mock()
+        headers = list(self.row)
+        values = list(dict(self.row, auto_reco=-2).values())
+        moved = [headers[-1], *headers[:-1]]
+        sheet.batch_get.return_value = [[moved], [[values[-1], *values[:-1]]]]
+        self.assertIsNone(run3.current_admission_row(sheet, 2, 681, self.row["filename"]))
+        sheet.batch_get.return_value = [[headers[:-1]], [values[:-1]]]
+        self.assertIsNone(run3.current_admission_row(sheet, 2, 681, self.row["filename"]))
+        sheet.batch_get.return_value = [[headers], [values[:-1]]]  # Sheets omits trailing blanks.
+        self.assertIsNotNone(run3.current_admission_row(sheet, 2, 681, self.row["filename"]))
+
+    def test_exclusion_is_applied_at_discovery_and_reenable_keeps_retry_limits(self):
+        options = dict(run_min=681, reco_version="3.1", output_format="root")
+        row = dict(self.row, reco_done=0, auto_reco=-2)
+        self.assertFalse(run3.discover([row], options)[1])
+        row["auto_reco"] = 0
+        self.assertIn(681, run3.discover([row], options)[1])
+        failed = dict(phase="failed", attempt_number=6, recovery_episode=3,
+                      episode_attempts=2, failed_at=1)
+        self.assertEqual(recovery.retry(failed, 100000, self.policy, "history",
+                                       [dict(JobStatus=4, ExitCode=1)])[0],
+                         "automatic_recovery_exhausted")
+
+    def test_diagnostic_with_acceptance_marker_is_uncertain(self):
+        run_dir = self.base / "00681"
+        state = dict(attempt="a"*32, phase="submitting")
+        evidence = run_dir / state["attempt"] / "00681"
+        evidence.mkdir(parents=True)
+        error = evidence / "submit_error.json"
+        error.write_text(json.dumps(dict(exit_code=1, stdout="1 job submitted to cluster 100.",
+                                        stderr="Please visit: https://condor.psge.cloud.infn.it/key/example")))
+        with patch.object(run3, "BASE", self.base), patch.object(run3, "local"):
+            self.assertIsNone(run3.submit_diagnosis(run_dir, state, 681))
+
+    def test_older_attempt_still_in_queue_blocks_retry(self):
+        history = [{"attempt": "a"*32}, {"attempt": "b"*32}]
+        with patch.object(run3, "condor_query", side_effect=[[], [{"JobStatus": 2}]]) as query:
+            self.assertTrue(run3.prior_attempt_active(history))
+            self.assertEqual([call.args[1] for call in query.call_args_list], ["a"*32, "b"*32])
 
     def test_missing_rows_remain_in_durable_observations(self):
         path = self.base / "observations.json"

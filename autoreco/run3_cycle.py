@@ -245,7 +245,8 @@ def migration_inputs(records):
     for run, record in records.items():
         uri = final_url(PRODUCTION, run)
         done = parse_integer(record.get("reco_done"))
-        if (done is None or done < 1 or parse_integer(record.get("rucio_status")) != 0
+        if (not persistent.operator_enabled(record) or done is None or done < 1
+                or parse_integer(record.get("rucio_status")) != 0
                 or str(record.get("filename", "")).strip() != f"run{run:05d}.mid.gz"
                 or str(record.get("reco_output_path", "")).strip() != uri
                 or str(record.get("reco_requested_version") or "").strip() not in ("", "3.0", "3.1")):
@@ -297,6 +298,9 @@ def discover(records, settings):
                 continue
     # The worker resolves raw names from the run number and supports one profile.
     for run, filename in list(eligible.items()):
+        if not persistent.operator_enabled(by_run[run]):
+            del eligible[run]
+            continue
         requested = str(by_run[run].get("reco_requested_version") or "").strip()
         if filename != f"run{run:05d}.mid.gz" or requested not in ("", settings["reco_version"]):
             print(f"Run {run}: filename or requested reconstruction version requires review")
@@ -349,6 +353,8 @@ def submit_diagnosis(run_dir, state, run):
     if type(info.get("exit_code")) is not int or info["exit_code"] == 0:
         return None
     output = info.get("stdout", "") + "\n" + info.get("stderr", "")
+    if re.search(r"submitted\s+to\s+cluster\s+\d+", output, re.I):
+        return None
     return ("authentication_required" if approval_url(output) else "submission_failure",
             path.stat().st_mtime)
 
@@ -362,6 +368,22 @@ def recovery_records(rows):
                 raise ValueError(f"Duplicate recovery logbook run {run}")
             records[run] = index, row
     return records
+
+
+def current_admission_row(worksheet, index, run, filename):
+    """Check the current header, row identity and control cell in one read."""
+    header_rows, data_rows = worksheet.batch_get(["1:1", f"{index}:{index}"])
+    if len(header_rows) != 1 or len(data_rows) != 1 or header_rows[0].count("auto_reco") != 1:
+        return None
+    row = dict(zip(header_rows[0], data_rows[0]))
+    if get_run_number(row) == run and row.get("filename") == filename and persistent.operator_enabled(row):
+        return row
+    return None
+
+
+def prior_attempt_active(history):
+    """Check older recorded identities as well as the current exact attempt."""
+    return any(condor_query("condor_q", attempt["attempt"]) for attempt in history)
 
 
 def recovery_alert(notifier, root, run, state, disposition):
@@ -690,10 +712,8 @@ def cycle(root, settings, args):
         if indexes:
             if run not in indexes:
                 continue
-            values = worksheet.row_values(indexes[run][0])
-            fresh = dict(zip(headers, values))
-            if (get_run_number(fresh) != run or fresh.get("filename") != records[run]["filename"]
-                    or not persistent.operator_enabled(fresh)):
+            fresh = current_admission_row(worksheet, indexes[run][0], run, records[run]["filename"])
+            if fresh is None:
                 continue
             if policy:
                 if persistent.admission(fresh, run, RAW_ARCHIVE, ROOT_ARCHIVE,
@@ -703,6 +723,8 @@ def cycle(root, settings, args):
                 if other.exists():
                     continue
                 if history:
+                    if prior_attempt_active(history[:-1]):
+                        continue
                     source, jobs = lookup(history[-1]["attempt"])
                     diagnosis = submit_diagnosis(run_dir, history[-1], run) if history[-1]["phase"] == "submitting" else None
                     _, plan = persistent.retry(history[-1], time.time(), policy, source, jobs, diagnosis)
@@ -710,14 +732,11 @@ def cycle(root, settings, args):
                         continue
                 episode, attempts, failures = plans[run]
                 state.update(recovery_episode=episode, episode_attempts=attempts+1,
-                             submission_failures=failures, recovery_baseline=persistent.baseline(fresh))
+                             submission_failures=failures+1, recovery_baseline=persistent.baseline(fresh))
         save_state(run_dir, state)
         try:
             cluster = submit_job(submit, show_output=False) if notifier else submit_job(submit)
         except SubmissionError as error:
-            if policy:
-                state["submission_failures"] += 1
-                save_state(run_dir, state)
             if notifier:
                 output = error.stdout + "\n" + error.stderr
                 link = approval_url(output)

@@ -171,6 +171,76 @@ writes. The initial queue check saw one running and one completed job
 with no idle or held jobs. Both later showed Completed. These results
 do not establish publication or reconciliation for those two jobs.
 
+## Persistent recovery pre-deployment verification, 27 November 2026
+
+Feature branch: `root31-persistent-recovery-20261127`. The starting
+revision was `02f3d08d27d73db97320bbba28c8396c0a899308`. No production
+activation or job submission was performed during verification.
+`auto_reco` is present in the live logbook; the existing deployed
+scheduler does not yet enforce the feature.
+
+All five preview candidates are released by Rucio, have a blank
+requested profile and operator flag, and lack a canonical ROOT v3.1
+product in both the Run3 and historical reference directories. Each
+archived BOR matched its run number and yielded valid RF coordinates.
+The existing digitizer decoder accepted six-channel SPE data at 5 MHz,
+with 1,048,576 samples per channel in the first event. All five lack
+an explicit BOR I/Q channel-pair mapping and use the existing configured
+0/1, 2/3 and 4/5 fallback. No reconstruction was run.
+
+| Run | Logbook events | Tier-1 bytes | Verification and disposition |
+| --- | ---: | ---: | --- |
+| 01143 | 1,251 | 3,574,161,107 | Full gzip CRC and MIDAS EOR verified; raw record count matches; no attempt recorded |
+| 01144 | 1,251 | 9,275,176,967 | Full gzip CRC and MIDAS EOR verified; raw record count matches; no attempt recorded |
+| 01220 | 1,251 | 9,285,536,829 | BOR and first event verified; unconfirmed attempt one |
+| 02561 | 1,252 | 3,713,824,078 | Full gzip CRC, EOR and 1,252 records including BOR/EOR verified; unconfirmed attempt one |
+| 02562 | 1,251 | 9,629,942,264 | BOR and first event verified; unconfirmed attempt one |
+
+Run 02561 is the third unconfirmed submission. It had 1,000
+digitizer events and a stable compressed size at EOF. Small
+compressed size alone is not evidence of truncation. The submit
+host could not obtain independent authenticated GFAL metadata.
+The reported integrity evidence is from reading the mounted Tier-1
+object, not an independent remote checksum. Runs 01220 and 02562
+received prefix checks only.
+
+The three unconfirmed attempts have no recorded ClusterId, no
+exact queue or history match and no accepted-cluster marker in
+their local diagnostics. Their nonzero submit results contain a
+recognized authorization prompt. This supports the bounded
+pre-admission authorization retry path, subject to a fresh Condor
+and archive check and operator approval of activation. Old approval
+links were not replayed. No state was reset.
+
+All 409 historical request conflicts were independently confirmed
+in the live logbook as explicit version 1.1 requests. They remain
+excluded from automatic ROOT v3.1 conversion. Missing v3.1 alone
+does not override a requested profile. Runs 02522, 02524 and 02536
+remain below the event threshold with exhausted attempt histories.
+
+Branch hardening now checks the exclusion during production and
+migration discovery. The last admission reads current headers and
+the exact row in one request, and fails closed if the control
+column is missing or the identity changed. Automatic retries also
+check older attempt tags, reject ambiguous submit evidence and
+require explicit failure for a terminal scientific attempt. The
+submission counter is reserved before calling Condor, so a crash
+cannot evade its cap. Re-enablement does not reset episode limits.
+All 37 scheduler tests passed. The default policy remains two
+scientific attempts per episode, a 24-hour cooldown and three
+episodes total. Authentication submissions are accounted separately.
+Keep the feature off until the bounded activation is approved.
+
+The official read-only scheduler dry run reported eight occupied local
+attempts and planned only Run 02618. The isolated feature dry run
+reported 1,434 validated dispositions, 409 requested-version conflicts,
+and six planned admissions: the five targeted candidates plus Run
+02618. Its occupied-attempt count was five after identifying three
+unconfirmed authorization attempts eligible for bounded recovery.
+Both dry runs planned zero logbook writes. The new final-admission
+batch read also confirmed the exact live row identity and enabled flag
+for each of the five targeted runs.
+
 ## Instructions for future Codex sessions
 
 Start with this context, the [Run3 runbook](../run3_root31_runbook.md),
