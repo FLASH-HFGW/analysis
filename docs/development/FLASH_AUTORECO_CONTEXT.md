@@ -1,6 +1,7 @@
 # FLASH Run3 ROOT v3.1 autoreconstruction context
 
-Operational snapshot: 26 November 2026, approximately 17:57 CET.
+Consolidation snapshot: 26 November 2026, approximately 17:57 CET.
+The authorization follow-up below was checked on 27 November at 14:01 CET.
 This document records architecture and decisions. Queue and credential
 observations are point-in-time evidence.
 
@@ -75,9 +76,7 @@ It needs operator review before any retry or state repair.
 
 On 26 November, the original Run 1220 submit returned exit code 1.
 Its restricted local diagnostic contains an approval-shaped link
-that the deployed parser does not accept. The exact cause and prompt
-wording must be checked locally before changing detection or treating
-the attempt as safe to retry. Later accepted submissions, including
+that the parser at the time did not accept. Later accepted submissions, including
 6073 and 6074, demonstrate scheduler submission worked again; the
 Tier-1 OAuth credential query separately reported a valid credential.
 No new submit was issued to probe authentication during consolidation.
@@ -110,6 +109,37 @@ Notification errors leave the original scheduler behavior intact.
 The persisted sent markers for exhausted runs 2522, 2524 and 2536
 were retained across consolidation. Each has two failed attempts
 and remains blocked. Do not clear its alert marker or retry history.
+
+### Authorization prompt parser follow-up, 27 November 2026
+
+Run 02562 failed during submission at 12:40:54 UTC. Condor used
+the greeting followed by a `Please visit:` line, without the
+authentication words required by the original parser. Discord sent
+the generic submission alert. Commit
+`a1ad24fa17d5a18a8e56843da3aba1130cbbd4d7` on
+`root31-discord-condor-approval-20261127` recognizes that prompt,
+including escaped newlines and Markdown wrappers. It requires a
+single unambiguous HTTPS authorization URL on the exact Condor
+origin with the expected path and rejects redirect-like parameters.
+It sends a sanitized prompt excerpt and the exact clickable link.
+The generic and authentication incident keys remain separate.
+
+The patch was deployed under the production lock at 13:58 CET and
+then integrated into `main` by fast-forward from
+`6b012e34e0df5b69128464112d32323f4c68d467`. All 28 autoreco
+tests passed, including mocked formatting and deduplication checks.
+The official deployment dry run observed eight occupied local
+attempts, one planned submission and no planned logbook writes.
+Canonical production source matched the validated revision byte for
+byte. The ignored config and deduplication state were preserved.
+
+At 14:01 CET both Run 01220 and Run 02562 remained in `submitting`
+on attempt one, with no ClusterId and no exact attempt in the queue
+or history. Both saved diagnostics have submit exit code 1, and
+the corrected parser recognizes a link in each without exposing
+it. Link validity was not established and no historical alert
+was replayed. Both attempts require review before any state repair
+or retry. No job state was changed during integration.
 
 ## Concurrency and Git history
 
