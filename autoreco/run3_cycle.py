@@ -18,6 +18,7 @@ from autoreco import (SubmissionError, get_run_number, parse_integer, runs_to_re
 from googletool import get_headers, open_google_sheet, read_all_records
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
 from notify import Notifier, approval_message, approval_url
+import recovery as persistent
 from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
@@ -93,7 +94,7 @@ def validate_receipt(receipt, completion, run, url, attempt):
         raise ValueError("invalid Run3 publication receipt")
 
 
-def finalize_verified(run_dir, state, directory, dry_run, queue):
+def finalize_verified(run_dir, state, directory, dry_run, queue, preserve_diagnostics=False):
     if queue:
         if len(queue) != 1:
             return True
@@ -111,6 +112,11 @@ def finalize_verified(run_dir, state, directory, dry_run, queue):
         subprocess.run(["condor_rm", "-constraint", constraint], check=True)
         if condor_query("condor_q", attempt):
             return True
+    if preserve_diagnostics:
+        if not dry_run and not state.get("queue_closed"):
+            state["queue_closed"] = True
+            save_state(run_dir, state)
+        return False
     keep_logs = time.time() - state["verified_at"] < 30*86400
     clean_attempt(directory, dry_run=dry_run, keep_logs=keep_logs)
     if not dry_run:
@@ -119,7 +125,8 @@ def finalize_verified(run_dir, state, directory, dry_run, queue):
     return False
 
 
-def reconcile(run_dir, state, run, url, retention, dry_run, notifier=None, max_attempts=2):
+def reconcile(run_dir, state, run, url, retention, dry_run, notifier=None, max_attempts=2,
+              preserve_diagnostics=False):
     """Return True if the run still occupies a slot."""
     attempt = state["attempt"]
     directory = workdir(run_dir, attempt, run)
@@ -136,7 +143,7 @@ def reconcile(run_dir, state, run, url, retention, dry_run, notifier=None, max_a
         else:
             source, jobs = lookup(attempt)
             queue = jobs if source == "active" else []
-        return finalize_verified(run_dir, state, directory, dry_run, queue)
+        return finalize_verified(run_dir, state, directory, dry_run, queue, preserve_diagnostics)
     source, jobs = lookup(attempt)
     if len(jobs) != 1:
         return state["phase"] not in ("verified", "failed") or source == "active"
@@ -194,19 +201,23 @@ def reconcile(run_dir, state, run, url, retention, dry_run, notifier=None, max_a
                                   "A reconstruction completed and its publication receipt passed validation.",
                                   reference, run=run)
         return finalize_verified(run_dir, state, directory, dry_run,
-                                 jobs if source == "active" else [])
+                                 jobs if source == "active" else [], preserve_diagnostics)
     if job["JobStatus"] not in (3, 4):
         return True
     if state["phase"] != "failed" and not dry_run:
         state.update(phase="failed", failed_at=time.time(), cluster=job["ClusterId"])
         save_state(run_dir, state)
-    if notifier and state["attempt_number"] >= min(2, max_attempts):
-        exhausted = state["attempt_number"] >= max_attempts
-        notifier.fault(f"reconstruction:{incident}" + (":exhausted" if exhausted else ""),
+    episode_count = state.get("episode_attempts", state.get("attempt_number", 0))
+    episode = state.get("recovery_episode", 1)
+    episode_key = f":episode:{episode}" if episode > 1 else ""
+    if notifier and episode_count >= min(2, max_attempts):
+        exhausted = episode_count >= max_attempts
+        notifier.fault(f"reconstruction:{incident}" + episode_key + (":exhausted" if exhausted else ""),
                        "ROOT reconstruction retries exhausted" if exhausted else "Repeated ROOT reconstruction failure",
-                       f"Attempt {state['attempt_number']} ended unsuccessfully. Inspect worker diagnostics locally.",
+                       f"Episode {episode}, attempt {state['attempt_number']} ended unsuccessfully. "
+                       "Inspect worker diagnostics locally. To exclude the run, set auto_reco = -2.",
                        reference, run=run)
-    if state.get("failed_at", time.time()) + retention*86400 <= time.time():
+    if not preserve_diagnostics and state.get("failed_at", time.time()) + retention*86400 <= time.time():
         clean_attempt(directory, dry_run=dry_run)
     return False
 
@@ -307,9 +318,10 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
         print(f"Run {run}: logbook row changed; update deferred")
         return None
     done = parse_integer(record.get("reco_done"))
+    baseline = state.get("recovery_baseline") if version == "3.1" and not migration else None
     late = not migration and version == "3.1" and state.get("late_rucio_recovery")
     prior = migration["reco_done"] if migration else -1 if late else 0
-    target = prior if migration else 1
+    target = prior if migration else max(1, parse_integer(baseline["reco_done"]) or 0) if baseline else 1
     current_path = str(record.get("reco_output_path", "")).strip()
     current_version = str(record.get("reco_version", "")).strip()
     if done == target and current_path == url and current_version == version:
@@ -317,12 +329,54 @@ def plan_logbook_update(run_dir, run, state, record, url, version, dry_run):
             state["status"] = "sheet_updated"
             save_state(run_dir, state)
         return None
-    if done != prior or (late and not late_rucio_row(record)) or (migration and (current_path != migration["reference"]["url"]
+    if (baseline is not None and persistent.baseline(record) != baseline) or (
+            baseline is None and done != prior) or (late and baseline is None and not late_rucio_row(record)) or (migration and (current_path != migration["reference"]["url"]
                                         or current_version != migration["expected_version"])):
         print(f"Run {run}: earlier reconstruction references changed; update deferred")
         return None
     return run_dir, dict(state, run_number=run, filename=filename, target_reco_done=target,
-                         expected_reco_done=prior, reco_version=version, output_path=url)
+                         expected_reco_done=prior if baseline is None else None,
+                         reco_version=version, output_path=url)
+
+
+def submit_diagnosis(run_dir, state, run):
+    path = workdir(run_dir, state["attempt"], run) / "submit_error.json"
+    local(path)
+    try:
+        info = json.loads(path.read_text())
+    except FileNotFoundError:
+        return None
+    if type(info.get("exit_code")) is not int or info["exit_code"] == 0:
+        return None
+    output = info.get("stdout", "") + "\n" + info.get("stderr", "")
+    return ("authentication_required" if approval_url(output) else "submission_failure",
+            path.stat().st_mtime)
+
+
+def recovery_records(rows):
+    records = {}
+    for index, row in enumerate(rows, 2):
+        run = get_run_number(row)
+        if run is not None and run > 680:
+            if run in records:
+                raise ValueError(f"Duplicate recovery logbook run {run}")
+            records[run] = index, row
+    return records
+
+
+def recovery_alert(notifier, root, run, state, disposition):
+    if disposition not in ("automatic_recovery_exhausted", "submission_recovery_exhausted",
+                            "submission_uncertain", "submission_failure", "terminal_attempt_unconfirmed",
+                            "publication_missing_operator_review", "verified_legacy_state",
+                            "root_present_needs_evidence", "logbook_reconciliation_pending"):
+        return
+    episode = state.get("recovery_episode", 1)
+    notifier.fault(f"persistent:{root.name}:{run}:{episode}:{disposition}",
+                   "Run3 recovery requires operator review",
+                   f"Episode {episode}: {disposition.replace('_', ' ')}. "
+                   "To exclude this run, set auto_reco = -2 in its Google logbook row.",
+                   state_path(root / f"{run:05d}"), run=run,
+                   after=2 if disposition == "logbook_reconciliation_pending" else 1)
 
 
 def recovery_backlog(eligible, blocked, validated, pending):
@@ -362,6 +416,23 @@ def finish_recovery(path, settings, limit):
     print(f"ROOT recovery complete. Restored max_active={limit}.", flush=True)
 
 
+def publication_disposition(state, run, url, row):
+    if state.get("phase") != "verified" or state.get("product_url") != url:
+        return "root_present_needs_evidence"
+    try:
+        validate_receipt(state["publication"], dict(run=run, exit_code=0, status="success"),
+                         run, url, state["attempt"])
+        size = (ROOT_ARCHIVE / f"run{run:05d}_iq_v3.1.root").stat().st_size
+    except (ValueError, KeyError, FileNotFoundError):
+        return "publication_missing_operator_review"
+    if size != state["publication"]["remote_size"]:
+        return "publication_missing_operator_review"
+    if (state.get("status") == "sheet_updated" and (parse_integer(row.get("reco_done")) or 0) > 0
+            and str(row.get("reco_version")) == "3.1" and row.get("reco_output_path") == url):
+        return "validated"
+    return "logbook_reconciliation_pending"
+
+
 def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
     dry_run = getattr(args, "dry_run", False)
@@ -370,6 +441,8 @@ def cycle(root, settings, args):
     migration = getattr(args, "migrate_root", False)
     root_output = not args.pilot and (migration or settings.get("output_format") == "root")
     recovery = root_output and not migration and "backlog_recovery" in settings
+    policy = persistent.options(settings) if root_output and not migration else None
+    observations, plans, indexes = {}, {}, {}
     migrations = {}
     records, eligible, updates, rebuilt = {}, {}, [], set()
     if args.pilot:
@@ -378,10 +451,35 @@ def cycle(root, settings, args):
         worksheet = open_google_sheet()
         headers = get_headers(worksheet)
         required = {"filename", "rucio_status", "reco_done", "reco_version", "reco_output_path"}
+        if policy:
+            required |= {"events", "auto_reco"}
         if not required.issubset(headers):
             raise ValueError(f"logbook columns missing: {sorted(required - set(headers))}")
         discover_settings = dict(settings, reco_version="3.1") if root_output else settings
-        records, eligible = discover(read_all_records(worksheet), discover_settings)
+        sheet_rows = read_all_records(worksheet)
+        indexes = recovery_records(sheet_rows) if "auto_reco" in headers else {}
+        records, eligible = discover(sheet_rows, discover_settings)
+        if policy:
+            if not ARCHIVE_MOUNT.is_mount():
+                raise RuntimeError("Persistent recovery requires the Tier-1 mount")
+            records = {run: row for run, (_, row) in indexes.items()}
+            observations = {str(run): persistent.admission(
+                row, run, RAW_ARCHIVE, ROOT_ARCHIVE, settings["deferred_runs"])
+                for run, row in records.items()}
+            for run, row in records.items():
+                key = str(run)
+                if observations[key] not in ("waiting_capacity", "root_present_needs_evidence"):
+                    continue
+                other = state_path(BASE / "root-migration" / f"{run:05d}")
+                if other.is_file():
+                    local(other)
+                    migrated = json.loads(other.read_text())
+                    if observations[key] == "root_present_needs_evidence":
+                        observations[key] = publication_disposition(migrated, run, final_url(destination, run, True), row)
+                    else:
+                        observations[key] = "migration_attempt_pending"
+            eligible = {run: row["filename"] for run, row in records.items()
+                        if observations[str(run)] == "waiting_capacity"}
         if migration:
             migrations = migration_inputs(records)
             eligible = {run: records[run]["filename"] for run in migrations}
@@ -390,13 +488,17 @@ def cycle(root, settings, args):
         if migration:
             rebuilt = {run for run, row in records.items()
                        if str(row.get("reco_output_path", "")).strip() == final_url(destination, run, True)}
-        runs = set(eligible) - set(settings["deferred_runs"])
+        runs = {run for run in eligible if run not in settings["deferred_runs"]
+                and persistent.operator_enabled(records[run])}
     active = 0
     waiting = []
     blocked = set(settings.get("deferred_runs", ()))
     validated = set()
     pending = set()
     known = set(runs)
+    if policy:
+        known.update(int(run) for run, value in observations.items()
+                     if value in ("publication_missing_operator_review", "root_present_needs_evidence"))
     for directory in root.iterdir():
         if re.fullmatch(r"\d{5,}", directory.name):
             local(directory)
@@ -414,16 +516,52 @@ def cycle(root, settings, args):
             previous_url = state.get("product_url", final_url(destination, run, migration))
             version = "3.1" if previous_url.endswith(".root") else settings["reco_version"]
             notification_options = dict(notifier=notifier, max_attempts=settings["max_attempts"]) if notifier else {}
+            if run in records and not persistent.operator_enabled(records[run]):
+                notification_options["preserve_diagnostics"] = True
             occupied = reconcile(run_dir, state, run, previous_url, settings["failure_days"], read_only,
                                  **notification_options)
             active += occupied
-            if recovery and not occupied and state["phase"] == "failed":
+            if policy and run in records and persistent.operator_enabled(records[run]):
+                disposition = observations[str(run)]
+                if state["phase"] == "verified":
+                    if previous_url == url and disposition == "root_present_needs_evidence":
+                        disposition = publication_disposition(state, run, url, records[run])
+                    elif run in runs:
+                        disposition = "verified_legacy_state"
+                elif run in runs or disposition == "root_present_needs_evidence":
+                    source, jobs = lookup(state["attempt"])
+                    if len(jobs) == 1 and jobs[0]["JobStatus"] == 5:
+                        disposition = "hold"
+                    elif run in runs and (not occupied or state["phase"] == "submitting"):
+                        diagnosis = submit_diagnosis(run_dir, state, run) if state["phase"] == "submitting" else None
+                        disposition, plan = persistent.retry(state, time.time(), policy, source, jobs, diagnosis)
+                        if plan is not None:
+                            plans[run] = plan
+                            if occupied:
+                                active -= 1
+                            prior_state = {key: value for key, value in state.items() if key != "previous"}
+                            prior_state.setdefault("failed_at", diagnosis[1] if diagnosis else time.time())
+                            waiting.append((run, url, state["attempt_number"] + 1,
+                                            state.get("previous", []) + [prior_state]))
+                    elif len(jobs) == 1 and jobs[0]["JobStatus"] == 4:
+                        disposition = "publication_verification_pending"
+                    else:
+                        disposition = "attempt_pending"
+                observations[str(run)] = disposition
+                if disposition in ("automatic_recovery_exhausted", "submission_recovery_exhausted",
+                                   "submission_uncertain", "submission_failure", "terminal_attempt_unconfirmed",
+                                   "verified_legacy_state"):
+                    blocked.add(run)
+                if notifier:
+                    recovery_alert(notifier, root, run, state, disposition)
+            if recovery and not policy and not occupied and state["phase"] == "failed":
                 if state["attempt_number"] >= settings["max_attempts"]:
                     blocked.add(run)
-            if not occupied and state["phase"] in ("failed", "verified"):
+            if (not occupied and state["phase"] in ("failed", "verified")
+                    and (run not in records or persistent.operator_enabled(records[run]))):
                 for previous in state.get("previous", []):
                     source, jobs = lookup(previous["attempt"])
-                    if (source == "history" and len(jobs) == 1
+                    if (previous.get("phase") != "submitting" and source == "history" and len(jobs) == 1
                             and jobs[0]["JobStatus"] in (3, 4)
                             and previous["failed_at"] + settings["failure_days"]*86400 <= time.time()):
                         clean_attempt(workdir(run_dir, previous["attempt"], run), dry_run=read_only)
@@ -438,13 +576,17 @@ def cycle(root, settings, args):
                                      run, url, state["attempt"])
                     validated.add(run)
                     pending.add(run)  # Eligibility means the live row still requests reconstruction.
-            if (not occupied and state["phase"] == "failed"
+            if (not policy and not occupied and state["phase"] == "failed"
                     and state["attempt_number"] < settings["max_attempts"] and run in runs):
                 history = state.get("previous", []) + [
                     {key: state[key] for key in ("attempt", "failed_at")}]
                 waiting.append((run, url, state["attempt_number"] + 1, history))
         elif run in runs:
             waiting.append((run, url, 1, []))
+            if policy:
+                plans[run] = (1, 0, 0)
+        elif policy and notifier and str(run) in observations:
+            recovery_alert(notifier, root, run, {}, observations[str(run)])
     limit = settings.get("migration_max_active", 40) if migration else settings["max_active"]
     late_runs = {run for run in runs if root_output and not migration and late_rucio_row(records[run])}
     for run, _, _, _ in waiting:
@@ -484,6 +626,14 @@ def cycle(root, settings, args):
         finish = limit != settings["max_active"]
     slots = max(0, limit - active)
     submissions = waiting[:slots if migration else min(slots, settings.get("max_submit_per_cycle", slots))]
+    if policy:
+        print("Persistent recovery dispositions: " + json.dumps(Counter(observations.values()), sort_keys=True))
+        if not read_only:
+            persistent.save_observations(BASE / "persistent-recovery.json", observations)
+        if getattr(args, "recovery_report", None):
+            with args.recovery_report.open("x") as output:
+                json.dump(observations, output, indent=2, sort_keys=True)
+                output.write("\n")
     if dry_run:
         print(f"Eleggibili ({len(eligible)}): {sorted(eligible)}")
         print(f"Già ricostruiti ({len(rebuilt)}): {sorted(rebuilt)}")
@@ -537,10 +687,37 @@ def cycle(root, settings, args):
             state["late_rucio_recovery"] = True
         if input_state:
             state["migration"] = input_state
+        if indexes:
+            if run not in indexes:
+                continue
+            values = worksheet.row_values(indexes[run][0])
+            fresh = dict(zip(headers, values))
+            if (get_run_number(fresh) != run or fresh.get("filename") != records[run]["filename"]
+                    or not persistent.operator_enabled(fresh)):
+                continue
+            if policy:
+                if persistent.admission(fresh, run, RAW_ARCHIVE, ROOT_ARCHIVE,
+                                        settings["deferred_runs"]) != "waiting_capacity":
+                    continue
+                other = state_path(BASE / "root-migration" / f"{run:05d}")
+                if other.exists():
+                    continue
+                if history:
+                    source, jobs = lookup(history[-1]["attempt"])
+                    diagnosis = submit_diagnosis(run_dir, history[-1], run) if history[-1]["phase"] == "submitting" else None
+                    _, plan = persistent.retry(history[-1], time.time(), policy, source, jobs, diagnosis)
+                    if plan != plans[run]:
+                        continue
+                episode, attempts, failures = plans[run]
+                state.update(recovery_episode=episode, episode_attempts=attempts+1,
+                             submission_failures=failures, recovery_baseline=persistent.baseline(fresh))
         save_state(run_dir, state)
         try:
             cluster = submit_job(submit, show_output=False) if notifier else submit_job(submit)
         except SubmissionError as error:
+            if policy:
+                state["submission_failures"] += 1
+                save_state(run_dir, state)
             if notifier:
                 output = error.stdout + "\n" + error.stderr
                 link = approval_url(output)
@@ -551,6 +728,8 @@ def cycle(root, settings, args):
                                submit.parent / "submit_error.json", run=run, approval=link, error=error)
             raise
         state.update(cluster=cluster, phase="submitted")
+        if policy:
+            state["submission_failures"] = 0
         save_state(run_dir, state)
         if notifier:
             print(f"Run {run}: submitted to cluster {cluster}.", flush=True)
@@ -580,10 +759,13 @@ def main():
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--gc-dry-run", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Anteprima Run3 in sola lettura del logbook")
+    parser.add_argument("--recovery-report", type=Path, help="Save the persistent-recovery dry-run dispositions")
     parser.add_argument("--cron", action="store_true")
     parser.add_argument("--migrate-root", action="store_true")
     args = parser.parse_args()
     settings = json.loads(args.config.read_text())
+    if args.recovery_report and (not args.dry_run or args.migrate_root or not persistent.options(settings)):
+        parser.error("--recovery-report requires a persistent recovery dry run")
     if "backlog_recovery" in settings:
         policy = settings["backlog_recovery"]
         if (policy != {"threshold": 20, "normal_max_active": 20}

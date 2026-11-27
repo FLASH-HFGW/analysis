@@ -141,3 +141,50 @@ Recovery requires an accepted Condor cluster, an observed exit from
 HOLD, a validated ROOT receipt, or a successful logbook update, as
 appropriate. A generic scheduler exception is not automatically
 declared recovered by an otherwise successful cron cycle.
+
+## Persistent recovery and operator exclusions
+
+The `auto_reco` column is operator-owned. Blank or zero enables
+automatic admission and `-2` excludes a run. Unknown values fail
+closed. The scheduler checks the flag in the snapshot and rereads
+the exact row immediately before submitting. Exclusion does not
+cancel a job or stop safe reconciliation. Existing attempt
+diagnostics remain intact while excluded.
+
+For the normal ROOT lane, the opt-in host setting
+`"persistent_recovery": {}` scans all logbook runs above 680 with
+at least 1,000 acquired events. The Rucio release, canonical raw
+object and requested profile must pass validation. Old reconstruction
+counters alone do not determine admission. Existing canonical ROOT
+objects suppress submission. A ROOT claim with a missing object
+requires review. The scheduler preserves explicit requested-version
+conflicts, and checks both lanes for duplicate work. The worker
+still validates the actual raw and ROOT data.
+
+The defaults are two scientific attempts per episode, 24 hours
+between exhausted episodes and three episodes total, including the
+initial episode. Set positive integer `cooldown_seconds` and
+`max_episodes` inside the policy to override those defaults. A new
+episode requires an exact unsuccessful terminal Condor history record.
+Recognized, nonzero-exit authorization failures without a matching
+queue or history record are retried separately with a one-hour
+`submission_cooldown_seconds` and a cap of three consecutive
+`max_submission_failures`. A failed authorization submission does
+not consume a scientific attempt. Unknown submit outcomes and generic
+failures require review instead of assuming safe re-admission.
+
+The original attempt records and monotonic attempt numbers survive
+new episodes. Observed dispositions are written atomically to
+`persistent-recovery.json` under the Run3 runtime. Disappearing
+logbook rows remain marked unresolved. Discord incident keys separate
+episodes and explain the manual exclusion flag. Recovery publication
+uses the existing verified receipt and checks the original logbook
+metadata again before updating. Positive existing completion counts
+are retained; a new validated completion for a nonpositive or missing
+counter records one. The scheduler never writes the operator flag.
+
+Use an official dry run with `--recovery-report /path/to/new-file.json`
+and a temporary config to inspect the entire candidate set before
+activating the policy. Review conflicting historical profile requests
+and anomalous raw inputs first. The existing five-minute cron is the
+only production entry point.

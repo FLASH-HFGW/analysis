@@ -636,7 +636,8 @@ def update_reco_done_batch(
 
         row_number, current_record = matching_record
         current_value = parse_integer(current_record.get("reco_done"))
-        if current_value is None:
+        recovery_baseline = state.get("recovery_baseline")
+        if current_value is None and recovery_baseline is None:
             print(
                 f"Run {run_number}: valore reco_done non valido, "
                 "aggiornamento rimandato"
@@ -647,6 +648,12 @@ def update_reco_done_batch(
         migration = state.get("migration")
         requested = str(current_record.get("reco_requested_version") or "").strip()
         allowed = ("", "3.0", state["reco_version"]) if migration else ("", state.get("reco_version", "1.0"))
+        if recovery_baseline is not None:
+            from recovery import baseline
+            if (baseline(current_record) != recovery_baseline or get_run_number(current_record) != run_number
+                    or parse_integer(current_record.get("rucio_status")) != 0 or requested not in allowed):
+                print(f"Run {run_number}: logbook row changed; update deferred")
+                continue
         if expected is not None and (
             current_value != expected or get_run_number(current_record) != run_number
             or parse_integer(current_record.get("rucio_status")) != 0 or requested not in allowed
