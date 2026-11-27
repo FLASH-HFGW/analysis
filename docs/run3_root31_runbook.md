@@ -188,3 +188,41 @@ and a temporary config to inspect the entire candidate set before
 activating the policy. Review conflicting historical profile requests
 and anomalous raw inputs first. The existing five-minute cron is the
 only production entry point.
+
+### Google logbook operator view
+
+The scheduler-owned fields are `auto_reco_status`, `auto_reco_error`
+and `auto_reco_next_retry`. They show pending, running, cooling-down,
+authentication-blocked, manually excluded, completed or other blocked
+dispositions. Retry timestamps are UTC and are blank when there is
+no scheduled retry. The error cell contains a short categorized
+reason. It never contains diagnostic output or approval links.
+Observed job changes appear on the next reconciliation cycle.
+
+Install the three status headers and the operator-owned
+`auto_reco_release` header as new columns to the right of `auto_reco`
+with all data cells blank. Do this only after reviewing
+`--dry-run --status-preview /path/to/new-file.json` and the optional
+`--recovery-report`. The preview specifies exact header coordinates,
+old and new cell values, skipped conflicts and the first bounded batch.
+It does not change the sheet. After the schema and deployment are
+approved, set `"recovery_logbook_status": true` together with the
+persistent recovery policy to permit writes on regular cron cycles.
+Only changed scheduler-owned cells are sent in one sparse RAW batch,
+with at most 120 rows per cycle and intervention statuses prioritized.
+Rows whose identity, control, reconstruction or status cells changed
+between snapshots are deferred. Google Sheets has no atomic
+compare-and-set for these cells; avoid moving rows or columns during
+a scheduler write. Monitoring write failures do not stop reconstruction.
+
+To release a temporary historical hold, review that run's input and
+profile first. In that run's row, leave `auto_reco` blank or zero and
+enter `root31:01143` for Run 1143 or `root31:01144` for Run 1144 in
+`auto_reco_release`. The token is scoped to that run, and it is
+rechecked immediately before submitting. Clear the token to reinstate
+the hold for future attempts. A manual `auto_reco=-2` takes precedence.
+Release does not override a conflicting requested version, a host
+deferral, an existing ROOT product, an active attempt or an exhausted
+recovery budget. An explicit historical version request can be changed
+only by an authorized operator after reviewing that profile. The
+scheduler writes neither control column and never assigns `-2`.

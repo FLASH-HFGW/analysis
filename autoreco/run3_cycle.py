@@ -19,6 +19,7 @@ from googletool import get_headers, open_google_sheet, read_all_records
 from noise_jobs import build_iq_v3_jobs, check_run3_inputs
 from notify import Notifier, approval_message, approval_url
 import recovery as persistent
+import recovery_sheet
 from run3_storage import PILOT, PRODUCTION, RAW
 
 BASE = Path("/home/mazzitel/HFGW/analysis-runtime/autoreco/Run3")
@@ -455,6 +456,13 @@ def publication_disposition(state, run, url, row):
     return "logbook_reconciliation_pending"
 
 
+def live_attempt_disposition(source, jobs):
+    if source == "active" and len(jobs) == 1:
+        return {1: "idle", 2: "running", 4: "publication_verification_pending",
+                5: "hold", 6: "running", 7: "idle"}.get(jobs[0]["JobStatus"])
+    return None
+
+
 def cycle(root, settings, args):
     destination = PILOT if args.pilot else PRODUCTION
     dry_run = getattr(args, "dry_run", False)
@@ -465,6 +473,9 @@ def cycle(root, settings, args):
     recovery = root_output and not migration and "backlog_recovery" in settings
     policy = persistent.options(settings) if root_output and not migration else None
     observations, plans, indexes = {}, {}, {}
+    retry_times = {}
+    status_preview = getattr(args, "status_preview", None)
+    status_writes = bool(policy and settings.get("recovery_logbook_status") is True and getattr(args, "cron", False))
     migrations = {}
     records, eligible, updates, rebuilt = {}, {}, [], set()
     if args.pilot:
@@ -499,7 +510,10 @@ def cycle(root, settings, args):
                     if observations[key] == "root_present_needs_evidence":
                         observations[key] = publication_disposition(migrated, run, final_url(destination, run, True), row)
                     else:
-                        observations[key] = "migration_attempt_pending"
+                        observed = None
+                        if migrated.get("attempt") and migrated.get("phase") != "verified":
+                            observed = live_attempt_disposition(*lookup(migrated["attempt"]))
+                        observations[key] = observed or "migration_attempt_pending"
             eligible = {run: row["filename"] for run, row in records.items()
                         if observations[str(run)] == "waiting_capacity"}
         if migration:
@@ -552,11 +566,19 @@ def cycle(root, settings, args):
                         disposition = "verified_legacy_state"
                 elif run in runs or disposition == "root_present_needs_evidence":
                     source, jobs = lookup(state["attempt"])
-                    if len(jobs) == 1 and jobs[0]["JobStatus"] == 5:
-                        disposition = "hold"
+                    live_disposition = live_attempt_disposition(source, jobs)
+                    if live_disposition:
+                        disposition = live_disposition
                     elif run in runs and (not occupied or state["phase"] == "submitting"):
                         diagnosis = submit_diagnosis(run_dir, state, run) if state["phase"] == "submitting" else None
                         disposition, plan = persistent.retry(state, time.time(), policy, source, jobs, diagnosis)
+                        if disposition == "reconstruction_cooldown":
+                            retry_times[run] = state["failed_at"] + policy["cooldown_seconds"]
+                        if diagnosis and diagnosis[0] == "authentication_required" and (
+                                disposition == "authentication_required" or plan is not None):
+                            retry_times[run] = diagnosis[1] + policy["submission_cooldown_seconds"]
+                            if plan is not None:
+                                disposition = "authorization_retry_ready"
                         if plan is not None:
                             plans[run] = plan
                             if occupied:
@@ -656,6 +678,23 @@ def cycle(root, settings, args):
             with args.recovery_report.open("x") as output:
                 json.dump(observations, output, indent=2, sort_keys=True)
                 output.write("\n")
+        if status_preview or (status_writes and not read_only):
+            try:
+                current_rows = worksheet.get_all_values()
+                if not current_rows or current_rows[0] != headers:
+                    raise ValueError("Logbook headers changed during status planning")
+                current = recovery_records([dict(zip(headers, row)) for row in current_rows[1:]])
+                preview = recovery_sheet.plan(headers, indexes, current, observations, retry_times)
+                if status_preview:
+                    with status_preview.open("x") as output:
+                        json.dump(preview, output, indent=2)
+                        output.write("\n")
+                else:
+                    recovery_sheet.apply(worksheet, preview)
+            except Exception:
+                if status_preview:
+                    raise
+                print("Recovery monitoring update deferred; scheduling remains active.", flush=True)
     if dry_run:
         print(f"Eleggibili ({len(eligible)}): {sorted(eligible)}")
         print(f"Già ricostruiti ({len(rebuilt)}): {sorted(rebuilt)}")
@@ -779,12 +818,14 @@ def main():
     parser.add_argument("--gc-dry-run", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Anteprima Run3 in sola lettura del logbook")
     parser.add_argument("--recovery-report", type=Path, help="Save the persistent-recovery dry-run dispositions")
+    parser.add_argument("--status-preview", type=Path, help="Save the exact proposed operator status updates")
     parser.add_argument("--cron", action="store_true")
     parser.add_argument("--migrate-root", action="store_true")
     args = parser.parse_args()
     settings = json.loads(args.config.read_text())
-    if args.recovery_report and (not args.dry_run or args.migrate_root or not persistent.options(settings)):
-        parser.error("--recovery-report requires a persistent recovery dry run")
+    if (args.recovery_report or args.status_preview) and (
+            not args.dry_run or args.migrate_root or not persistent.options(settings)):
+        parser.error("Recovery report options require a persistent recovery dry run")
     if "backlog_recovery" in settings:
         policy = settings["backlog_recovery"]
         if (policy != {"threshold": 20, "normal_max_active": 20}

@@ -12,6 +12,7 @@ METADATA = ("reco_done", "reco_version", "reco_output_path")
 DEFAULT_COOLDOWN = 24 * 60 * 60
 DEFAULT_EPISODES = 3  # Includes the initial episode.
 DEFAULT_SUBMISSION_LIMIT = 3
+HISTORICAL_HOLDS = frozenset({1143, 1144})
 
 
 def operator_enabled(row):
@@ -45,10 +46,12 @@ def admission(row, run, raw_archive, root_archive, deferred):
         return "host_deferred"
     if get_run_number(row) != run or row.get("filename") != f"run{run:05d}.mid.gz":
         return "filename_conflict"
-    if str(row.get("reco_requested_version") or "").strip() not in ("", "3.1"):
-        return "requested_version_conflict"
     if file_exists(root_archive / f"run{run:05d}_iq_v3.1.root"):
         return "root_present_needs_evidence"
+    if str(row.get("reco_requested_version") or "").strip() not in ("", "3.1"):
+        return "requested_version_conflict"
+    if run in HISTORICAL_HOLDS and str(row.get("auto_reco_release") or "").strip() != f"root31:{run:05d}":
+        return "historical_hold"
     if (str(row.get("reco_version") or "").strip() == "3.1"
             or str(row.get("reco_output_path") or "").endswith("_iq_v3.1.root")):
         return "publication_missing_operator_review"
